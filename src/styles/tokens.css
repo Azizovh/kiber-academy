@@ -1,0 +1,93 @@
+/* Design tokens. Dark is the default; [data-theme='light'] overrides. */
+:root {
+  --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', var(--font-body);
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --sidebar-w: 252px;
+  --content-w: 1120px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --bg: #090d13;
+  --bg-raised: #0e141c;
+  --surface: #121923;
+  --surface-2: #19222f;
+  --surface-3: #212c3c;
+  --border: #212b39;
+  --border-strong: #32405a;
+  --text: #e8eef6;
+  --text-2: #a6b3c5;
+  --text-3: #6c7b91;
+
+  --accent: #35d6a4;
+  --accent-strong: #5fe3ba;
+  --accent-ink: #032419;
+  --accent-soft: rgba(53, 214, 164, 0.12);
+  --accent-line: rgba(53, 214, 164, 0.35);
+
+  --ok: #35d6a4;
+  --warn: #f3b648;
+  --danger: #ff6f6f;
+  --info: #5aa9ff;
+  --ok-soft: rgba(53, 214, 164, 0.12);
+  --warn-soft: rgba(243, 182, 72, 0.12);
+  --danger-soft: rgba(255, 111, 111, 0.12);
+  --info-soft: rgba(90, 169, 255, 0.12);
+
+  --t-foundation: #35d6a4;
+  --t-pentest: #ff6f6f;
+  --t-soc: #5aa9ff;
+  --t-appsec: #f3b648;
+  --t-cloud: #b18cff;
+  --t-career: #f58fc7;
+
+  --term-bg: #05080c;
+  --term-text: #d3e0ee;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -18px rgba(0, 0, 0, 0.8);
+  --shadow-pop: 0 18px 48px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px var(--border-strong);
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: #f4f6f9;
+  --bg-raised: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1f4f8;
+  --surface-3: #e6ebf1;
+  --border: #e0e5ec;
+  --border-strong: #c5ceda;
+  --text: #121a25;
+  --text-2: #4b596b;
+  --text-3: #7c899b;
+
+  --accent: #0b9a70;
+  --accent-strong: #08805c;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(11, 154, 112, 0.1);
+  --accent-line: rgba(11, 154, 112, 0.35);
+
+  --ok: #0b9a70;
+  --warn: #b97a09;
+  --danger: #d43c3c;
+  --info: #1f72d6;
+  --ok-soft: rgba(11, 154, 112, 0.1);
+  --warn-soft: rgba(185, 122, 9, 0.1);
+  --danger-soft: rgba(212, 60, 60, 0.09);
+  --info-soft: rgba(31, 114, 214, 0.09);
+
+  --t-foundation: #0b9a70;
+  --t-pentest: #d43c3c;
+  --t-soc: #1f72d6;
+  --t-appsec: #b97a09;
+  --t-cloud: #7b4fe0;
+  --t-career: #c8479a;
+
+  --term-bg: #0c1219;
+  --term-text: #d3e0ee;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 10px 28px -20px rgba(16, 24, 40, 0.35);
+  --shadow-pop: 0 18px 48px -14px rgba(16, 24, 40, 0.3), 0 0 0 1px var(--border);
+  color-scheme: light;
+}
