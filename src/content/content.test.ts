@@ -52,11 +52,14 @@ describe('curriculum', () => {
   });
 });
 
+/** Stages whose every topic must have a full lesson. */
+const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq'];
+
 describe('lessons', () => {
   const ids = lessonIds();
 
-  it('exist for every topic of stages 0 and 1', () => {
-    const expected = ALL_STAGES.filter((s) => s.id === 's0-kirish' || s.id === 's1-kompyuter').flatMap((s) =>
+  it('exist for every topic of the finished stages', () => {
+    const expected = ALL_STAGES.filter((s) => FINISHED_STAGES.includes(s.id)).flatMap((s) =>
       s.modules.flatMap((m) => m.topics.map((t) => t.id)),
     );
     expect(expected.filter((id) => !ids.includes(id))).toEqual([]);
