@@ -150,7 +150,7 @@ Kasblar va maoshlar, sertifikatlar yo'l xaritasi, portfolio, rezyume, LinkedIn, 
 |---|---|
 | **v1.0** ✓ | Platforma to'liq (F1–F12), barcha bosqichlar xaritasi, 0–1-bosqich to'liq darslari, 6 terminal lab, CTF to'plami, lug'at, desktop oyna |
 | **v1.1** ✓ | 2-bosqich (Tarmoq) va 3-bosqich (Linux) darslari va testlari (ularning lablari v1.0 da qurilgan) |
-| **v1.2** | 4-bosqich (Dasturlash) va 5-bosqich (Xavfsizlik asoslari) darslari — poydevor to'liq |
+| **v1.2** ✓ | 4-bosqich (Dasturlash) va 5-bosqich (Xavfsizlik asoslari) darslari — poydevor to'liq |
 | **v1.3–1.6** | Tarmoqlar darslari birma-bir: Pentest → SOC → AppSec → Cloud |
 | **v2.0** | Sayt sifatida chiqarish: akkaunt, Supabase sinxronlash, AI-ustoz, rus/ingliz interfeysi |
 
