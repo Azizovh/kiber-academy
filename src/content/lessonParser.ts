@@ -6,19 +6,23 @@ const CALLOUTS: CalloutKind[] = ['tip', 'info', 'warn', 'key', 'try'];
 const WPM = 90;
 
 /**
- * [[term]] and [[term-id|shown text]] become links with a "#g:" target,
- * which the Markdown renderer turns into glossary popovers.
+ * A glossary reference: [[term-id]] or [[term-id|shown text]].
+ * The id must be a bare lower-case slug with no spaces, so that Bash tests
+ * such as `[[ -f "$file" ]]` in code samples are never mistaken for one.
+ */
+const GLOSSARY_REF = /\[\[([a-z0-9][a-z0-9-]*)(?:\|([^\]\n]+))?\]\]/g;
+
+/**
+ * Glossary references become links with a "#g:" target, which the Markdown
+ * renderer turns into glossary popovers.
  */
 export function linkGlossary(md: string): string {
-  return md.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, id: string, label?: string) => {
-    const slug = id.trim().toLowerCase().replace(/\s+/g, '-');
-    return `[${(label ?? id).trim()}](#g:${slug})`;
-  });
+  return md.replace(GLOSSARY_REF, (_, id: string, label?: string) => `[${(label ?? id).trim()}](#g:${id})`);
 }
 
 /** Glossary ids referenced by a lesson (used by the content test). */
 export function glossaryRefs(md: string): string[] {
-  return [...md.matchAll(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g)].map((m) => m[1]!.trim().toLowerCase().replace(/\s+/g, '-'));
+  return [...md.matchAll(GLOSSARY_REF)].map((m) => m[1]!);
 }
 
 function parseQuiz(body: string): QuizQuestion[] {

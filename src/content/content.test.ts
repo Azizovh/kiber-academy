@@ -53,7 +53,7 @@ describe('curriculum', () => {
 });
 
 /** Stages whose every topic must have a full lesson. */
-const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq'];
+const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq', 's3-linux'];
 
 describe('lessons', () => {
   const ids = lessonIds();
