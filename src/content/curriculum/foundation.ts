@@ -300,11 +300,12 @@ export const FOUNDATION: Stage[] = [
           "Xatolarni `try/except` bilan ushlay olaman",
           "`pip` bilan kutubxona o'rnatib ishlataman",
         ], [r.docs('Python — rasmiy tutorial', 'https://docs.python.org/3/tutorial/'), r.book('Automate the Boring Stuff', 'https://automatetheboringstuff.com/')]),
-        topic('python-xavfsizlik-uchun', 'Python xavfsizlik uchun', 14, "socket, requests, hashlib: port skaner va boshqa vositalar yozish.", [
-          "`socket` bilan oddiy port skaner yozdim",
-          "`requests` bilan web so'rov yuborib, javobni tahlil qila olaman",
-          "Lug'at bo'yicha xesh topuvchi skript yoza olaman",
-        ], [r.thm('Python for Pentesters'), r.book('Black Hat Python (pullik kitob)', 'https://nostarch.com/black-hat-python2E')]),
+        topic('python-xavfsizlik-uchun', 'Python xavfsizlik uchun', 14, "socket, requests, hashlib: tekshiruv va tahlil vositalarini o'zingiz yozish.", [
+          "`socket` bilan o'z serverimdagi portlar holatini tekshiruvchi skript yozdim",
+          "`requests` bilan web so'rov yuborib, javob va sarlavhalarni tahlil qila olaman",
+          "`hashlib` bilan fayl yaxlitligini tekshiruvchi skript yoza olaman",
+          "Jurnal faylini tahlil qilib, hisobot chiqaruvchi dastur yozdim",
+        ], [r.docs('Python — socket hujjatlari', 'https://docs.python.org/3/library/socket.html'), r.docs('Requests kutubxonasi', 'https://requests.readthedocs.io/'), r.thm('Python Basics')]),
       ]),
       mod('s4-vosita', 'Vositalar va web', [
         topic('git', 'Git va GitHub', 7, "Versiyalarni boshqarish va kodni ulashish.", [
