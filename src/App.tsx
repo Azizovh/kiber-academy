@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { AccountPage } from './pages/AccountPage';
+import { AdminPage } from './pages/AdminPage';
 import { CtfPage } from './pages/CtfPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { GlossaryPage } from './pages/GlossaryPage';
@@ -51,6 +53,8 @@ export function App() {
         <Route path="qaydlar" element={<NotesPage />} />
         <Route path="intervyu" element={<InterviewPage />} />
         <Route path="sozlamalar" element={<SettingsPage />} />
+        <Route path="akkaunt" element={<AccountPage />} />
+        <Route path="admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

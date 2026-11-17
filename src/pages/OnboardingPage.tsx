@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, BookOpenCheck, Map, SquareTerminal, Target } from 'lucide-react';
+import { AuthPanel } from '../components/AuthPanel';
 import { Brand } from '../components/Layout';
+import { cloudEnabled } from '../services/supabase';
+import { useAuth } from '../store/auth';
 import { TRACKS, getTrack } from '../content/curriculum';
 import { addDays, dayKey, formatHours, formatMonthYear, formatSpan } from '../engine/dates';
 import { daysFor, topicsOf } from '../engine/progress';
@@ -42,8 +45,12 @@ export function PaceEstimate({ dailyMinutes, daysPerWeek }: { dailyMinutes: numb
   );
 }
 
+/** Not one of the numbered steps: the sign-in card for learners who already have an account. */
+const LOGIN_STEP = 9;
+
 export function OnboardingPage() {
   const save = useSettings((s) => s.set);
+  const authStatus = useAuth((s) => s.status);
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [dailyMinutes, setDaily] = useState(60);
@@ -62,7 +69,7 @@ export function OnboardingPage() {
           <Brand />
           <div className="onb-steps" aria-hidden>
             {[0, 1, 2].map((i) => (
-              <i key={i} className={i <= step ? 'on' : ''} />
+              <i key={i} className={step !== LOGIN_STEP && i <= step ? 'on' : ''} />
             ))}
           </div>
         </div>
@@ -112,11 +119,42 @@ export function OnboardingPage() {
                 </div>
               </li>
             </ul>
-            <div className="row" style={{ justifyContent: 'flex-end' }}>
+            <div className="row" style={{ justifyContent: cloudEnabled ? 'space-between' : 'flex-end' }}>
+              {cloudEnabled && (
+                <button className="btn ghost" onClick={() => setStep(LOGIN_STEP)}>
+                  Akkauntim bor — kirish
+                </button>
+              )}
               <button className="btn primary lg" onClick={() => setStep(1)} autoFocus>
                 Boshlash <ArrowRight />
               </button>
             </div>
+          </>
+        )}
+
+        {step === LOGIN_STEP && (
+          <>
+            <h1>Akkauntga kirish</h1>
+            {authStatus === 'user' ? (
+              <>
+                <p className="muted">
+                  Kirdingiz. Bu akkauntda hali sozlangan profil yo'q — keling, uni tanishuvdan boshlaymiz.
+                </p>
+                <div className="row" style={{ justifyContent: 'flex-end' }}>
+                  <button className="btn primary lg" onClick={() => setStep(1)}>
+                    Davom etish <ArrowRight />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="muted">Oldin boshqa qurilmada o'qigan bo'lsangiz, progressingiz shu yerga yuklanadi.</p>
+                <AuthPanel />
+                <button className="link-btn small" onClick={() => setStep(0)}>
+                  ← Orqaga
+                </button>
+              </>
+            )}
           </>
         )}
 

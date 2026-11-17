@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   BookA,
+  Cloud,
+  CloudOff,
   Flame,
   Home,
   Layers,
+  LogIn,
   Map,
   Menu,
   MessagesSquare,
@@ -14,6 +17,7 @@ import {
   SquareTerminal,
 } from 'lucide-react';
 import { useDueCards, useToday } from '../hooks/useLearning';
+import { useAuth } from '../store/auth';
 import { Ring } from './ui';
 
 interface Item {
@@ -61,6 +65,7 @@ export function Layout() {
   const [open, setOpen] = useState(false);
   const due = useDueCards();
   const today = useToday();
+  const auth = useAuth();
 
   useEffect(() => {
     setOpen(false);
@@ -98,6 +103,13 @@ export function Layout() {
               </span>
             </div>
           </Link>
+          {auth.status !== 'disabled' &&
+            link({
+              to: '/akkaunt',
+              label: auth.user ? auth.user.name || auth.user.email : 'Kirish',
+              icon: auth.user ? (auth.sync === 'error' ? CloudOff : Cloud) : LogIn,
+              also: ['/admin'],
+            })}
           {link({ to: '/sozlamalar', label: 'Sozlamalar', icon: Settings })}
         </div>
       </aside>

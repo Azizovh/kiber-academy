@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { Download, Monitor, Moon, Sun, Trash2, Upload } from 'lucide-react';
 import { SPECIALITIES, getTrack } from '../content/curriculum';
+import { resetEverywhere } from '../services/sync';
+import { useAuth } from '../store/auth';
 import { downloadBackup, resetLearningData, restoreBackup } from '../store/backup';
 import { DAILY_OPTIONS, WEEK_OPTIONS, useSettings, type ThemeChoice } from '../store/settings';
 import { APP_VERSION } from '../version';
@@ -14,6 +16,7 @@ const THEMES: { id: ThemeChoice; label: string; icon: typeof Sun }[] = [
 
 export function SettingsPage() {
   const settings = useSettings();
+  const signedIn = useAuth((s) => s.status === 'user');
   const fileInput = useRef<HTMLInputElement>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -38,7 +41,9 @@ export function SettingsPage() {
       "Barcha progress, faollik tarixi, kartochkalar va qaydlar o'chiriladi. Buni qaytarib bo'lmaydi.\n\nDavom etilsinmi?",
     );
     if (!ok) return;
-    resetLearningData();
+    // Signed in: the cloud copy is cleared too, otherwise the next sync would merge the old progress back.
+    if (signedIn) void resetEverywhere();
+    else resetLearningData();
     notify("O'quv ma'lumotlari tozalandi");
   };
 
@@ -51,7 +56,7 @@ export function SettingsPage() {
       <section className="settings-block" style={{ borderTop: 0 }}>
         <div>
           <h2>Profil</h2>
-          <p>Faqat shu kompyuterda saqlanadi.</p>
+          <p>{signedIn ? 'Akkauntingiz bilan sinxronlanadi.' : 'Faqat shu qurilmada saqlanadi.'}</p>
         </div>
         <div className="field">
           <label htmlFor="name">Ism</label>
@@ -130,7 +135,11 @@ export function SettingsPage() {
       <section className="settings-block">
         <div>
           <h2>Ma'lumotlar</h2>
-          <p>Progress shu kompyuterda saqlanadi. Vaqti-vaqti bilan zaxira nusxa olib turing.</p>
+          <p>
+            {signedIn
+              ? 'Progress akkauntingizda saqlanadi va qurilmalar o\'rtasida sinxronlanadi. Zaxira fayl ham olib qo\'yishingiz mumkin.'
+              : 'Progress shu qurilmada saqlanadi. Vaqti-vaqti bilan zaxira nusxa oling — yoki akkauntga kiring.'}
+          </p>
         </div>
         <div className="stack">
           <div className="row wrap">

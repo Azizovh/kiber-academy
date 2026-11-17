@@ -9,6 +9,9 @@ import './styles/tokens.css';
 import './styles/app.css';
 import './styles/lesson.css';
 import { App } from './App';
+import { initSync } from './services/sync';
+
+initSync();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -151,6 +151,20 @@ lesson was rewritten without it. Practical consequences:
   `pt-web-amaliyot` in p2. `himoyadan-otish` is written strictly as "how AV/EDR detect and what traces a tester
   leaves"; it says outright that evasion is not taught. Keep it that way.
 
+## Accounts and cloud sync (added after v1.7.0)
+
+- Optional sign-in through Supabase (email + password everywhere, Google on the website only; Electron cannot take an
+  OAuth redirect to `file://`). Without `VITE_SUPABASE_*` keys the app is local-only, exactly as before — keep that
+  path working. Setup guide for the user: `docs/SUPABASE.md`; schema and RLS: `supabase/schema.sql`.
+- PKCE flow on purpose: the implicit flow puts tokens in the URL hash, which HashRouter owns.
+- `services/sync.ts` stores the whole local state as one JSON row (`user_state.data`) plus `summary` for the admin page.
+  Every save is read-merge-write with the pure rules in `engine/merge.ts` ("keep the furthest progress", idempotent).
+  Consequence: deletions (a cleared note) can come back from another device; the full reset writes the cloud copy
+  directly (`resetEverywhere`). Adding a store means adding it to `SyncData`, `readLocal`, `applyLocal` and the merge.
+- Admin = `profiles.is_admin`, set only by SQL in the Supabase dashboard; users cannot update that column.
+- Vercel hosts the site (`cbersecurity-learning-platform.vercel.app`) and deploys from GitHub; env vars live there.
+  For the desktop shortcut the same keys go into a local `.env` before `npm run build`.
+
 ## Code conventions
 
 - React 19 + TypeScript (strict) + Vite, zustand with `persist`, `HashRouter`, hand-written CSS with tokens in
