@@ -53,7 +53,7 @@ describe('curriculum', () => {
 });
 
 /** Stages whose every topic must have a full lesson. */
-const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq', 's3-linux', 's4-dasturlash', 's5-xavfsizlik', 'b1-soc-asoslari', 'b2-siem', 'b3-ir-forensics', 'b4-hunting', 'k1-karyera', 'a1-web-chuqur', 'a2-zaifliklar', 'a3-ssdlc', 'a4-devsecops', 'c1-infratuzilma'];
+const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq', 's3-linux', 's4-dasturlash', 's5-xavfsizlik', 'b1-soc-asoslari', 'b2-siem', 'b3-ir-forensics', 'b4-hunting', 'k1-karyera', 'a1-web-chuqur', 'a2-zaifliklar', 'a3-ssdlc', 'a4-devsecops', 'c1-infratuzilma', 'c2-bulut-xavfsizligi'];
 
 describe('lessons', () => {
   const ids = lessonIds();
