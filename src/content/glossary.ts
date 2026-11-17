@@ -407,6 +407,7 @@ export const GLOSSARY: GlossaryTerm[] = [
   g('himoya', 'security-group', 'Security group', "Bulutda server (instans) darajasidagi stateful firewall: faqat ruxsat qoidalari yoziladi."),
   g('himoya', 'nacl', 'NACL', "Network ACL — subnet darajasidagi stateless filtr; ruxsat va taqiq qoidalari tartib raqami bo'yicha tekshiriladi."),
   g('tarmoq', 'load-balancer', 'Load balancer', "Kiruvchi so'rovlarni bir nechta server orasida taqsimlovchi xizmat; ko'pincha TLS ham shu yerda tugaydi.", 'Yuk balanslovchi'),
+  g('umumiy', 'aws', 'AWS', "Amazon Web Services — dunyodagi eng katta bulut provayderi; IAM, EC2, S3, VPC kabi yuzlab xizmatlarni taklif qiladi."),
   g('tizim', 'ec2', 'EC2', "AWS'ning virtual server xizmati (instans)."),
   g('tizim', 's3', 'S3', "AWS'ning obyekt saqlash xizmati: fayllar bucket deb ataladigan konteynerlarda saqlanadi."),
   g('kripto', 'kms', 'KMS', "Key Management Service — shifrlash kalitlarini yaratish, saqlash va ishlatishni boshqaradigan xizmat; kalitning o'zi xizmatdan chiqmaydi."),
