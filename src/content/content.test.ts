@@ -92,6 +92,8 @@ describe('lessons', () => {
       if (seg.type === 'lab') expect(getLab(seg.labId), `lab ${seg.labId}`).not.toBeNull();
     }
     for (const ref of glossaryRefs(LESSON_SOURCES[id]!)) expect(getTerm(ref), `[[${ref}]]`).not.toBeNull();
+    // An escaped pipe (needed inside tables) stops the glossary pattern from matching; the ref would show raw.
+    expect(LESSON_SOURCES[id]!, 'glossary ref with \\| — link the term outside the table').not.toMatch(/\[\[[a-z0-9-]+\\\|/);
     // No block marker may leak into the rendered text.
     for (const seg of lesson.segments) {
       if (seg.type !== 'lab') expect(seg.text).not.toMatch(/^:::/m);
