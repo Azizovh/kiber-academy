@@ -54,6 +54,10 @@ Bundan uchta muhim xulosa:
 | Konteynerga `docker.sock` ulangan (`-v /var/run/docker.sock:/var/run/docker.sock`) | Konteyner ichidagi jarayon daemon'ni boshqaradi → xostni boshqaradi | Iloji boricha qilmang; kerak bo'lsa — faqat ishonchli, minimal vosita, yoki socket proksi bilan cheklangan API |
 | Daemon TCP portda (2375) TLS'siz ochiq | Internetdan istalgan kishi xostingizda root sifatida konteyner ko'taradi | Hech qachon; masofaviy boshqaruv kerak bo'lsa — SSH orqali yoki o'zaro TLS |
 
+:::warn
+CI/CD runner'lari alohida xavf nuqtasi: ular ko'pincha Docker image yig'ish uchun `docker.sock` yoki privileged rejim bilan ishlaydi va ularda **begona kod** (har bir pull request) bajariladi. Bunday runner'lar ishlab chiqarish xostlaridan ajratilgan, har bir ish uchun vaqtinchalik bo'lishi kerak (a4 bosqichidagi CI/CD xavfsizligi). Image yig'ish uchun daemon talab qilmaydigan vositalar ham bor (masalan, BuildKit rootless rejimi, Kaniko).
+:::
+
 Uchinchi qator — nazariya emas: internetda ochiq Docker API'larni avtomatik skanerlab, ularga kriptomayner konteynerlari joylaydigan botnetlar yillardan beri ishlaydi. c1 bosqichidagi "server birinchi daqiqadan hujum ostida" — shu yerda ham.
 
 **Rootless rejim.** Docker (va Podman) daemon'ni oddiy foydalanuvchi sifatida ishga tushirish rejimini qo'llab-quvvatlaydi. Shunda konteynerdan chiqib ketish muvaffaqiyatli bo'lsa ham, hujumchi xostda root emas, oddiy foydalanuvchi bo'ladi. Ba'zi imkoniyatlar cheklanadi, lekin ko'p holatlar uchun yetarli.
@@ -122,7 +126,9 @@ Natijani solishtiring:
 
 (`capsh --decode=<qiymat>` buyrug'i `CapEff` maskasini capability nomlari ro'yxatiga aylantiradi.) Bu jadval — auditda privileged konteyner nima uchun "kritik" ekanini tushuntirish uchun yetarli dalil.
 
-Privileged ba'zan haqiqatan kerak bo'ladi (masalan, past darajadagi tizim agentlari). Lekin ilova konteyneri uchun — **hech qachon**. Ko'pincha kerakli bitta capability yoki bitta qurilma bilan almashtirish mumkin.
+:::key
+Privileged ba'zan haqiqatan kerak bo'ladi (masalan, past darajadagi tizim agentlari). Lekin ilova konteyneri uchun — **hech qachon**. Ko'pincha uni kerakli bitta capability (`--cap-add`) yoki bitta qurilma (`--device`) bilan almashtirish mumkin. Auditda topilgan har bir privileged konteyner uchun savol: "Aynan qaysi imtiyoz kerak edi?"
+:::
 
 Topish:
 
