@@ -38,7 +38,7 @@ Not written yet — every topic below has goals and resources only ("map mode"):
 
 | Track | Stage ids | Notes |
 |---|---|---|
-| Pentest | `p1-asoslar`, `p2-web`, `p3-tizim`, `p4-professional` | See "Content boundaries" |
+| Pentest | `p2-web` (8 vulnerability topics), `p3-tizim` (all) | Paused by decision — see "Content boundaries" |
 
 Topic ids, titles, goals and hours live in `src/content/curriculum/*.ts`. Other backlog is at the end of this file.
 
@@ -139,8 +139,11 @@ lesson was rewritten without it. Practical consequences:
 - In November 2026 a second session was stopped by the safety filter while writing the Pentest lesson on finding
   SQL injection from the tester's side. Do not retry that lesson in any wording. The per-vulnerability Pentest topics
   (p2 vulnerability lessons, p3 privilege escalation and Active Directory attacks) stay in map mode unless the user
-  decides otherwise; each vulnerability is already covered defensively in a2. Written so far: all of p1, and
-  `burp-suite`, `web-razvedka` in p2.
+  decides otherwise; each vulnerability is already covered defensively in a2. In November 2026 the user chose
+  "safe topics only". Written so far: all of p1, all of p4 (report writing, independent boxes, bug bounty,
+  red team concepts, how defensive tools detect, certification), and `burp-suite`, `web-razvedka`,
+  `pt-web-amaliyot` in p2. `himoyadan-otish` is written strictly as "how AV/EDR detect and what traces a tester
+  leaves"; it says outright that evasion is not taught. Keep it that way.
 
 ## Code conventions
 
