@@ -13,14 +13,16 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 
 ## State (v1.2.0)
 
-Done: the whole platform, the full roadmap (foundation + 4 specialities + career), and **full lessons for all six
-foundation stages** (`s0`–`s5`, 52 topics). 6 terminal labs, 11 CTF challenges, glossary, interview bank.
+Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
+foundation stages** (`s0`–`s5`, 52 topics) and for SOC stage `b1-soc-asoslari` (8 topics: SOC roles, triage,
+Windows Event Log, Sysmon, Linux logs/auditd, network logs, traffic analysis, phishing analysis).
+6 terminal labs, 11 CTF challenges, glossary, interview bank.
 
 Not written yet — every topic below has goals and resources only ("map mode"):
 
 | Track | Stage ids | Notes |
 |---|---|---|
-| SOC / Blue Team | `b1-soc-asoslari`, `b2-siem`, `b3-ir-forensics`, `b4-hunting` | Recommended next: fully defensive, widest entry to the field |
+| SOC / Blue Team | `b2-siem`, `b3-ir-forensics`, `b4-hunting` | Recommended next: continues `b1`; reuse its running example (WS-BUX-014, d.karimova, 203.0.113.45) |
 | Career | `k1-karyera` | Short; high value for the "job-ready" goal |
 | AppSec | `a1-web-chuqur`, `a2-zaifliklar`, `a3-ssdlc`, `a4-devsecops` | |
 | Cloud | `c1-infratuzilma`, `c2-bulut-xavfsizligi`, `c3-konteyner`, `c4-professional` | |
@@ -82,6 +84,8 @@ commands; every CTF flag matches its hash.
 - **Cards split on the first `::`** — never put `::` in card text (IPv6 addresses, Python slices like `[::2]`).
 - **Glossary ids must be bare lower-case slugs** (`[a-z0-9-]`). This is deliberate: Bash tests such as
   `[[ -f file ]]` in code samples would otherwise be parsed as glossary links.
+- **No labelled glossary refs inside table rows**: `[[id|text]]` has a raw `|` that splits the cell, and `[[id\|text]]`
+  no longer matches the glossary pattern. Link the term in prose instead.
 - In `:::quiz`, every line must start with `?`, `+`, `-` or `!`; a multi-line question is only allowed before its options.
 - **No Cyrillic letters.** A Cyrillic "о" slipped into the word `daho` twice. After a batch, search lessons for
   `[а-яА-Я]`.

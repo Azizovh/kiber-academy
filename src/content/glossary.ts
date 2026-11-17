@@ -308,6 +308,11 @@ export const GLOSSARY: GlossaryTerm[] = [
   g('himoya', 'ticket', 'Ticket', "Hodisa va u bo'yicha bajarilgan ishlar yozib boriladigan yozuv.", 'Tiket'),
   g('himoya', 'sla', 'SLA', "Service Level Agreement — ogohlantirishga qancha vaqt ichida javob berish kerakligi haqidagi kelishuv."),
   g('himoya', 'baseline', 'Baseline', "Tizim yoki tarmoqning odatiy, normal holati; undan chetlanish — tekshirish uchun sabab.", 'Odatiy holat'),
+  g('hujum', 'c2', 'C2 (Command and Control)', "Hujumchi buzilgan qurilmalarni masofadan boshqaradigan server va aloqa kanali.", 'Boshqaruv serveri'),
+  g('himoya', 'beaconing', 'Beaconing', "Buzilgan qurilmaning C2 serveriga muntazam oraliqda “men shu yerdaman” deb ulanishi; tarmoqda takroriy naqsh bo'lib ko'rinadi."),
+  g('himoya', 'spf', 'SPF', "Sender Policy Framework — domen egasi DNS'da qaysi serverlar uning nomidan xat yuborishi mumkinligini e'lon qiladi."),
+  g('himoya', 'dkim', 'DKIM', "DomainKeys Identified Mail — xatga raqamli imzo qo'yiladi; qabul qiluvchi uni domenning DNS'dagi ochiq kaliti bilan tekshiradi."),
+  g('himoya', 'dmarc', 'DMARC', "SPF va DKIM natijasini xatdagi ko'rinadigan From domeni bilan bog'laydi va tekshiruvdan o'tmagan xatlar bilan nima qilishni belgilaydi."),
 
   g('dasturlash', 'writeup', 'Writeup', "Topshiriq yoki mashina qanday yechilgani haqida yozilgan bosqichma-bosqich tahlil."),
 ];
