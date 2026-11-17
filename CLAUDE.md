@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.6.0)
+## State (v1.7.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -19,7 +19,8 @@ logs, SIEM and detection, IR and forensics, hunting, automation, cloud logs, pur
 certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tracks), **the whole AppSec
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
-Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). 6 terminal labs, 11 CTF
+Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 6 terminal labs, 11 CTF
 challenges, glossary, interview bank (47 questions; SOC 15, Cloud 12, AppSec only 3 — worth extending).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
@@ -30,6 +31,11 @@ The AppSec lessons share one example app, **Qaydnoma** (a Flask notes app with s
 API): built in a1, its vulnerabilities found and fixed in a2 (with `load_note(id, Action)` as the central
 authorization layer and pytest security tests), threat-modelled and scanned in a3, put into CI/CD and containers in
 a4, and turned into the portfolio project. Keep using it in later tracks where it fits.
+
+The Pentest lessons follow engagement **PT-2026-07** against Qaydnoma (grey box; tester IP 198.51.100.50; test
+accounts tester1, tester2, testadmin; in scope `api.qaydnoma.example.com` and 203.0.113.16/29; `staging` added to
+scope by the client, `dev-old` being removed by the client). The p4 report lesson lists its findings F-01…F-06 with
+CVSS 3.1 vectors computed by script.
 
 The SOC lessons share one running incident (WS-BUX-014, d.karimova, Word → PowerShell, C2 203.0.113.45,
 update-check.example-cdn.net; local time UTC+5, first execution 04:32 UTC). Other tracks may refer back to it.
