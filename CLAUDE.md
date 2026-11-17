@@ -136,6 +136,11 @@ lesson was rewritten without it. Practical consequences:
 - The Pentest track therefore concentrates on methodology, scoping and rules of engagement, reconnaissance concepts,
   reading tool output, reporting, and the defensive meaning of each finding.
 - Network tools in examples target only the learner's own lab; say so in the lesson.
+- In November 2026 a second session was stopped by the safety filter while writing the Pentest lesson on finding
+  SQL injection from the tester's side. Do not retry that lesson in any wording. The per-vulnerability Pentest topics
+  (p2 vulnerability lessons, p3 privilege escalation and Active Directory attacks) stay in map mode unless the user
+  decides otherwise; each vulnerability is already covered defensively in a2. Written so far: all of p1, and
+  `burp-suite`, `web-razvedka` in p2.
 
 ## Code conventions
 
