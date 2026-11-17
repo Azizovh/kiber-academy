@@ -341,6 +341,12 @@ export const GLOSSARY: GlossaryTerm[] = [
   g('tizim', 'pe-file', 'PE fayl', "Portable Executable — Windows bajariladigan fayllari (.exe, .dll) formati; MZ bilan boshlanadi."),
   g('himoya', 'packer', 'Packer', "Bajariladigan faylni siqadigan yoki shifrlaydigan vosita; zararli dasturlar tahlilni qiyinlashtirish uchun ham ishlatadi."),
   g('himoya', 'timeline', 'Timeline', "Turli manbalardagi hodisalarni vaqt bo'yicha tartiblangan yagona ro'yxati — tergovning asosiy natijasi.", "Vaqt chizig'i"),
+  g('himoya', 'threat-hunting', 'Threat hunting', "Ogohlantirishni kutmasdan, gipoteza asosida tarmoq va qurilmalardan yashirin hujumchi izlarini faol qidirish.", 'Tahdid ovi'),
+  g('himoya', 'purple-team', 'Purple team', "Red va blue jamoalarning hamkorligi: hujum texnikasi bajariladi va uning aniqlanishi birgalikda tekshiriladi."),
+  g('tizim', 'cloud', 'Cloud', "Internet orqali ijaraga olinadigan hisoblash resurslari (serverlar, saqlash, xizmatlar): AWS, Azure, Google Cloud.", 'Bulut'),
+  g('himoya', 'iam', 'IAM', "Identity and Access Management — kim (foydalanuvchi, xizmat) qaysi resursga qanday amal bilan murojaat qila olishini boshqarish."),
+  g('himoya', 'access-key', 'Access key', "Bulut xizmatlariga dastur orqali murojaat qilish uchun uzoq muddatli kalit; sizib chiqsa — hisob buziladi."),
+  g('himoya', 'cloudtrail', 'CloudTrail', "AWS'dagi har bir API chaqiruvini (kim, qachon, qayerdan, nima qildi) yozib boradigan audit xizmati."),
   g('tarmoq', 'ntp', 'NTP', "Network Time Protocol — qurilmalar soatini aniq vaqt serveri bilan sinxronlash protokoli; loglarni solishtirish uchun zarur."),
   g('himoya', 'dmarc', 'DMARC', "SPF va DKIM natijasini xatdagi ko'rinadigan From domeni bilan bog'laydi va tekshiruvdan o'tmagan xatlar bilan nima qilishni belgilaydi."),
 
