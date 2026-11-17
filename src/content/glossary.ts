@@ -394,6 +394,7 @@ export const GLOSSARY: GlossaryTerm[] = [
   g('tarmoq', 'reverse-proxy', 'Reverse proxy', "Server tomonida turib, internetdan kelgan so'rovlarni ichkaridagi ilovaga uzatadigan vositachi (nginx); ko'pincha TLS'ni ham tugatadi."),
   g('himoya', 'cis', 'CIS Benchmarks', "Center for Internet Security tayyorlagan, OS, dastur va bulut xizmatlarini xavfsiz sozlash bo'yicha tekshiriladigan tavsiyalar to'plami."),
   g('hujum', 'lateral-movement', 'Lateral movement', "Hujumchining bitta buzilgan tizimdan tarmoqdagi boshqa tizimlarga o'tishi.", "Gorizontal harakat"),
+  g('hujum', 'exfiltration', 'Exfiltration', "Hujumchining o'g'irlangan ma'lumotni tashkilot tarmog'idan tashqariga, o'z serveriga chiqarishi.", "Ma'lumotni chiqarib ketish"),
   g('tarmoq', 'vlan', 'VLAN', "Virtual LAN — bitta fizik switch ichida bir-biridan ajratilgan mantiqiy tarmoqlar yaratish."),
   g('tarmoq', 'segmentation', 'Segmentation', "Tarmoqni maqsadi va ishonch darajasiga ko'ra alohida qismlarga bo'lish; bir qism buzilsa, boshqalarga yo'l yopiq qoladi.", 'Segmentatsiya'),
   g('tarmoq', 'wireguard', 'WireGuard', "Zamonaviy, kodi kichik va tez VPN protokoli; tomonlar bir-birini ochiq kalitlar orqali taniydi."),
