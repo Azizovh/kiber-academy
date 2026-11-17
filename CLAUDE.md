@@ -88,6 +88,9 @@ commands; every CTF flag matches its hash.
   `[[ -f file ]]` in code samples would otherwise be parsed as glossary links.
 - **No labelled glossary refs inside table rows**: `[[id|text]]` has a raw `|` that splits the cell, and `[[id\|text]]`
   no longer matches the glossary pattern. Link the term in prose instead.
+- **Do not bulk-rewrite lessons with a regex inside a shell-quoted `node -e`.** Shell quoting turned `\\|` into an
+  alternation once and stripped every `]]` from five lessons. Put such scripts in a file, use plain string
+  replacement, and check `git diff` before going on.
 - In `:::quiz`, every line must start with `?`, `+`, `-` or `!`; a multi-line question is only allowed before its options.
 - **No Cyrillic letters.** A Cyrillic "о" slipped into the word `daho` twice. After a batch, search lessons for
   `[а-яА-Я]`.
