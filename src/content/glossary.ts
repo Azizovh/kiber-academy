@@ -295,6 +295,20 @@ export const GLOSSARY: GlossaryTerm[] = [
   g('kripto', 'ca', 'Certificate Authority', "Sertifikat beruvchi va imzolovchi ishonchli tashkilot.", 'Sertifikat markazi'),
   g('kripto', 'pki', 'PKI', "Public Key Infrastructure — sertifikatlar, CA lar va ishonch zanjiridan iborat tizim."),
 
+  // ── SOC
+  g('himoya', 'alert', 'Alert', "Monitoring tizimi shubhali deb topgan hodisa haqidagi ogohlantirish.", 'Ogohlantirish'),
+  g('himoya', 'triage', 'Triage', "Ogohlantirishni birlamchi saralash: haqiqiymi, qanchalik jiddiy va keyin nima qilinadi.", 'Saralash'),
+  g('himoya', 'false-positive', 'False positive', "Yolg'on signal: ogohlantirish bor, lekin hujum yo'q.", "Yolg'on signal"),
+  g('himoya', 'true-positive', 'True positive', "Ogohlantirish haqiqiy zararli faoliyatni to'g'ri aniqlagan holat."),
+  g('himoya', 'escalation', 'Escalation', "Hodisani yuqoriroq darajadagi analitik yoki boshqa jamoaga topshirish.", 'Eskalatsiya'),
+  g('himoya', 'playbook', 'Playbook', "Ma'lum turdagi ogohlantirish yoki insident uchun qadam-baqadam harakatlar rejasi."),
+  g('himoya', 'event-log', 'Event log', "Windows'ning hodisalar jurnali: Security, System, Application va boshqalar.", 'Hodisalar jurnali'),
+  g('himoya', 'event-id', 'Event ID', "Windows hodisasi turini bildiruvchi raqam: 4624 — muvaffaqiyatli kirish, 4625 — muvaffaqiyatsiz."),
+  g('himoya', 'sysmon', 'Sysmon', "Microsoft Sysinternals vositasi: jarayon yaratilishi, tarmoq ulanishi va fayl hodisalarini batafsil jurnalga yozadi."),
+  g('himoya', 'ticket', 'Ticket', "Hodisa va u bo'yicha bajarilgan ishlar yozib boriladigan yozuv.", 'Tiket'),
+  g('himoya', 'sla', 'SLA', "Service Level Agreement — ogohlantirishga qancha vaqt ichida javob berish kerakligi haqidagi kelishuv."),
+  g('himoya', 'baseline', 'Baseline', "Tizim yoki tarmoqning odatiy, normal holati; undan chetlanish — tekshirish uchun sabab.", 'Odatiy holat'),
+
   g('dasturlash', 'writeup', 'Writeup', "Topshiriq yoki mashina qanday yechilgani haqida yozilgan bosqichma-bosqich tahlil."),
 ];
 
