@@ -154,7 +154,8 @@ Kasblar va maoshlar, sertifikatlar yo'l xaritasi, portfolio, rezyume, LinkedIn, 
 | **v1.3** ✓ | SOC / Blue Team tarmog'i darslari to'liq (b1–b4, 33 mavzu) — eng keng va to'liq himoyaviy yo'nalish bo'lgani uchun birinchi |
 | **v1.4** ✓ | Karyera bo'limi darslari (k1, 8 mavzu); intervyu bazasiga SOC va xulq-atvor savollari qo'shildi |
 | **v1.5** ✓ | AppSec tarmog'i darslari to'liq (a1–a4, 28 mavzu) — butun tarmoq bo'ylab o'quv ilovasi “Qaydnoma” bilan |
-| **v1.6–1.7** | Qolgan tarmoqlar darslari: Cloud, Pentest |
+| **v1.6** ✓ | Cloud tarmog'i darslari to'liq (c1–c4, 24 mavzu) — Qaydnoma'ni bulutga chiqarish orqali; intervyu bazasiga bulut savollari qo'shildi |
+| **v1.7** | Qolgan tarmoq darslari: Pentest |
 | **v2.0** | Sayt sifatida chiqarish: akkaunt, Supabase sinxronlash, AI-ustoz, rus/ingliz interfeysi |
 
 v1 doirasidan tashqarida: akkauntlar, server, AI-ustoz, XP/reyting/sertifikat, interfeysning boshqa tillari, matn ichida rang bilan belgilash.

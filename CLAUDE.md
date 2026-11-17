@@ -11,14 +11,20 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.5.0)
+## State (v1.6.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
 logs, SIEM and detection, IR and forensics, hunting, automation, cloud logs, purple team, portfolio,
-certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tracks) and **the whole AppSec
-track** (`a1`–`a4`, 28 topics). 6 terminal labs, 11 CTF challenges, glossary, interview bank (38 questions;
-SOC has 15, AppSec only 3 — worth extending).
+certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tracks), **the whole AppSec
+track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
+IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
+Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). 6 terminal labs, 11 CTF
+challenges, glossary, interview bank (47 questions; SOC 15, Cloud 12, AppSec only 3 — worth extending).
+
+The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
+account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
+2026-11-16 UTC) as the c4 incident-response case.
 
 The AppSec lessons share one example app, **Qaydnoma** (a Flask notes app with sharing, an admin panel and a JSON
 API): built in a1, its vulnerabilities found and fixed in a2 (with `load_note(id, Action)` as the central
@@ -32,7 +38,6 @@ Not written yet — every topic below has goals and resources only ("map mode"):
 
 | Track | Stage ids | Notes |
 |---|---|---|
-| Cloud | `c1-infratuzilma`, `c2-bulut-xavfsizligi`, `c3-konteyner`, `c4-professional` | Recommended next: continues b4 cloud logs and a4 containers/IaC/OIDC |
 | Pentest | `p1-asoslar`, `p2-web`, `p3-tizim`, `p4-professional` | See "Content boundaries" |
 
 Topic ids, titles, goals and hours live in `src/content/curriculum/*.ts`. Other backlog is at the end of this file.
@@ -98,7 +103,11 @@ commands; every CTF flag matches its hash.
   replacement, and check `git diff` before going on.
 - In `:::quiz`, every line must start with `?`, `+`, `-` or `!`; a multi-line question is only allowed before its options.
 - **No Cyrillic letters.** A Cyrillic "о" slipped into the word `daho` twice. After a batch, search lessons for
-  `[а-яА-Я]`.
+  `[а-яА-Я]`. The one deliberate exception is the Unicode example `ў` in `s1-kompyuter/malumot-kodlash.md`.
+- **Gate commits on the test exit code**, not on `grep` output: `npx vitest run | grep ... && git commit` commits even
+  when tests fail, because grep happily matches the "failed" line. This pushed a broken lesson once.
+- Every lesson needs at least two callouts besides the quiz and cards (`:::key`, `:::warn`, `:::tip`, `:::info`,
+  `:::try`) — a lesson with only `:::try` fails the segment test.
 - Never invent computed values (hashes, Base64, hex, subnets, CVSS scores): compute them with a tool, or leave them out.
 - Raw HTML only inside code spans or fences.
 
