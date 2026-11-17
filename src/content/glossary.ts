@@ -347,6 +347,9 @@ export const GLOSSARY: GlossaryTerm[] = [
   g('himoya', 'iam', 'IAM', "Identity and Access Management — kim (foydalanuvchi, xizmat) qaysi resursga qanday amal bilan murojaat qila olishini boshqarish."),
   g('himoya', 'access-key', 'Access key', "Bulut xizmatlariga dastur orqali murojaat qilish uchun uzoq muddatli kalit; sizib chiqsa — hisob buziladi."),
   g('himoya', 'cloudtrail', 'CloudTrail', "AWS'dagi har bir API chaqiruvini (kim, qachon, qayerdan, nima qildi) yozib boradigan audit xizmati."),
+  g('umumiy', 'ats', 'ATS', "Applicant Tracking System — rezyumelarni avtomatik saralaydigan tizim; kalit so'zlar va oddiy formatni yaxshi ko'radi."),
+  g('umumiy', 'soft-skills', 'Soft skills', "Muloqot, yozish, jamoada ishlash, vaqtni boshqarish kabi texnik bo'lmagan ko'nikmalar.", "Yumshoq ko'nikmalar"),
+  g('umumiy', 'star-method', 'STAR usuli', "Xulq-atvor savollariga javob tuzilishi: Situation (vaziyat), Task (vazifa), Action (harakat), Result (natija)."),
   g('tarmoq', 'ntp', 'NTP', "Network Time Protocol — qurilmalar soatini aniq vaqt serveri bilan sinxronlash protokoli; loglarni solishtirish uchun zarur."),
   g('himoya', 'dmarc', 'DMARC', "SPF va DKIM natijasini xatdagi ko'rinadigan From domeni bilan bog'laydi va tekshiruvdan o'tmagan xatlar bilan nima qilishni belgilaydi."),
 
