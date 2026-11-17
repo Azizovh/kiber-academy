@@ -11,22 +11,21 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.2.0)
+## State (v1.3.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
-foundation stages** (`s0`–`s5`, 52 topics) and for SOC stage `b1-soc-asoslari` (8 topics: SOC roles, triage,
-Windows Event Log, Sysmon, Linux logs/auditd, network logs, traffic analysis, phishing analysis) and SOC stage
-`b2-siem` (9 topics: SIEM concepts, Splunk/SPL, Elastic/Wazuh, detection engineering/Sigma, ATT&CK mapping,
-Suricata, EDR/LOLBins, CTI, YARA) and SOC stage `b3-ir-forensics` (10 topics: IR process, evidence collection,
-Windows/disk/memory/Linux forensics, static and dynamic malware analysis, timeline and IR report).
-6 terminal labs, 11 CTF challenges, glossary, interview bank.
+foundation stages** (`s0`–`s5`, 52 topics) and **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
+logs, SIEM and detection, IR and forensics, hunting, automation, cloud logs, purple team, portfolio,
+certification). 6 terminal labs, 11 CTF challenges, glossary, interview bank.
+
+The SOC lessons share one running incident (WS-BUX-014, d.karimova, Word → PowerShell, C2 203.0.113.45,
+update-check.example-cdn.net; local time UTC+5, first execution 04:32 UTC). Other tracks may refer back to it.
 
 Not written yet — every topic below has goals and resources only ("map mode"):
 
 | Track | Stage ids | Notes |
 |---|---|---|
-| SOC / Blue Team | `b4-hunting` | Recommended next; last SOC stage. The SOC lessons share one running incident (WS-BUX-014, d.karimova, Word → PowerShell, C2 203.0.113.45, update-check.example-cdn.net; local time UTC+5, first execution 04:32 UTC); keep using it |
-| Career | `k1-karyera` | Short; high value for the "job-ready" goal |
+| Career | `k1-karyera` | Recommended next: short, high value for the "job-ready" goal; SOC lessons `uy-soc-laboratoriyasi` and `soc-sertifikat` already point to it |
 | AppSec | `a1-web-chuqur`, `a2-zaifliklar`, `a3-ssdlc`, `a4-devsecops` | |
 | Cloud | `c1-infratuzilma`, `c2-bulut-xavfsizligi`, `c3-konteyner`, `c4-professional` | |
 | Pentest | `p1-asoslar`, `p2-web`, `p3-tizim`, `p4-professional` | See "Content boundaries" |

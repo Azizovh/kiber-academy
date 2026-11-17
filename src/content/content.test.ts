@@ -53,7 +53,7 @@ describe('curriculum', () => {
 });
 
 /** Stages whose every topic must have a full lesson. */
-const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq', 's3-linux', 's4-dasturlash', 's5-xavfsizlik', 'b1-soc-asoslari', 'b2-siem', 'b3-ir-forensics'];
+const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq', 's3-linux', 's4-dasturlash', 's5-xavfsizlik', 'b1-soc-asoslari', 'b2-siem', 'b3-ir-forensics', 'b4-hunting'];
 
 describe('lessons', () => {
   const ids = lessonIds();
