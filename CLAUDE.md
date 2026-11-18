@@ -117,6 +117,8 @@ commands; every CTF flag matches its hash.
   alternation once and stripped every `]]` from five lessons. Put such scripts in a file, use plain string
   replacement, and check `git diff` before going on.
 - In `:::quiz`, every line must start with `?`, `+`, `-` or `!`; a multi-line question is only allowed before its options.
+- **`String.replace(a, b)` treats `$` in `b` as a pattern** (`` $` `` inserts everything before the match). Inserting text
+  that contains `$` this way once duplicated half of this file. Use a function replacement or slice and concatenate.
 - **No Cyrillic letters.** A Cyrillic "о" slipped into the word `daho` twice. After a batch, search lessons for
   `[а-яА-Я]`. The one deliberate exception is the Unicode example `ў` in `s1-kompyuter/malumot-kodlash.md`.
 - **Gate commits on the test exit code**, not on `grep` output: `npx vitest run | grep ... && git commit` commits even
