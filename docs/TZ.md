@@ -157,6 +157,7 @@ Kasblar va maoshlar, sertifikatlar yo'l xaritasi, portfolio, rezyume, LinkedIn, 
 | **v1.6** ✓ | Cloud tarmog'i darslari to'liq (c1–c4, 24 mavzu) — Qaydnoma'ni bulutga chiqarish orqali; intervyu bazasiga bulut savollari qo'shildi |
 | **v1.7** ✓ | Pentest tarmog'i darslari qisman (17 mavzu): p1 to'liq (metodologiya, qamrov, razvedka, skanerlash, vositalar), p4 to'liq (hisobot, mustaqil amaliyot, bug bounty, red team, himoya vositalari, sertifikat), p2 dan Burp Suite, web razvedka va web amaliyot. Zaifliklar bo'yicha p2 darslari (8 ta) va p3 (imtiyoz oshirish, tarmoq, Active Directory) ataylab faqat roadmap rejimida qoldi — kontent chegaralari sababli; har bir zaiflik a2 da himoyachi tomondan yoritilgan |
 | **v1.8** ✓ | Ixtiyoriy akkaunt (Google va email), Supabase orqali bulut sinxroni (progress avtomatik birlashtiriladi), admin panel, maxfiylik siyosati sahifasi; sayt Vercel'da |
+| **v1.9** ✓ | Sayt tezlashtirildi (darslar va sahifalar kerak bo'lganda yuklanadi, ulashish rasmi, 404, bosh ekran ikonkasi); intervyu bazasi 68 savolga; terminalga jarayonlar, xizmatlar, awk, sed, jq, sha256sum va skriptlar; 7 ta yangi lab (jami 13) va 18 ta yangi CTF (jami 29) — Linux, SOC, AppSec, Cloud |
 | **v2.0** | AI-ustoz, rus/ingliz interfeysi |
 
 v1 doirasidan tashqarida: akkauntlar, server, AI-ustoz, XP/reyting/sertifikat, interfeysning boshqa tillari, matn ichida rang bilan belgilash.
