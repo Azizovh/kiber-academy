@@ -1,5 +1,6 @@
 import { buildFs, canAccess, chownTree, getNode, resolvePath, dirname, type FsDir, type FsSpec } from './fs';
 import { COMMANDS } from './commands';
+import { createSystem, type SystemSpec, type SystemState } from './system';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -7,6 +8,8 @@ export interface ShellInit {
   host?: string;
   /** Defaults to the user's home directory. */
   cwd?: string;
+  /** Running processes, services and sockets (ps, systemctl, ss). */
+  system?: SystemSpec;
 }
 
 export interface ShellState {
@@ -17,6 +20,9 @@ export interface ShellState {
   host: string;
   home: string;
   history: string[];
+  system: SystemState;
+  /** Shell variables set with NAME=value (also inside scripts). */
+  vars: Record<string, string>;
 }
 
 export interface CmdResult {
@@ -66,6 +72,8 @@ export function createShell(init: ShellInit): ShellState {
     host: init.host ?? 'kali',
     home,
     history: [],
+    system: createSystem(init.system),
+    vars: {},
   };
 }
 
@@ -78,6 +86,9 @@ export function promptPath(state: ShellState): string {
 /* ── tokenizer ───────────────────────────────────────────────────────── */
 
 type Token = { kind: 'word'; text: string; quoted: boolean } | { kind: 'op'; text: string };
+
+/** Stands for a `$` that must not be expanded (inside single quotes or escaped as \$). */
+const LITERAL_DOLLAR = '\u0001';
 
 const OPS = ['&&', '>>', '|', '>', ';'];
 
@@ -103,14 +114,20 @@ function tokenize(line: string): Token[] | string {
     if (ch === "'" || ch === '"') {
       const end = line.indexOf(ch, i + 1);
       if (end === -1) return "yopilmagan qo'shtirnoq";
-      cur += line.slice(i + 1, end);
+      const body = line.slice(i + 1, end);
+      // Single quotes keep $ literal (awk '{print $1}' depends on it); the marker survives variable expansion.
+      // In double quotes, \$ and \\ are escapes, as in bash.
+      cur +=
+        ch === "'"
+          ? body.replace(/\$/g, LITERAL_DOLLAR)
+          : body.replace(/\\([$\\])/g, (_, c: string) => (c === '$' ? LITERAL_DOLLAR : c));
       has = true;
       quoted = true;
       i = end + 1;
       continue;
     }
     if (ch === '\\' && i + 1 < line.length) {
-      cur += line[i + 1];
+      cur += line[i + 1] === '$' ? LITERAL_DOLLAR : line[i + 1];
       has = true;
       quoted = true;
       i += 2;
@@ -136,14 +153,19 @@ function globToRegExp(glob: string): RegExp {
   return new RegExp(`^${src}$`);
 }
 
-/** Expand ~, $VARS and * on an unquoted word. */
-function expandWord(state: ShellState, tok: { text: string; quoted: boolean }): string[] {
-  let text = tok.text.replace(/\$(\w+)/g, (_, name: string) => {
-    if (name === 'HOME') return state.home;
-    if (name === 'USER') return state.user;
-    if (name === 'PWD') return state.cwd;
-    return '';
-  });
+/** Expand ~, $VARS (and $1..$9 inside scripts) and * on an unquoted word. */
+function expandWord(state: ShellState, tok: { text: string; quoted: boolean }, positional: string[] = []): string[] {
+  let text = tok.text
+    .replace(/\$(\w+|@|#)/g, (_, name: string) => {
+      if (/^\d+$/.test(name)) return positional[Number(name)] ?? '';
+      if (name === '@') return positional.slice(1).join(' ');
+      if (name === '#') return String(Math.max(0, positional.length - 1));
+      if (name === 'HOME') return state.home;
+      if (name === 'USER') return state.user;
+      if (name === 'PWD') return state.cwd;
+      return state.vars[name] ?? '';
+    })
+    .replaceAll(LITERAL_DOLLAR, '$');
   if (tok.quoted) return [text];
   if (text === '~' || text.startsWith('~/')) text = state.home + text.slice(1);
   if (!/[*?]/.test(text)) return [text];
@@ -168,12 +190,16 @@ interface Stage {
   redirect?: { path: string; append: boolean };
 }
 
+/** Scripts may call scripts; a cap keeps a script that runs itself from hanging the page. */
+const MAX_SCRIPT_DEPTH = 5;
+
 function runArgv(
   state: ShellState,
   argv: string[],
   user: string,
   stdin: string | null,
   custom: Record<string, CustomCommand>,
+  depth = 0,
 ): CmdResult {
   const [name, ...args] = argv;
   if (!name) return ok();
@@ -181,9 +207,13 @@ function runArgv(
     state,
     user,
     stdin,
-    run: (innerArgv, asUser) => runArgv(state, innerArgv, asUser, stdin, custom),
+    run: (innerArgv, asUser) => runArgv(state, innerArgv, asUser, stdin, custom, depth),
     commandNames: () => [...new Set([...Object.keys(COMMANDS), ...Object.keys(custom)])].sort(),
   };
+  if ((name === 'bash' || name === 'sh') && args.length && !args[0]!.startsWith('-')) {
+    return runScript(state, args[0]!, args.slice(1), user, custom, depth, false);
+  }
+  if (name.includes('/')) return runScript(state, name, args, user, custom, depth, true);
   const lab = custom[name];
   if (lab) {
     const res = lab(args, ctx);
@@ -192,6 +222,60 @@ function runArgv(
   const cmd = COMMANDS[name];
   if (!cmd) return fail(`${name}: command not found\n(bunday buyruq yo'q — ro'yxat uchun: help)`, 127);
   return cmd(args, ctx);
+}
+
+/**
+ * Runs a shell script line by line. Supported: commands, pipes, redirects, && and ;, NAME=value variables, $1..$9,
+ * $@ and $#, comments, exit, set -e. Not supported (said so when met): if, for, while, functions, $(...).
+ */
+function runScript(
+  state: ShellState,
+  path: string,
+  args: string[],
+  user: string,
+  custom: Record<string, CustomCommand>,
+  depth: number,
+  direct: boolean,
+): CmdResult {
+  const abs = resolvePath(state.cwd, path, state.home);
+  const node = getNode(state.root, abs);
+  if (!node) return fail(`bash: ${path}: No such file or directory`, 127);
+  if (node.type === 'dir') return fail(`bash: ${path}: Is a directory`, 126);
+  if (!canAccess(node, user, 'r')) return fail(`bash: ${path}: Permission denied`, 126);
+  // Running ./script needs the execute bit; "bash script" only needs to read it.
+  if (direct && !canAccess(node, user, 'x')) {
+    return fail(`bash: ${path}: Permission denied\n(Bajarish ruxsati yo'q: chmod +x ${path})`, 126);
+  }
+  if (depth >= MAX_SCRIPT_DEPTH) return fail("bash: skriptlar juda chuqur chaqirildi (ehtimol skript o'zini chaqiryapti)");
+
+  const positional = [path, ...args];
+  const out: string[] = [];
+  let code = 0;
+  let stopOnError = false;
+  const lines = node.content.split('\n');
+  for (let n = 0; n < lines.length; n++) {
+    const line = lines[n]!.trim();
+    if (!line || line.startsWith('#')) continue;
+    if (/^set\s+-e\b/.test(line)) {
+      stopOnError = true;
+      continue;
+    }
+    if (/^(if|then|else|elif|fi|for|while|until|do|done|case|esac|function)\b/.test(line) || line.includes('$(')) {
+      out.push(`${path}: ${n + 1}-qator: bu simulyatorda if, for, while, funksiyalar va $(...) yo'q — skript qatorma-qator bajariladi`);
+      code = 2;
+      break;
+    }
+    const exit = /^exit(?:\s+(\d+))?$/.exec(line);
+    if (exit) {
+      code = Number(exit[1] ?? 0);
+      break;
+    }
+    const res = runLine(state, line, custom, user, positional, depth + 1);
+    if (res.output) out.push(res.output);
+    code = res.code;
+    if (code !== 0 && stopOnError) break;
+  }
+  return { out: out.join('\n'), code };
 }
 
 function writeRedirect(state: ShellState, redirect: { path: string; append: boolean }, text: string): string | null {
@@ -213,12 +297,18 @@ function writeRedirect(state: ShellState, redirect: { path: string; append: bool
   return null;
 }
 
-function runPipeline(state: ShellState, stages: Stage[], custom: Record<string, CustomCommand>): CmdResult {
+function runPipeline(
+  state: ShellState,
+  stages: Stage[],
+  custom: Record<string, CustomCommand>,
+  user: string,
+  depth: number,
+): CmdResult {
   let stdin: string | null = null;
   let errors = '';
   let last: CmdResult = ok();
   for (const stage of stages) {
-    last = runArgv(state, stage.argv, state.user, stdin, custom);
+    last = runArgv(state, stage.argv, user, stdin, custom, depth);
     if (last.err) errors += (errors ? '\n' : '') + last.err;
     if (last.clear) return last;
     if (stage.redirect) {
@@ -231,26 +321,30 @@ function runPipeline(state: ShellState, stages: Stage[], custom: Record<string, 
   return { out: last.out, err: errors || undefined, code: last.code };
 }
 
-/** Execute one command line; mutates `state`. */
-export function execLine(
+type WordToken = { kind: 'word'; text: string; quoted: boolean };
+type RawStage = { words: WordToken[]; redirect?: { target: WordToken; append: boolean } };
+
+const ASSIGNMENT = /^([A-Za-z_]\w*)=(.*)$/s;
+
+function runLine(
   state: ShellState,
   line: string,
-  custom: Record<string, CustomCommand> = {},
+  custom: Record<string, CustomCommand>,
+  user: string,
+  positional: string[],
+  depth: number,
 ): ExecResult {
-  const trimmed = line.trim();
-  if (!trimmed) return { output: '', code: 0, clear: false };
-  state.history.push(trimmed);
-
-  const tokens = tokenize(trimmed);
+  const tokens = tokenize(line);
   if (typeof tokens === 'string') return { output: `xato: ${tokens}`, code: 2, clear: false };
 
-  // Split into chains (&&, ;) of pipelines (|) of stages.
-  const chains: { stages: Stage[]; andNext: boolean }[] = [];
-  let stages: Stage[] = [];
-  let stage: Stage = { argv: [] };
+  // Split into chains (&&, ;) of pipelines (|) of stages. Words are expanded when their chain runs,
+  // so "A=1; echo $A" already sees the new value.
+  const chains: { stages: RawStage[]; andNext: boolean }[] = [];
+  let stages: RawStage[] = [];
+  let stage: RawStage = { words: [] };
   const endStage = () => {
-    if (stage.argv.length || stage.redirect) stages.push(stage);
-    stage = { argv: [] };
+    if (stage.words.length || stage.redirect) stages.push(stage);
+    stage = { words: [] };
   };
   const endChain = (andNext: boolean) => {
     endStage();
@@ -260,18 +354,18 @@ export function execLine(
   for (let i = 0; i < tokens.length; i++) {
     const tok = tokens[i]!;
     if (tok.kind === 'word') {
-      stage.argv.push(...expandWord(state, tok));
+      stage.words.push(tok);
       continue;
     }
     if (tok.text === '|') {
-      if (!stage.argv.length) return { output: "xato: `|` dan oldin buyruq yo'q", code: 2, clear: false };
+      if (!stage.words.length) return { output: "xato: `|` dan oldin buyruq yo'q", code: 2, clear: false };
       endStage();
     } else if (tok.text === '>' || tok.text === '>>') {
       const target = tokens[++i];
       if (!target || target.kind !== 'word') {
         return { output: `xato: \`${tok.text}\` dan keyin fayl nomi kerak`, code: 2, clear: false };
       }
-      stage.redirect = { path: expandWord(state, target)[0]!, append: tok.text === '>>' };
+      stage.redirect = { target, append: tok.text === '>>' };
     } else {
       endChain(tok.text === '&&');
     }
@@ -282,7 +376,21 @@ export function execLine(
   let code = 0;
   let clear = false;
   for (const chain of chains) {
-    const res = runPipeline(state, chain.stages, custom);
+    const first = chain.stages[0]!;
+    const assign =
+      chain.stages.length === 1 && first.words.length === 1 && !first.redirect ? ASSIGNMENT.exec(first.words[0]!.text) : null;
+    if (assign) {
+      state.vars[assign[1]!] = expandWord(state, { text: assign[2]!, quoted: true }, positional)[0] ?? '';
+      code = 0;
+      continue;
+    }
+    const expanded: Stage[] = chain.stages.map((s) => ({
+      argv: s.words.flatMap((w) => expandWord(state, w, positional)),
+      redirect: s.redirect
+        ? { path: expandWord(state, s.redirect.target, positional)[0]!, append: s.redirect.append }
+        : undefined,
+    }));
+    const res = runPipeline(state, expanded, custom, user, depth);
     code = res.code;
     if (res.clear) {
       clear = true;
@@ -294,6 +402,18 @@ export function execLine(
     if (chain.andNext && code !== 0) break;
   }
   return { output: parts.join('\n'), code, clear };
+}
+
+/** Execute one command line; mutates `state`. */
+export function execLine(
+  state: ShellState,
+  line: string,
+  custom: Record<string, CustomCommand> = {},
+): ExecResult {
+  const trimmed = line.trim();
+  if (!trimmed) return { output: '', code: 0, clear: false };
+  state.history.push(trimmed);
+  return runLine(state, trimmed, custom, state.user, [], 0);
 }
 
 /** Tab completion: the completed line, or the candidates when ambiguous. */

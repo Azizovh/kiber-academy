@@ -119,9 +119,17 @@ export function canAccess(node: FsNode, user: string, access: Access): boolean {
 
 export function modeString(node: FsNode): string {
   const bits = 'rwxrwxrwx';
-  let s = node.type === 'dir' ? 'd' : '-';
-  for (let i = 0; i < 9; i++) s += node.mode & (1 << (8 - i)) ? bits[i] : '-';
-  return s;
+  const chars = [...bits].map((b, i) => (node.mode & (1 << (8 - i)) ? b : '-'));
+  // setuid / setgid / sticky replace the matching x: s or S, s or S, t or T.
+  const special: [number, number, string][] = [
+    [0o4000, 2, 's'],
+    [0o2000, 5, 's'],
+    [0o1000, 8, 't'],
+  ];
+  for (const [bit, pos, ch] of special) {
+    if (node.mode & bit) chars[pos] = chars[pos] === 'x' ? ch : ch.toUpperCase();
+  }
+  return (node.type === 'dir' ? 'd' : '-') + chars.join('');
 }
 
 export function cloneNode<T extends FsNode>(node: T): T {

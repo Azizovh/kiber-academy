@@ -10,6 +10,8 @@ import {
   type FsNode,
 } from './fs';
 import { fail, ok, type CmdCtx, type CmdResult, type Command } from './shell';
+import { SYSTEM_MANUAL, journalctl, kill, pgrep, ps, ss, systemctl } from './system';
+import { TEXT_MANUAL, awk, jq, sed, sha256sum } from './text';
 
 /*
  * Error texts are the real English ones on purpose: learners must recognise
@@ -29,7 +31,7 @@ interface Located {
   denied: boolean;
 }
 
-function locate(ctx: CmdCtx, path: string): Located {
+export function locate(ctx: CmdCtx, path: string): Located {
   const abs = resolvePath(ctx.state.cwd, path, ctx.state.home);
   let node: FsNode = ctx.state.root;
   for (const part of abs.split('/')) {
@@ -55,7 +57,7 @@ interface Flags {
 }
 
 /** Split "-la -n 5 file" into flags, flag values and positional arguments. */
-function parseFlags(args: string[], valueFlags = ''): Flags {
+export function parseFlags(args: string[], valueFlags = ''): Flags {
   const flags = new Set<string>();
   const values: Record<string, string> = {};
   const rest: string[] = [];
@@ -87,7 +89,7 @@ function parseFlags(args: string[], valueFlags = ''): Flags {
   return { flags, values, rest };
 }
 
-function toLines(text: string): string[] {
+export function toLines(text: string): string[] {
   if (text === '') return [];
   const lines = text.split('\n');
   if (lines[lines.length - 1] === '') lines.pop();
@@ -95,7 +97,7 @@ function toLines(text: string): string[] {
 }
 
 /** Text of the given files, or stdin when no file is named. */
-function readInput(name: string, files: string[], ctx: CmdCtx): { text: string } | { err: string } {
+export function readInput(name: string, files: string[], ctx: CmdCtx): { text: string } | { err: string } {
   if (!files.length) {
     if (ctx.stdin === null) return { err: `${name}: kirish ma'lumoti yo'q (fayl nomini bering yoki | orqali uzating)` };
     return { text: ctx.stdin };
@@ -112,7 +114,7 @@ function readInput(name: string, files: string[], ctx: CmdCtx): { text: string }
   return { text };
 }
 
-function trimEnd(text: string): string {
+export function trimEnd(text: string): string {
   return text.endsWith('\n') ? text.slice(0, -1) : text;
 }
 
@@ -175,7 +177,7 @@ export const MANUAL: Record<string, { usage: string; text: string }> = {
   cut: { usage: "cut -d 'AJRATGICH' -f N [FAYL]", text: "Har qatordan kerakli ustunni kesib oladi." },
   tr: { usage: "tr 'TO\\'PLAM1' 'TO\\'PLAM2'", text: "Belgilarni almashtiradi. Masalan: `tr 'a-z' 'A-Z'`. -d — belgilarni o'chiradi." },
   rev: { usage: 'rev [FAYL]', text: "Har qatorni teskari yozadi." },
-  find: { usage: 'find [YO\'L] [-name NAMUNA] [-type f|d]', text: "Fayllarni qidiradi. Masalan: `find / -name \"*.txt\"`." },
+  find: { usage: 'find [YO\'L] [-name NAMUNA] [-type f|d] [-perm -4000] [-user EGA]', text: "Fayllarni qidiradi. Masalan: `find / -name \"*.txt\"`; SUID fayllar: `find / -perm -4000 -type f`." },
   file: { usage: 'file FAYL', text: "Fayl turini aniqlaydi." },
   chmod: { usage: 'chmod REJIM FAYL', text: "Ruxsatlarni o'zgartiradi. Raqamli: `chmod 644 f` yoki belgili: `chmod u+x f`." },
   chown: { usage: 'chown EGA FAYL', text: "Fayl egasini o'zgartiradi (faqat root)." },
@@ -191,6 +193,9 @@ export const MANUAL: Record<string, { usage: string; text: string }> = {
   xxd: { usage: 'xxd [-p] [-r -p] [FAYL]', text: "Hex ko'rinish. -p — faqat hex; -r -p — hex'dan matnga qaytaradi." },
   env: { usage: 'env', text: "Muhit o'zgaruvchilari." },
   clear: { usage: 'clear', text: "Ekranni tozalaydi." },
+  bash: { usage: 'bash SKRIPT [ARGUMENTLAR]   yoki   ./SKRIPT', text: "Skriptni bajaradi. ./skript.sh uchun bajarish ruxsati kerak (chmod +x). Simulyatorda skript qatorma-qator bajariladi: o'zgaruvchilar va $1..$9 bor, if/for yo'q." },
+  ...SYSTEM_MANUAL,
+  ...TEXT_MANUAL,
 };
 
 /* ── commands ────────────────────────────────────────────────────────── */
@@ -564,9 +569,20 @@ const find: Command = (args, ctx) => {
   let start = '.';
   let namePattern: RegExp | null = null;
   let type: string | null = null;
+  let perm: ((mode: number) => boolean) | null = null;
+  let owner: string | null = null;
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!;
-    if (a === '-name' || a === '-iname') {
+    if (a === '-perm') {
+      const spec = args[++i] ?? '';
+      const m = /^([-/]?)([0-7]{3,4})$/.exec(spec);
+      if (!m) return fail('find: bu simulyatorda -perm faqat raqamli: -perm -4000 (SUID), -perm -2000, -perm -0002 (hamma yoza oladi)');
+      const want = parseInt(m[2]!, 8);
+      // -MODE: all these bits set; /MODE: any of them; MODE: exactly this mode.
+      perm =
+        m[1] === '-' ? (mode) => (mode & want) === want : m[1] === '/' ? (mode) => (mode & want) !== 0 : (mode) => (mode & 0o7777) === want;
+    } else if (a === '-user') owner = args[++i] ?? null;
+    else if (a === '-name' || a === '-iname') {
       const glob = args[++i] ?? '*';
       const src = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.');
       namePattern = new RegExp(`^${src}$`, a === '-iname' ? 'i' : '');
@@ -580,7 +596,9 @@ const find: Command = (args, ctx) => {
   const visit = (label: string, node: FsNode) => {
     const matchesName = !namePattern || namePattern.test(basename(label) || label);
     const matchesType = !type || (type === 'd' ? node.type === 'dir' : node.type === 'file');
-    if (matchesName && matchesType) out.push(label);
+    const matchesPerm = !perm || perm(node.mode);
+    const matchesOwner = !owner || node.owner === owner;
+    if (matchesName && matchesType && matchesPerm && matchesOwner) out.push(label);
     if (node.type !== 'dir') return;
     if (!canAccess(node, ctx.user, 'r') || !canAccess(node, ctx.user, 'x')) {
       errors.push(`find: '${label}': ${EACCES}`);
@@ -614,13 +632,19 @@ const fileCmd: Command = (args, ctx) => {
 function applySymbolic(mode: number, spec: string): number | null {
   let result = mode;
   for (const clause of spec.split(',')) {
-    const m = /^([ugoa]*)([+\-=])([rwx]*)$/.exec(clause);
+    const m = /^([ugoa]*)([+\-=])([rwxst]*)$/.exec(clause);
     if (!m) return null;
     const who = m[1] === '' || m[1]!.includes('a') ? 'ugo' : m[1]!;
     let bits = 0;
     if (m[3]!.includes('r')) bits |= 4;
     if (m[3]!.includes('w')) bits |= 2;
     if (m[3]!.includes('x')) bits |= 1;
+    // s on u sets setuid, on g setgid; t is the sticky bit.
+    let special = 0;
+    if (m[3]!.includes('s')) special |= (who.includes('u') ? 0o4000 : 0) | (who.includes('g') ? 0o2000 : 0);
+    if (m[3]!.includes('t')) special |= 0o1000;
+    if (m[2] === '+') result |= special;
+    else if (m[2] === '-') result &= ~special;
     for (const w of who) {
       const shift = w === 'u' ? 6 : w === 'g' ? 3 : 0;
       if (m[2] === '+') result |= bits << shift;
@@ -643,7 +667,7 @@ const chmod: Command = (args, ctx) => {
     if (ctx.user !== 'root' && node.owner !== ctx.user) {
       return fail(`chmod: changing permissions of '${p}': Operation not permitted`);
     }
-    if (/^[0-7]{3,4}$/.test(spec)) node.mode = parseInt(spec, 8) & 0o777;
+    if (/^[0-7]{3,4}$/.test(spec)) node.mode = parseInt(spec, 8) & 0o7777;
     else {
       const next = applySymbolic(node.mode, spec);
       if (next === null) return fail(`chmod: invalid mode: '${spec}'`);
@@ -775,5 +799,17 @@ export const COMMANDS: Record<string, Command> = {
   nano: noEditor,
   vim: noEditor,
   vi: noEditor,
+  ps,
+  pgrep,
+  kill,
+  systemctl,
+  journalctl,
+  ss,
+  awk,
+  sed,
+  jq,
+  sha256sum,
+  bash: () => fail('Ishlatilishi: bash SKRIPT.sh   (bu simulyator allaqachon bash ichida ishlaydi)'),
+  sh: () => fail('Ishlatilishi: sh SKRIPT.sh'),
   exit: () => ok("Bu simulyator — yopish shart emas. Chiqish uchun sahifadan chiqing."),
 };
