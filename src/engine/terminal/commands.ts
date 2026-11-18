@@ -1,15 +1,55 @@
-import {
-  basename,
-  canAccess,
-  cloneNode,
-  dirname,
-  getNode,
-  modeString,
-  resolvePath,
-  type FsDir,
-  type FsNode,
-} from './fs';
+import { canAccess, dirname, getNode, resolvePath, type FsNode } from './fs';
 import { fail, ok, type CmdCtx, type CmdResult, type Command } from './shell';
+import {
+  basenameCmd,
+  cat,
+  cp,
+  df,
+  diff,
+  dirnameCmd,
+  du,
+  find,
+  grep,
+  head,
+  ln,
+  ls,
+  mkdir,
+  mv,
+  nl,
+  readlink,
+  realpath,
+  rm,
+  rmdir,
+  stat,
+  tail,
+  tee,
+  touch,
+  tree,
+  wc,
+  xargs,
+} from './files';
+import { curl, dig, host, ip, nc, nslookup, ping, traceroute, wget } from './net';
+import {
+  apt,
+  crontab,
+  date,
+  env,
+  exportCmd,
+  free,
+  groups,
+  id,
+  last,
+  passwd,
+  su,
+  uname,
+  unset,
+  uptime,
+  useradd,
+  userdel,
+  usermod,
+  w,
+  who,
+} from './users';
 import { SYSTEM_MANUAL, journalctl, kill, pgrep, ps, ss, systemctl } from './system';
 import { TEXT_MANUAL, awk, jq, sed, sha256sum } from './text';
 
@@ -43,11 +83,6 @@ export function locate(ctx: CmdCtx, path: string): Located {
     node = next;
   }
   return { abs, node, denied: false };
-}
-
-function parentDir(ctx: CmdCtx, abs: string): FsDir | null {
-  const node = getNode(ctx.state.root, dirname(abs));
-  return node && node.type === 'dir' ? node : null;
 }
 
 interface Flags {
@@ -104,8 +139,15 @@ export function readInput(name: string, files: string[], ctx: CmdCtx): { text: s
   }
   let text = '';
   for (const f of files) {
-    const { node, denied } = locate(ctx, f);
-    if (denied) return { err: `${name}: ${f}: ${EACCES}` };
+    const found = locate(ctx, f);
+    if (found.denied) return { err: `${name}: ${f}: ${EACCES}` };
+    let node: FsNode | null = found.node;
+    let abs = found.abs;
+    // Reading a symbolic link reads what it points to (a few hops at most).
+    for (let hop = 0; hop < 8 && node?.type === 'file' && node.link !== undefined; hop++) {
+      abs = resolvePath(dirname(abs), node.link, ctx.state.home);
+      node = getNode(ctx.state.root, abs);
+    }
     if (!node) return { err: `${name}: ${f}: ${ENOENT}` };
     if (node.type === 'dir') return { err: `${name}: ${f}: ${EISDIR}` };
     if (!canAccess(node, ctx.user, 'r')) return { err: `${name}: ${f}: ${EACCES}` };
@@ -116,14 +158,6 @@ export function readInput(name: string, files: string[], ctx: CmdCtx): { text: s
 
 export function trimEnd(text: string): string {
   return text.endsWith('\n') ? text.slice(0, -1) : text;
-}
-
-function toRegExp(pattern: string, flags: string): RegExp {
-  try {
-    return new RegExp(pattern, flags);
-  } catch {
-    return new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
-  }
 }
 
 function utf8ToBase64(text: string): string {
@@ -143,13 +177,6 @@ function expandSet(set: string): string {
     for (let c = a.charCodeAt(0); c <= b.charCodeAt(0); c++) out += String.fromCharCode(c);
     return out;
   });
-}
-
-const STAMP = 'Nov 16 09:00';
-
-function longLine(name: string, node: FsNode): string {
-  const size = node.type === 'dir' ? 4096 : node.content.length;
-  return `${modeString(node)} 1 ${node.owner.padEnd(6)} ${node.owner.padEnd(6)} ${String(size).padStart(5)} ${STAMP} ${name}`;
 }
 
 /* ── manual ──────────────────────────────────────────────────────────── */
@@ -229,49 +256,6 @@ const cd: Command = (args, ctx) => {
   return ok();
 };
 
-const ls: Command = (args, ctx) => {
-  const { flags, rest } = parseFlags(args);
-  const long = flags.has('l');
-  const all = flags.has('a') || flags.has('A');
-  const paths = rest.length ? rest : ['.'];
-  const blocks: string[] = [];
-  const errors: string[] = [];
-
-  for (const p of paths) {
-    const { node, denied } = locate(ctx, p);
-    if (denied) {
-      errors.push(`ls: cannot access '${p}': ${EACCES}`);
-      continue;
-    }
-    if (!node) {
-      errors.push(`ls: cannot access '${p}': ${ENOENT}`);
-      continue;
-    }
-    if (node.type === 'file') {
-      blocks.push(long ? longLine(p, node) : p);
-      continue;
-    }
-    if (!canAccess(node, ctx.user, 'r')) {
-      errors.push(`ls: cannot open directory '${p}': ${EACCES}`);
-      continue;
-    }
-    const names = Object.keys(node.children)
-      .filter((n) => all || !n.startsWith('.'))
-      .sort((a, b) => a.localeCompare(b));
-    const body = long
-      ? names.map((n) => longLine(n, node.children[n]!)).join('\n')
-      : names.map((n) => (node.children[n]!.type === 'dir' ? n + '/' : n)).join('  ');
-    blocks.push(paths.length > 1 ? `${p}:\n${body}` : body);
-  }
-  return { out: blocks.join(paths.length > 1 ? '\n\n' : '\n'), err: errors.join('\n') || undefined, code: errors.length ? 2 : 0 };
-};
-
-const cat: Command = (args, ctx) => {
-  const { rest } = parseFlags(args);
-  const input = readInput('cat', rest, ctx);
-  return 'err' in input ? fail(input.err) : ok(trimEnd(input.text));
-};
-
 const echo: Command = (args) => {
   let parts = args;
   let escapes = false;
@@ -282,217 +266,6 @@ const echo: Command = (args) => {
   let text = parts.join(' ');
   if (escapes) text = text.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
   return ok(text);
-};
-
-const mkdir: Command = (args, ctx) => {
-  const { flags, rest } = parseFlags(args);
-  if (!rest.length) return fail('mkdir: missing operand');
-  for (const p of rest) {
-    const abs = resolvePath(ctx.state.cwd, p, ctx.state.home);
-    if (getNode(ctx.state.root, abs)) {
-      if (flags.has('p')) continue;
-      return fail(`mkdir: cannot create directory '${p}': File exists`);
-    }
-    // Walk down, creating missing levels when -p is given.
-    let node: FsNode = ctx.state.root;
-    const parts = abs.split('/').filter(Boolean);
-    for (let i = 0; i < parts.length; i++) {
-      if (node.type !== 'dir') return fail(`mkdir: cannot create directory '${p}': ${ENOTDIR}`);
-      const part = parts[i]!;
-      const next: FsNode | undefined = node.children[part];
-      const isLast = i === parts.length - 1;
-      if (next) {
-        node = next;
-        continue;
-      }
-      if (!isLast && !flags.has('p')) return fail(`mkdir: cannot create directory '${p}': ${ENOENT}`);
-      if (!canAccess(node, ctx.user, 'w')) return fail(`mkdir: cannot create directory '${p}': ${EACCES}`);
-      const created: FsDir = { type: 'dir', children: {}, mode: 0o755, owner: ctx.user };
-      node.children[part] = created;
-      node = created;
-    }
-  }
-  return ok();
-};
-
-const touch: Command = (args, ctx) => {
-  if (!args.length) return fail('touch: missing file operand');
-  for (const p of args) {
-    const abs = resolvePath(ctx.state.cwd, p, ctx.state.home);
-    if (getNode(ctx.state.root, abs)) continue;
-    const parent = parentDir(ctx, abs);
-    if (!parent) return fail(`touch: cannot touch '${p}': ${ENOENT}`);
-    if (!canAccess(parent, ctx.user, 'w')) return fail(`touch: cannot touch '${p}': ${EACCES}`);
-    parent.children[basename(abs)] = { type: 'file', content: '', mode: 0o644, owner: ctx.user };
-  }
-  return ok();
-};
-
-const rm: Command = (args, ctx) => {
-  const { flags, rest } = parseFlags(args);
-  if (!rest.length) return fail('rm: missing operand');
-  const recursive = flags.has('r') || flags.has('R');
-  for (const p of rest) {
-    const { abs, node } = locate(ctx, p);
-    if (!node) {
-      if (flags.has('f')) continue;
-      return fail(`rm: cannot remove '${p}': ${ENOENT}`);
-    }
-    if (abs === '/') return fail("rm: '/' ni o'chirib bo'lmaydi — haqiqiy tizimda bu hamma narsani yo'q qiladi!");
-    if (node.type === 'dir' && !recursive) return fail(`rm: cannot remove '${p}': ${EISDIR}`);
-    const parent = parentDir(ctx, abs)!;
-    if (!canAccess(parent, ctx.user, 'w')) return fail(`rm: cannot remove '${p}': ${EACCES}`);
-    delete parent.children[basename(abs)];
-  }
-  return ok();
-};
-
-const rmdir: Command = (args, ctx) => {
-  if (!args.length) return fail('rmdir: missing operand');
-  for (const p of args) {
-    const { abs, node } = locate(ctx, p);
-    if (!node) return fail(`rmdir: failed to remove '${p}': ${ENOENT}`);
-    if (node.type !== 'dir') return fail(`rmdir: failed to remove '${p}': ${ENOTDIR}`);
-    if (Object.keys(node.children).length) return fail(`rmdir: failed to remove '${p}': Directory not empty`);
-    const parent = parentDir(ctx, abs)!;
-    if (!canAccess(parent, ctx.user, 'w')) return fail(`rmdir: failed to remove '${p}': ${EACCES}`);
-    delete parent.children[basename(abs)];
-  }
-  return ok();
-};
-
-function copyOrMove(name: 'cp' | 'mv'): Command {
-  return (args, ctx) => {
-    const { flags, rest } = parseFlags(args);
-    if (rest.length < 2) return fail(`${name}: missing file operand`);
-    const destArg = rest[rest.length - 1]!;
-    const sources = rest.slice(0, -1);
-    const dest = locate(ctx, destArg);
-    if (sources.length > 1 && dest.node?.type !== 'dir') return fail(`${name}: target '${destArg}' is not a directory`);
-
-    for (const s of sources) {
-      const src = locate(ctx, s);
-      if (!src.node) return fail(`${name}: cannot stat '${s}': ${ENOENT}`);
-      if (src.node.type === 'dir' && name === 'cp' && !flags.has('r') && !flags.has('R')) {
-        return fail(`cp: -r not specified; omitting directory '${s}'`);
-      }
-      if (name === 'cp' && !canAccess(src.node, ctx.user, 'r')) return fail(`cp: cannot open '${s}': ${EACCES}`);
-
-      const targetAbs = dest.node?.type === 'dir' ? (dest.abs === '/' ? '' : dest.abs) + '/' + basename(src.abs) : dest.abs;
-      if (targetAbs === src.abs) return fail(`${name}: '${s}' and '${destArg}' are the same file`);
-      const targetParent = parentDir(ctx, targetAbs);
-      if (!targetParent) return fail(`${name}: cannot create '${destArg}': ${ENOENT}`);
-      if (!canAccess(targetParent, ctx.user, 'w')) return fail(`${name}: cannot create '${destArg}': ${EACCES}`);
-
-      if (name === 'mv') {
-        const srcParent = parentDir(ctx, src.abs)!;
-        if (!canAccess(srcParent, ctx.user, 'w')) return fail(`mv: cannot move '${s}': ${EACCES}`);
-        delete srcParent.children[basename(src.abs)];
-        targetParent.children[basename(targetAbs)] = src.node;
-      } else {
-        const copy = cloneNode(src.node);
-        copy.owner = ctx.user;
-        targetParent.children[basename(targetAbs)] = copy;
-      }
-    }
-    return ok();
-  };
-}
-
-const grep: Command = (args, ctx) => {
-  const { flags, rest } = parseFlags(args);
-  const pattern = rest[0];
-  if (pattern === undefined) return fail('Ishlatilishi: grep [-i] [-n] [-v] [-c] [-r] NAMUNA [FAYL]...', 2);
-  const re = toRegExp(pattern, flags.has('i') ? 'i' : '');
-  const recursive = flags.has('r') || flags.has('R');
-  let targets = rest.slice(1);
-  if (!targets.length && recursive) targets = ['.'];
-
-  const sources: { label: string; text: string }[] = [];
-  const errors: string[] = [];
-  if (!targets.length) {
-    if (ctx.stdin === null) return fail("grep: kirish ma'lumoti yo'q (fayl nomini bering yoki | orqali uzating)", 2);
-    sources.push({ label: '', text: ctx.stdin });
-  }
-  const addFile = (label: string, node: FsNode) => {
-    if (node.type === 'dir') {
-      if (!recursive) {
-        errors.push(`grep: ${label}: ${EISDIR}`);
-        return;
-      }
-      if (!canAccess(node, ctx.user, 'r')) {
-        errors.push(`grep: ${label}: ${EACCES}`);
-        return;
-      }
-      for (const name of Object.keys(node.children).sort()) {
-        addFile(label === '.' ? name : `${label.replace(/\/$/, '')}/${name}`, node.children[name]!);
-      }
-      return;
-    }
-    if (!canAccess(node, ctx.user, 'r')) {
-      errors.push(`grep: ${label}: ${EACCES}`);
-      return;
-    }
-    sources.push({ label, text: node.content });
-  };
-  for (const t of targets) {
-    const { node, denied } = locate(ctx, t);
-    if (denied) errors.push(`grep: ${t}: ${EACCES}`);
-    else if (!node) errors.push(`grep: ${t}: ${ENOENT}`);
-    else addFile(t, node);
-  }
-
-  const showName = sources.length > 1 || recursive;
-  const out: string[] = [];
-  let total = 0;
-  for (const src of sources) {
-    let count = 0;
-    toLines(src.text).forEach((line, i) => {
-      if (re.test(line) === flags.has('v')) return;
-      count++;
-      if (flags.has('c') || flags.has('l')) return;
-      out.push((showName ? `${src.label}:` : '') + (flags.has('n') ? `${i + 1}:` : '') + line);
-    });
-    total += count;
-    if (flags.has('c')) out.push((showName ? `${src.label}:` : '') + count);
-    else if (flags.has('l') && count) out.push(src.label);
-  }
-  return { out: out.join('\n'), err: errors.join('\n') || undefined, code: total ? 0 : 1 };
-};
-
-function headTail(name: 'head' | 'tail'): Command {
-  return (args, ctx) => {
-    let n = 10;
-    const files: string[] = [];
-    for (let i = 0; i < args.length; i++) {
-      const a = args[i]!;
-      if (a === '-n') n = Number(args[++i]);
-      else if (/^-n\d+$/.test(a)) n = Number(a.slice(2));
-      else if (/^-\d+$/.test(a)) n = Number(a.slice(1));
-      else files.push(a);
-    }
-    if (!Number.isFinite(n) || n < 0) return fail(`${name}: invalid number of lines`);
-    const input = readInput(name, files, ctx);
-    if ('err' in input) return fail(input.err);
-    const lines = toLines(input.text);
-    return ok((name === 'head' ? lines.slice(0, n) : n === 0 ? [] : lines.slice(-n)).join('\n'));
-  };
-}
-
-const wc: Command = (args, ctx) => {
-  const { flags, rest } = parseFlags(args);
-  const input = readInput('wc', rest, ctx);
-  if ('err' in input) return fail(input.err);
-  const lines = toLines(input.text).length;
-  const words = input.text.split(/\s+/).filter(Boolean).length;
-  const chars = input.text.length;
-  const picked: number[] = [];
-  if (flags.has('l')) picked.push(lines);
-  if (flags.has('w')) picked.push(words);
-  if (flags.has('c') || flags.has('m')) picked.push(chars);
-  const nums = picked.length ? picked : [lines, words, chars];
-  const label = rest.length === 1 ? ' ' + rest[0] : '';
-  return ok(nums.join(' ') + label);
 };
 
 const sort: Command = (args, ctx) => {
@@ -512,7 +285,12 @@ const sort: Command = (args, ctx) => {
   lines.sort(
     numeric
       ? (a, b) => (parseFloat(key(a)) || 0) - (parseFloat(key(b)) || 0)
-      : (a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0),
+      : (a, b) => {
+          // -f: ignore upper/lower case.
+          const ka = flags.has('f') ? key(a).toLowerCase() : key(a);
+          const kb = flags.has('f') ? key(b).toLowerCase() : key(b);
+          return ka < kb ? -1 : ka > kb ? 1 : 0;
+        },
   );
   if (flags.has('r')) lines.reverse();
   if (flags.has('u')) lines = lines.filter((l, i) => i === 0 || l !== lines[i - 1]);
@@ -524,12 +302,15 @@ const uniq: Command = (args, ctx) => {
   const input = readInput('uniq', rest, ctx);
   if ('err' in input) return fail(input.err);
   const groups: { line: string; count: number }[] = [];
+  const same = (a: string, b: string) => (flags.has('i') ? a.toLowerCase() === b.toLowerCase() : a === b);
   for (const line of toLines(input.text)) {
     const last = groups[groups.length - 1];
-    if (last && last.line === line) last.count++;
+    if (last && same(last.line, line)) last.count++;
     else groups.push({ line, count: 1 });
   }
-  return ok(groups.map((g) => (flags.has('c') ? `${String(g.count).padStart(7)} ${g.line}` : g.line)).join('\n'));
+  // -d: only lines that repeat; -u: only lines that do not.
+  const kept = groups.filter((g) => (flags.has('d') ? g.count > 1 : flags.has('u') ? g.count === 1 : true));
+  return ok(kept.map((g) => (flags.has('c') ? `${String(g.count).padStart(7)} ${g.line}` : g.line)).join('\n'));
 };
 
 const cut: Command = (args, ctx) => {
@@ -538,9 +319,12 @@ const cut: Command = (args, ctx) => {
   if (!spec) return fail("cut: -f (ustun) yoki -c (belgi) ko'rsatilishi kerak. Masalan: cut -d ':' -f 1");
   const wanted: number[] = [];
   for (const part of spec.split(',')) {
-    const m = /^(\d+)(?:-(\d+))?$/.exec(part);
-    if (!m) return fail(`cut: invalid field value '${part}'`);
-    for (let i = Number(m[1]); i <= Number(m[2] ?? m[1]); i++) wanted.push(i);
+    // N, N-M, N- (to the end) and -M (from the start).
+    const m = /^(\d*)(-?)(\d*)$/.exec(part);
+    if (!m || (!m[1] && !m[3])) return fail(`cut: invalid field value '${part}'`);
+    const from = m[1] ? Number(m[1]) : 1;
+    const to = m[2] ? (m[3] ? Number(m[3]) : 999) : from;
+    for (let i = from; i <= to; i++) wanted.push(i);
   }
   const input = readInput('cut', rest, ctx);
   if ('err' in input) return fail(input.err);
@@ -576,53 +360,6 @@ const rev: Command = (args, ctx) => {
   const input = readInput('rev', args, ctx);
   if ('err' in input) return fail(input.err);
   return ok(toLines(input.text).map((l) => [...l].reverse().join('')).join('\n'));
-};
-
-const find: Command = (args, ctx) => {
-  let start = '.';
-  let namePattern: RegExp | null = null;
-  let type: string | null = null;
-  let perm: ((mode: number) => boolean) | null = null;
-  let owner: string | null = null;
-  for (let i = 0; i < args.length; i++) {
-    const a = args[i]!;
-    if (a === '-perm') {
-      const spec = args[++i] ?? '';
-      const m = /^([-/]?)([0-7]{3,4})$/.exec(spec);
-      if (!m) return fail('find: bu simulyatorda -perm faqat raqamli: -perm -4000 (SUID), -perm -2000, -perm -0002 (hamma yoza oladi)');
-      const want = parseInt(m[2]!, 8);
-      // -MODE: all these bits set; /MODE: any of them; MODE: exactly this mode.
-      perm =
-        m[1] === '-' ? (mode) => (mode & want) === want : m[1] === '/' ? (mode) => (mode & want) !== 0 : (mode) => (mode & 0o7777) === want;
-    } else if (a === '-user') owner = args[++i] ?? null;
-    else if (a === '-name' || a === '-iname') {
-      const glob = args[++i] ?? '*';
-      const src = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.');
-      namePattern = new RegExp(`^${src}$`, a === '-iname' ? 'i' : '');
-    } else if (a === '-type') type = args[++i] ?? null;
-    else if (!a.startsWith('-')) start = a;
-  }
-  const root = locate(ctx, start);
-  if (!root.node) return fail(`find: '${start}': ${ENOENT}`);
-  const out: string[] = [];
-  const errors: string[] = [];
-  const visit = (label: string, node: FsNode) => {
-    const matchesName = !namePattern || namePattern.test(basename(label) || label);
-    const matchesType = !type || (type === 'd' ? node.type === 'dir' : node.type === 'file');
-    const matchesPerm = !perm || perm(node.mode);
-    const matchesOwner = !owner || node.owner === owner;
-    if (matchesName && matchesType && matchesPerm && matchesOwner) out.push(label);
-    if (node.type !== 'dir') return;
-    if (!canAccess(node, ctx.user, 'r') || !canAccess(node, ctx.user, 'x')) {
-      errors.push(`find: '${label}': ${EACCES}`);
-      return;
-    }
-    for (const name of Object.keys(node.children).sort()) {
-      visit(label.replace(/\/$/, '') + '/' + name, node.children[name]!);
-    }
-  };
-  visit(start, root.node);
-  return { out: out.join('\n'), err: errors.join('\n') || undefined, code: errors.length ? 1 : 0 };
 };
 
 const fileCmd: Command = (args, ctx) => {
@@ -711,12 +448,6 @@ const sudo: Command = (args, ctx) => {
   return ctx.run(args, 'root');
 };
 
-const id: Command = (_a, ctx) =>
-  ok(ctx.user === 'root' ? 'uid=0(root) gid=0(root) groups=0(root)' : `uid=1000(${ctx.user}) gid=1000(${ctx.user}) groups=1000(${ctx.user}),27(sudo)`);
-
-const uname: Command = (args, ctx) =>
-  ok(args.includes('-a') ? `Linux ${ctx.state.host} 6.8.11-kali-amd64 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux` : 'Linux');
-
 const history: Command = (_a, ctx) =>
   ok(ctx.state.history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`).join('\n'));
 
@@ -782,11 +513,11 @@ export const COMMANDS: Record<string, Command> = {
   touch,
   rm,
   rmdir,
-  cp: copyOrMove('cp'),
-  mv: copyOrMove('mv'),
+  cp,
+  mv,
   grep,
-  head: headTail('head'),
-  tail: headTail('tail'),
+  head,
+  tail,
   wc,
   sort,
   uniq,
@@ -800,18 +531,56 @@ export const COMMANDS: Record<string, Command> = {
   sudo,
   whoami: (_a, ctx) => ok(ctx.user),
   id,
+  groups,
+  useradd,
+  usermod,
+  userdel,
+  passwd,
+  su,
+  who,
+  w,
+  last,
+  uptime,
+  free,
+  crontab,
+  apt,
+  'apt-get': apt,
+  export: exportCmd,
+  unset,
+  ip,
+  ping,
+  traceroute,
+  dig,
+  nslookup,
+  host,
+  nc,
+  curl,
+  wget,
   hostname: (_a, ctx) => ok(ctx.state.host),
   uname,
-  date: () => ok(new Date().toString()),
+  date,
   history,
   which,
   base64,
   xxd,
-  env: (_a, ctx) => ok(`USER=${ctx.state.user}\nHOME=${ctx.state.home}\nPWD=${ctx.state.cwd}\nSHELL=/bin/bash`),
+  env,
   clear: (): CmdResult => ({ out: '', code: 0, clear: true }),
   nano: noEditor,
   vim: noEditor,
   vi: noEditor,
+  nl,
+  tree,
+  stat,
+  du,
+  df,
+  ln,
+  readlink,
+  diff,
+  tee,
+  xargs,
+  basename: basenameCmd,
+  dirname: dirnameCmd,
+  realpath,
   ps,
   pgrep,
   kill,

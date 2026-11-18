@@ -1,6 +1,8 @@
 import { buildFs, canAccess, chownTree, getNode, resolvePath, dirname, type FsDir, type FsSpec } from './fs';
 import { COMMANDS } from './commands';
+import { createNet, type NetSpec, type NetState } from './net';
 import { createSystem, type SystemSpec, type SystemState } from './system';
+import { createPackages, type SysInfoSpec } from './users';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -10,6 +12,10 @@ export interface ShellInit {
   cwd?: string;
   /** Running processes, services and sockets (ps, systemctl, ss). */
   system?: SystemSpec;
+  /** Extra hosts on the simulated network (ip, ping, curl, dig, nc). */
+  net?: NetSpec;
+  /** Sessions, logins, memory and installed packages (who, last, free, apt). */
+  sysinfo?: SysInfoSpec;
 }
 
 export interface ShellState {
@@ -21,6 +27,9 @@ export interface ShellState {
   home: string;
   history: string[];
   system: SystemState;
+  net: NetState;
+  sysinfo: SysInfoSpec;
+  packages: Set<string>;
   /** Shell variables set with NAME=value (also inside scripts). */
   vars: Record<string, string>;
 }
@@ -41,6 +50,8 @@ export interface CmdCtx {
   /** Run another command line as `user` (used by sudo). */
   run: (argv: string[], user: string) => CmdResult;
   commandNames: () => string[];
+  /** Output goes to a pipe or a file, not the screen (ls then prints one name per line, as the real one does). */
+  piped?: boolean;
 }
 
 export type Command = (args: string[], ctx: CmdCtx) => CmdResult;
@@ -73,6 +84,9 @@ export function createShell(init: ShellInit): ShellState {
     home,
     history: [],
     system: createSystem(init.system),
+    net: createNet(init.net),
+    sysinfo: init.sysinfo ?? {},
+    packages: createPackages(init.sysinfo),
     vars: {},
   };
 }
@@ -200,6 +214,7 @@ function runArgv(
   stdin: string | null,
   custom: Record<string, CustomCommand>,
   depth = 0,
+  piped = false,
 ): CmdResult {
   const [name, ...args] = argv;
   if (!name) return ok();
@@ -207,8 +222,9 @@ function runArgv(
     state,
     user,
     stdin,
-    run: (innerArgv, asUser) => runArgv(state, innerArgv, asUser, stdin, custom, depth),
+    run: (innerArgv, asUser) => runArgv(state, innerArgv, asUser, stdin, custom, depth, piped),
     commandNames: () => [...new Set([...Object.keys(COMMANDS), ...Object.keys(custom)])].sort(),
+    piped,
   };
   if ((name === 'bash' || name === 'sh') && args.length && !args[0]!.startsWith('-')) {
     return runScript(state, args[0]!, args.slice(1), user, custom, depth, false);
@@ -307,8 +323,8 @@ function runPipeline(
   let stdin: string | null = null;
   let errors = '';
   let last: CmdResult = ok();
-  for (const stage of stages) {
-    last = runArgv(state, stage.argv, user, stdin, custom, depth);
+  for (const [index, stage] of stages.entries()) {
+    last = runArgv(state, stage.argv, user, stdin, custom, depth, index < stages.length - 1 || !!stage.redirect);
     if (last.err) errors += (errors ? '\n' : '') + last.err;
     if (last.clear) return last;
     if (stage.redirect) {

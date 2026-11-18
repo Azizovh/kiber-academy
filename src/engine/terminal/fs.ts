@@ -5,6 +5,10 @@ export interface FsFile {
   content: string;
   mode: number;
   owner: string;
+  /** Last modification, ms since epoch; unset means the lab's base date (see mtimeOf). */
+  mtime?: number;
+  /** Symbolic link target (ln -s). Reading the link reads the target. */
+  link?: string;
 }
 
 export interface FsDir {
@@ -12,6 +16,14 @@ export interface FsDir {
   children: Record<string, FsNode>;
   mode: number;
   owner: string;
+  mtime?: number;
+}
+
+/** The date every lab file has unless the lab says otherwise: 16 Nov 2026, 09:00 UTC. */
+export const BASE_TIME = Date.UTC(2026, 10, 16, 9, 0, 0);
+
+export function mtimeOf(node: FsNode): number {
+  return node.mtime ?? BASE_TIME;
 }
 
 export type FsNode = FsFile | FsDir;
@@ -25,18 +37,18 @@ export type FsSpec = { [name: string]: FsSpecEntry };
 export type FsSpecEntry =
   | string
   | FsSpec
-  | { $file: string; mode?: number; owner?: string }
+  | { $file: string; mode?: number; owner?: string; mtime?: number }
   | { $dir: FsSpec; mode?: number; owner?: string };
 
-export function file(content: string, mode = 0o644, owner?: string): FsSpecEntry {
-  return { $file: content, mode, owner };
+export function file(content: string, mode = 0o644, owner?: string, mtime?: number): FsSpecEntry {
+  return { $file: content, mode, owner, mtime };
 }
 
 export function dir(children: FsSpec, mode = 0o755, owner?: string): FsSpecEntry {
   return { $dir: children, mode, owner };
 }
 
-function isFileSpec(e: FsSpecEntry): e is { $file: string; mode?: number; owner?: string } {
+function isFileSpec(e: FsSpecEntry): e is { $file: string; mode?: number; owner?: string; mtime?: number } {
   return typeof e === 'object' && '$file' in e && typeof e.$file === 'string';
 }
 
@@ -55,6 +67,7 @@ export function buildFs(spec: FsSpec, owner = 'root', mode = 0o755): FsDir {
         content: entry.$file,
         mode: entry.mode ?? 0o644,
         owner: entry.owner ?? owner,
+        ...(entry.mtime !== undefined ? { mtime: entry.mtime } : {}),
       };
     } else if (isDirSpec(entry)) {
       children[name] = buildFs(entry.$dir, entry.owner ?? owner, entry.mode ?? 0o755);
@@ -129,6 +142,7 @@ export function modeString(node: FsNode): string {
   for (const [bit, pos, ch] of special) {
     if (node.mode & bit) chars[pos] = chars[pos] === 'x' ? ch : ch.toUpperCase();
   }
+  if (node.type === 'file' && node.link !== undefined) return 'lrwxrwxrwx';
   return (node.type === 'dir' ? 'd' : '-') + chars.join('');
 }
 

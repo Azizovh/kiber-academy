@@ -51,7 +51,7 @@ describe('navigation', () => {
     expect(run(s, 'ls')).toBe('a.txt  docs/  nums.txt');
     expect(run(s, 'ls docs')).toBe('reja.txt');
     expect(run(s, 'ls -a docs')).toContain('.yashirin');
-    expect(run(s, 'ls -l')).toMatch(/^-rw-r--r-- 1 talaba/);
+    expect(run(s, 'ls -l')).toMatch(/^total \d+\n-rw-r--r-- 1 talaba/);
   });
 });
 
