@@ -40,6 +40,8 @@ export interface CmdResult {
   err?: string;
   code: number;
   clear?: boolean;
+  /** Output does not end a line (echo -n); the next command in a pipe then gets no trailing newline. */
+  noNewline?: boolean;
 }
 
 export interface CmdCtx {
@@ -52,6 +54,8 @@ export interface CmdCtx {
   commandNames: () => string[];
   /** Output goes to a pipe or a file, not the screen (ls then prints one name per line, as the real one does). */
   piped?: boolean;
+  /** Real programs print a final newline; piped text here has it stripped. True when the previous stage was echo -n. */
+  stdinNoNewline?: boolean;
 }
 
 export type Command = (args: string[], ctx: CmdCtx) => CmdResult;
@@ -216,6 +220,7 @@ function runArgv(
   custom: Record<string, CustomCommand>,
   depth = 0,
   piped = false,
+  stdinNoNewline = false,
 ): CmdResult {
   const [name, ...args] = argv;
   if (!name) return ok();
@@ -226,6 +231,7 @@ function runArgv(
     run: (innerArgv, asUser) => runArgv(state, innerArgv, asUser, stdin, custom, depth, piped),
     commandNames: () => [...new Set([...Object.keys(COMMANDS), ...Object.keys(custom)])].sort(),
     piped,
+    stdinNoNewline,
   };
   if ((name === 'bash' || name === 'sh') && args.length && !args[0]!.startsWith('-')) {
     return runScript(state, args[0]!, args.slice(1), user, custom, depth, false);
@@ -322,10 +328,11 @@ function runPipeline(
   depth: number,
 ): CmdResult {
   let stdin: string | null = null;
+  let prevNoNewline = false;
   let errors = '';
   let last: CmdResult = ok();
   for (const [index, stage] of stages.entries()) {
-    last = runArgv(state, stage.argv, user, stdin, custom, depth, index < stages.length - 1 || !!stage.redirect);
+    last = runArgv(state, stage.argv, user, stdin, custom, depth, index < stages.length - 1 || !!stage.redirect, !!prevNoNewline);
     if (last.err) errors += (errors ? '\n' : '') + last.err;
     if (last.clear) return last;
     if (stage.redirect) {
@@ -334,6 +341,7 @@ function runPipeline(
       last = { ...last, out: '' };
     }
     stdin = last.out;
+    prevNoNewline = !!last.noNewline;
   }
   return { out: last.out, err: errors || undefined, code: last.code };
 }

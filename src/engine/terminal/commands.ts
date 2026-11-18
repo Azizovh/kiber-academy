@@ -157,6 +157,16 @@ export function readInput(name: string, files: string[], ctx: CmdCtx): { text: s
   return { text };
 }
 
+/**
+ * Like readInput, but byte-exact for piped text: the newline a real program prints at the end is added back unless
+ * the previous stage was echo -n. Used where bytes matter (base64, xxd, wc -c, sha256sum).
+ */
+export function readBytes(name: string, files: string[], ctx: CmdCtx): { text: string } | { err: string } {
+  const input = readInput(name, files, ctx);
+  if ('err' in input || files.length || !input.text || ctx.stdinNoNewline || input.text.endsWith('\n')) return input;
+  return { text: input.text + '\n' };
+}
+
 export function trimEnd(text: string): string {
   return text.endsWith('\n') ? text.slice(0, -1) : text;
 }
@@ -214,13 +224,15 @@ const cd: Command = (args, ctx) => {
 const echo: Command = (args) => {
   let parts = args;
   let escapes = false;
+  let noNewline = false;
   while (parts[0] === '-n' || parts[0] === '-e') {
     if (parts[0] === '-e') escapes = true;
+    if (parts[0] === '-n') noNewline = true;
     parts = parts.slice(1);
   }
   let text = parts.join(' ');
   if (escapes) text = text.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-  return ok(text);
+  return { out: text, code: 0, noNewline };
 };
 
 const sort: Command = (args, ctx) => {
@@ -414,7 +426,7 @@ const which: Command = (args, ctx) => {
 
 const base64: Command = (args, ctx) => {
   const { flags, rest } = parseFlags(args);
-  const input = readInput('base64', rest, ctx);
+  const input = readBytes('base64', rest, ctx);
   if ('err' in input) return fail(input.err);
   if (flags.has('d') || flags.has('D') || flags.has('decode')) {
     try {
@@ -423,12 +435,12 @@ const base64: Command = (args, ctx) => {
       return fail('base64: invalid input');
     }
   }
-  return ok(utf8ToBase64(trimEnd(input.text)));
+  return ok(utf8ToBase64(input.text));
 };
 
 const xxd: Command = (args, ctx) => {
   const { flags, rest } = parseFlags(args);
-  const input = readInput('xxd', rest, ctx);
+  const input = readBytes('xxd', rest, ctx);
   if ('err' in input) return fail(input.err);
   if (flags.has('r')) {
     const hex = input.text.replace(/[^0-9a-fA-F]/g, '');
@@ -437,7 +449,7 @@ const xxd: Command = (args, ctx) => {
     for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
     return ok(trimEnd(new TextDecoder().decode(bytes)));
   }
-  const bytes = new TextEncoder().encode(trimEnd(input.text));
+  const bytes = new TextEncoder().encode(input.text);
   const hex = [...bytes].map((b) => b.toString(16).padStart(2, '0'));
   if (flags.has('p')) return ok(hex.join(''));
   const rows: string[] = [];

@@ -346,6 +346,12 @@ export const DOCS: CommandDoc[] = [
     ['-z', "Ma'lumot yubormasdan faqat ochiqligini tekshiradi.", 'nc -z srv.lab 22'],
     ['-v', 'Batafsil: har port natijasi.', 'nc -zv srv.lab 20-25'],
   ], [['nc srv.lab 22', "Xizmat o'zi haqida aytgan qator (banner): SSH versiyasi"]], 'Faqat o\'z laboratoriyangiz yoki ruxsat berilgan tizimlarda.'),
+  d('nmap', 'tarmoq', 'Tarmoqdagi hostlar va ochiq portlarni aniqlaydi (faqat ruxsat berilgan tarmoqda!).', 'nmap [-sn] [-sV] [-p PORTLAR] NISHON', [
+    ['-sn', "Faqat qaysi hostlar tirikligini (portlarsiz).", 'nmap -sn 10.10.10.0/24'],
+    ['-sV', "Ochiq portlardagi dastur va versiyani aniqlaydi.", 'nmap -sV srv.lab'],
+    ['-p PORTLAR', "Faqat shu portlar: 22,80 yoki 1-1000.", 'nmap -p 22,80 srv.lab'],
+    ['-A', "Kengaytirilgan: versiyalar va qo'shimcha ma'lumot.", 'nmap -A srv.lab'],
+  ], [['nmap -sV -p 3306 portal.lab', "Ma'lumotlar bazasi porti va versiyasi"]], "Bu buyruq faqat Tarmoq razvedkasi labida bor (o'quv simulyatsiyasi). Haqiqiy hayotda faqat o'z tarmog'ingiz yoki yozma ruxsat bilan."),
   d('curl', 'tarmoq', "URL bo'yicha so'rov yuboradi va javobni chiqaradi.", 'curl [-i] [-I] [-s] [-L] [-o FAYL] URL', [
     ['-i', 'Javob sarlavhalari bilan birga.', 'curl -i http://srv.lab/'],
     ['-I', 'Faqat sarlavhalar (HEAD).', 'curl -I http://srv.lab/'],

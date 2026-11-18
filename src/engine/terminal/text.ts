@@ -1,5 +1,5 @@
 import { canAccess } from './fs';
-import { locate, parseFlags, readInput, toLines } from './commands';
+import { locate, parseFlags, readBytes, readInput, toLines } from './commands';
 import { fail, ok, type Command } from './shell';
 
 /*
@@ -709,7 +709,8 @@ export const sha256sum: Command = (args, ctx) => {
   }
   if (!files.length) {
     if (ctx.stdin === null) return fail('Ishlatilishi: sha256sum FAYL...   yoki   sha256sum -c ROYXAT');
-    return ok(`${sha256Hex(ctx.stdin)}  -`);
+    const bytes = readBytes('sha256sum', [], ctx);
+    return ok(`${sha256Hex('err' in bytes ? ctx.stdin : bytes.text)}  -`);
   }
   const out: string[] = [];
   for (const f of files) {

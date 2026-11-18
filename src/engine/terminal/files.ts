@@ -11,7 +11,7 @@ import {
   type FsDir,
   type FsNode,
 } from './fs';
-import { locate, parseFlags, readInput, toLines, trimEnd } from './commands';
+import { locate, parseFlags, readBytes, readInput, toLines, trimEnd } from './commands';
 import { fail, ok, type CmdCtx, type CmdResult, type Command } from './shell';
 
 /*
@@ -235,7 +235,7 @@ export const wc: Command = (args, ctx) => {
     return (keys.length ? keys : (['l', 'w', 'c'] as const)).map((k) => c[k]);
   };
   if (rest.length <= 1) {
-    const input = readInput('wc', rest, ctx);
+    const input = readBytes('wc', rest, ctx);
     if ('err' in input) return fail(input.err);
     return ok(pick(count(input.text)).join(' ') + (rest[0] ? ' ' + rest[0] : ''));
   }

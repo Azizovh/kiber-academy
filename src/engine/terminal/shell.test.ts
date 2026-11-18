@@ -120,9 +120,11 @@ describe('text tools and pipes', () => {
 
   it('encodes and decodes', () => {
     const s = shell();
-    expect(run(s, 'echo salom | base64')).toBe('c2Fsb20=');
+    // Like real echo, the newline is part of the input; echo -n leaves it out.
+    expect(run(s, 'echo salom | base64')).toBe('c2Fsb20K');
+    expect(run(s, 'echo -n salom | base64')).toBe('c2Fsb20=');
     expect(run(s, 'echo c2Fsb20= | base64 -d')).toBe('salom');
-    expect(run(s, 'echo Kali | xxd -p')).toBe('4b616c69');
+    expect(run(s, 'echo -n Kali | xxd -p')).toBe('4b616c69');
     expect(run(s, 'echo 4b616c69 | xxd -r -p')).toBe('Kali');
     expect(run(s, "echo Uryyb | tr 'A-Za-z' 'N-ZA-Mn-za-m'")).toBe('Hello');
   });
