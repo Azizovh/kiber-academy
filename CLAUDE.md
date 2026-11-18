@@ -20,7 +20,7 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 13 terminal labs, 29 CTF
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 13 terminal labs (20–24 tasks each, last one a `challenge`), 29 CTF
 challenges (Linux admin, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
@@ -183,6 +183,12 @@ with $1..$9), `commands.ts` (file and text basics), `system.ts` (processes, syst
 systemctl, journalctl, ss — a lab describes them in `ShellInit.system`), `text.ts` (awk, sed, jq, sha256sum subsets).
 Single quotes keep `$` literal, as in bash. Labs may add their own commands (`Lab.commands`, e.g. curl, nmap). Every
 lab and terminal CTF has a scripted solution that the content tests run.
+Also `files.ts` (ls/grep/find/cp/... with most real flags), `users.ts` (users, cron, apt, env, date, uname), `net.ts`
+(ip, ping, dig, nc, curl, wget on simulated hosts) and `docs.ts`: one entry per command with flag rows and examples,
+used by `help`, `man`, the /buyruqlar page and lab teaching notes. A lab task's `teach: ["cmd", "cmd FLAG"]` shows that
+flag's row before the task (TeachPanel); a content test fails if the doc or flag row is missing — add the row to
+`docs.ts` first. `challenge: true` marks the final task, which has a vaguer hint on purpose. Lab checks compare with
+values computed from the lab's own data, never hand-typed counts.
 
 ## Code conventions
 
