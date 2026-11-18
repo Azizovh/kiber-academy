@@ -766,6 +766,7 @@ button.chip.on {
   color: var(--text-3);
 }
 
+.empty h2,
 .empty h3 {
   color: var(--text);
   font-size: 1.1rem;
@@ -1413,6 +1414,7 @@ button.chip.on {
   padding: 18px;
 }
 
+.tile h2,
 .tile h3 {
   font-size: 1.02rem;
 }
@@ -1448,19 +1450,6 @@ button.chip.on {
 
 .level i.on {
   background: var(--warn);
-}
-
-.lab-layout {
-  display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
-}
-
-@media (max-width: 1000px) {
-  .lab-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 .task {
@@ -1601,6 +1590,7 @@ button.chip.on {
   padding: 15px 18px;
 }
 
+.term h2,
 .term h3 {
   display: flex;
   flex-wrap: wrap;
@@ -1612,6 +1602,7 @@ button.chip.on {
   letter-spacing: 0;
 }
 
+.term h2 span,
 .term h3 span {
   color: var(--accent);
   font-weight: 500;
@@ -2072,4 +2063,352 @@ a.card.tile {
 
 @media (prefers-reduced-motion: reduce) {
   .lesson-skeleton i { animation: none; }
+}
+
+/* ── Collapsible sidebar ───────────────────────────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+main:focus {
+  outline: none;
+}
+
+.sidebar-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.sidebar-top .brand {
+  min-width: 0;
+}
+
+.sidebar-toggle {
+  flex: none;
+  margin-top: 2px;
+}
+
+.shell {
+  transition: grid-template-columns 0.22s var(--ease);
+}
+
+@media (min-width: 901px) {
+  .shell.collapsed {
+    grid-template-columns: 68px minmax(0, 1fr);
+  }
+
+  .shell.collapsed .sidebar {
+    padding: 18px 10px 14px;
+    overflow-x: hidden;
+  }
+
+  .shell.collapsed .sidebar-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+
+  .shell.collapsed .brand {
+    padding: 4px 0 0;
+  }
+
+  .shell.collapsed .brand > span:last-child,
+  .shell.collapsed .nav-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .shell.collapsed .nav-link {
+    position: relative;
+    justify-content: center;
+    padding: 10px 0;
+  }
+
+  .shell.collapsed .nav-count {
+    position: absolute;
+    top: 3px;
+    right: 6px;
+    min-width: 16px;
+    padding: 0 4px;
+    font-size: 0.625rem;
+  }
+
+  .shell.collapsed .nav-label {
+    height: 1px;
+    margin: 10px 8px;
+    padding: 0;
+    overflow: hidden;
+    background: var(--border);
+    color: transparent;
+  }
+
+  .shell.collapsed .today-card {
+    justify-content: center;
+    padding: 8px 0;
+    border: 0;
+    background: none;
+  }
+}
+
+/* The fold button only makes sense next to a permanent sidebar; phones use the drawer. */
+@media (max-width: 900px) {
+  .sidebar-toggle {
+    display: none;
+  }
+}
+
+/* ── Practice workspace (lab and CTF pages) ────────────────────────────── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.page.workspace {
+  max-width: 1600px;
+  padding: 18px 24px 24px;
+}
+
+.workspace-head {
+  margin-bottom: 14px;
+}
+
+.workspace-head .crumbs {
+  margin-bottom: 6px;
+}
+
+.workspace-title {
+  font-size: 1.55rem;
+  margin: 0;
+}
+
+.side-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* On wide screens the workspace fits the window: nothing but the task list scrolls. */
+@media (min-width: 1001px) {
+  .page.workspace {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .page.workspace > .lab-layout,
+  .page.workspace > .ctf-layout {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
+
+.lab-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  grid-template-areas: 'side main';
+  gap: 18px;
+}
+
+.lab-main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.lab-side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.lab-terminal {
+  flex: 1;
+  min-height: 0;
+}
+
+.term-win.fill {
+  height: 100%;
+}
+
+.term-win.fill .term-body {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+.current-task {
+  padding: 14px 16px;
+  border-color: var(--accent-line);
+}
+
+.current-task.finished {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.current-icon {
+  flex: none;
+  color: var(--accent);
+}
+
+.current-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.current-head .bar,
+.current-head > :last-child {
+  flex: 1;
+  max-width: 220px;
+}
+
+.current-step {
+  flex: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.current-text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.current-hint-btn {
+  margin: 6px 0 0 -10px;
+}
+
+.lab-intro {
+  padding: 0;
+}
+
+.lab-intro summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.lab-intro summary::-webkit-details-marker {
+  display: none;
+}
+
+.lab-intro summary svg {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+
+.lab-intro summary::after {
+  content: '';
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-3);
+  border-bottom: 2px solid var(--text-3);
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+
+.lab-intro[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.lab-intro > :not(summary) {
+  padding: 0 16px 14px;
+}
+
+.task-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* CTF with a terminal: description, hints and flag on the left, terminal on the right. */
+.ctf-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.ctf-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.ctf-terminal {
+  min-height: 0;
+}
+
+/* Tablets and phones: terminal first (with the current task above it), the task list below. */
+@media (max-width: 1000px) {
+  .page.workspace {
+    padding: 14px 16px 32px;
+  }
+
+  .lab-layout,
+  .ctf-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'main' 'side';
+  }
+
+  .lab-side,
+  .ctf-side {
+    overflow: visible;
+  }
+
+  .lab-terminal,
+  .ctf-terminal {
+    height: clamp(300px, 58vh, 560px);
+    flex: none;
+  }
+
+  .ctf-terminal {
+    order: -1;
+  }
 }

@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, Check, ChevronRight, Lightbulb, PartyPopper } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, Info, Lightbulb, PartyPopper } from 'lucide-react';
 import { Markdown } from '../components/Markdown';
 import { TerminalView } from '../components/TerminalView';
 import { Bar, Level } from '../components/ui';
@@ -81,100 +81,130 @@ function LabRun({ lab }: { lab: Lab }) {
     setHint(false);
   };
 
-  return (
-    <div className="page">
-      <nav className="crumbs">
-        <Link to="/amaliyot">Amaliyot</Link>
-        <ChevronRight />
-        <span>Terminal lablari</span>
-      </nav>
+  const current = lab.tasks[solved];
+  const currentRef = useRef<HTMLLIElement>(null);
 
-      <header className="page-head">
-        <div>
-          <h1 className="page-title">{lab.title}</h1>
-          <div className="row wrap" style={{ marginTop: 12, gap: 8 }}>
-            <Level level={lab.level} />
-            <span className="chip">{lab.minutes} daqiqa</span>
-            {everDone && (
-              <span className="chip ok">
-                <Check /> Avval bajarilgan
-              </span>
-            )}
-          </div>
+  // Keep the current task visible inside the task list (desktop only: on phones the list sits below the terminal,
+  // and scrolling the page there would pull the learner away from what they are typing).
+  useEffect(() => {
+    if (window.matchMedia('(min-width: 1001px)').matches) currentRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [solved]);
+
+  return (
+    <div className="page workspace">
+      <header className="workspace-head">
+        <nav className="crumbs" aria-label="Yo'l">
+          <Link to="/amaliyot">Amaliyot</Link>
+          <ChevronRight aria-hidden />
+          <span>Terminal lablari</span>
+        </nav>
+        <div className="row wrap" style={{ gap: 10 }}>
+          <h1 className="page-title workspace-title">{lab.title}</h1>
+          <Level level={lab.level} />
+          <span className="chip">{lab.minutes} daqiqa</span>
+          {everDone && (
+            <span className="chip ok">
+              <Check aria-hidden /> Avval bajarilgan
+            </span>
+          )}
         </div>
       </header>
 
       <div className="lab-layout">
-        <div className="stack">
-          <div className="card pad">
-            <Markdown text={lab.intro} className="prose small-prose" />
-          </div>
-
-          <div className="card pad">
-            <div className="row between" style={{ marginBottom: 10 }}>
-              <b>Topshiriqlar</b>
-              <span className="small faint">
-                {Math.min(solved, lab.tasks.length)} / {lab.tasks.length}
-              </span>
-            </div>
-            <Bar value={solved / lab.tasks.length} style={{ marginBottom: 12 }} />
-            <div className="stack" style={{ gap: 2 }}>
-              {lab.tasks.map((task, i) => {
-                const state = i < solved ? 'done' : i === solved ? 'current' : '';
-                return (
-                  <div key={task.id} className={`task ${state}`}>
-                    <span className="num">{i < solved ? <Check strokeWidth={3.5} /> : i + 1}</span>
-                    <div>
-                      <Inline text={task.text} />
-                      {i === solved &&
-                        (hint ? (
-                          <div className="task-hint">
-                            <Inline text={task.hint} />
-                          </div>
-                        ) : (
-                          <div style={{ marginTop: 8 }}>
-                            <button className="btn sm ghost" onClick={() => setHint(true)} style={{ marginLeft: -10 }}>
-                              <Lightbulb /> Maslahat
-                            </button>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {finished && (
-            <div className="notice ok">
-              <PartyPopper />
-              <div className="stack" style={{ gap: 10 }}>
-                <span>
-                  <b>Lab tugadi!</b> Terminalda bemalol tajriba qilishda davom etishingiz mumkin.
+        <section className="lab-main" aria-label="Terminal">
+          <div className={`current-task card ${finished ? 'finished' : ''}`} aria-live="polite">
+            {finished ? (
+              <div className="row between wrap" style={{ gap: 12 }}>
+                <span className="row" style={{ gap: 10 }}>
+                  <PartyPopper aria-hidden className="current-icon" />
+                  <span>
+                    <b>Lab tugadi!</b> Terminalda tajriba qilishda davom etishingiz mumkin.
+                  </span>
                 </span>
-                <div className="row wrap">
+                <span className="row wrap" style={{ gap: 8 }}>
                   {next && (
                     <Link to={`/lab/${next.id}`} className="btn primary sm">
-                      Keyingi lab: {next.title} <ArrowRight />
+                      Keyingi lab <ArrowRight aria-hidden />
                     </Link>
                   )}
                   <Link to="/amaliyot" className="btn sm">
                     Barcha lablar
                   </Link>
-                </div>
+                </span>
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              current && (
+                <>
+                  <div className="current-head">
+                    <span className="current-step">
+                      {solved + 1}-topshiriq · {lab.tasks.length} tadan
+                    </span>
+                    <Bar value={solved / lab.tasks.length} />
+                  </div>
+                  <p className="current-text">
+                    <Inline text={current.text} />
+                  </p>
+                  {hint ? (
+                    <div className="task-hint">
+                      <Inline text={current.hint} />
+                    </div>
+                  ) : (
+                    <button className="btn sm ghost current-hint-btn" onClick={() => setHint(true)}>
+                      <Lightbulb aria-hidden /> Maslahat
+                    </button>
+                  )}
+                </>
+              )
+            )}
+          </div>
 
-        <TerminalView
-          init={lab.shell}
-          commands={lab.commands}
-          onCommand={onCommand}
-          onReset={onReset}
-          height={520}
-          banner={"KiberAkademiya o'quv terminali. Buyruqlar ro'yxati: help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"}
-        />
+          <div className="lab-terminal">
+            <TerminalView
+              init={lab.shell}
+              commands={lab.commands}
+              onCommand={onCommand}
+              onReset={onReset}
+              fill
+              // On phones focusing the input would open the keyboard over the task before it is read.
+              autoFocus={window.matchMedia('(min-width: 1001px)').matches}
+              banner={"KiberAkademiya o'quv terminali. Buyruqlar ro'yxati: help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"}
+            />
+          </div>
+        </section>
+
+        <aside className="lab-side" aria-label="Lab haqida va topshiriqlar">
+          <details className="card lab-intro" open={!everDone}>
+            <summary>
+              <Info aria-hidden /> Lab haqida
+            </summary>
+            <Markdown text={lab.intro} className="prose small-prose" />
+          </details>
+
+          <div className="card pad">
+            <div className="row between" style={{ marginBottom: 10 }}>
+              <h2 className="side-title">Topshiriqlar</h2>
+              <span className="small faint">
+                {Math.min(solved, lab.tasks.length)} / {lab.tasks.length}
+              </span>
+            </div>
+            <ol className="task-list">
+              {lab.tasks.map((task, i) => {
+                const state = i < solved ? 'done' : i === solved ? 'current' : '';
+                return (
+                  <li key={task.id} ref={i === solved ? currentRef : undefined} className={`task ${state}`} aria-current={i === solved ? 'step' : undefined}>
+                    <span className="num" aria-hidden>
+                      {i < solved ? <Check strokeWidth={3.5} /> : i + 1}
+                    </span>
+                    <div>
+                      <Inline text={task.text} />
+                      {i < solved && <span className="sr-only"> (bajarildi)</span>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </aside>
       </div>
     </div>
   );

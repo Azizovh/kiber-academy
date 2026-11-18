@@ -37,6 +37,7 @@ export function GlossaryPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Atama yoki izohdan qidirish…"
+            aria-label="Lug'atdan qidirish"
             autoFocus
           />
         </div>
@@ -56,10 +57,10 @@ export function GlossaryPage() {
         <div className="grid c2">
           {terms.map((t) => (
             <article key={t.id} className="card term">
-              <h3>
+              <h2>
                 {t.term}
                 {t.uz && <span>{t.uz}</span>}
-              </h3>
+              </h2>
               <p>{t.text}</p>
             </article>
           ))}
@@ -67,7 +68,7 @@ export function GlossaryPage() {
       ) : (
         <div className="empty">
           <SearchX />
-          <h3>Hech narsa topilmadi</h3>
+          <h2>Hech narsa topilmadi</h2>
           <p>Boshqa so'z bilan qidirib ko'ring yoki toifani “Hammasi” qiling.</p>
         </div>
       )}

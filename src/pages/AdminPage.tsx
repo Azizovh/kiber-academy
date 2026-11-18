@@ -75,7 +75,7 @@ export function AdminPage() {
       <div className="page narrow">
         <div className="empty">
           <ShieldAlert />
-          <h3>Bu sahifa faqat admin uchun</h3>
+          <h2>Bu sahifa faqat admin uchun</h2>
           <p>
             <Link to="/akkaunt">Akkaunt sahifasiga qaytish</Link>
           </p>

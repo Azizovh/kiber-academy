@@ -347,6 +347,7 @@ function TopicView({ topicRef }: { topicRef: TopicRef }) {
             </h2>
             <textarea
               className="textarea"
+              aria-label="Mening qaydim"
               value={note}
               onChange={(e) => setNote(topic.id, e.target.value)}
               placeholder="O'z so'zlaringiz bilan yozing — shunda yaxshiroq eslab qolasiz…"

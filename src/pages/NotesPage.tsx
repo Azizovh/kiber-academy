@@ -36,7 +36,7 @@ export function NotesPage() {
       {total === 0 ? (
         <div className="empty">
           <NotebookPen />
-          <h3>Hali qayd yo'q</h3>
+          <h2>Hali qayd yo'q</h2>
           <p>
             Mavzu sahifasining o'ng tomonidagi “Mening qaydim” maydoniga yozing. O'z so'zingiz bilan yozilgan narsa
             ancha yaxshi esda qoladi.

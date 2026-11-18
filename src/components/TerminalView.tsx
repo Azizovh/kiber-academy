@@ -26,6 +26,8 @@ interface Props {
   banner?: string;
   height?: number;
   autoFocus?: boolean;
+  /** Stretch to the parent's height (workspace layouts) instead of a fixed height. */
+  fill?: boolean;
 }
 
 function Prompt({ user, host, path }: { user: string; host: string; path: string }) {
@@ -39,7 +41,7 @@ function Prompt({ user, host, path }: { user: string; host: string; path: string
   );
 }
 
-export function TerminalView({ init, commands, onCommand, onReset, banner, height, autoFocus = true }: Props) {
+export function TerminalView({ init, commands, onCommand, onReset, banner, height, autoFocus = true, fill = false }: Props) {
   const shell = useRef<ShellState | null>(null);
   if (!shell.current) shell.current = createShell(init());
   const lines = useRef<string[]>([]);
@@ -135,7 +137,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
   };
 
   return (
-    <div className="term-win">
+    <div className={`term-win ${fill ? 'fill' : ''}`}>
       <div className="term-bar">
         <i />
         <i />
@@ -144,14 +146,14 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
           {state.user}@{state.host}: {promptPath(state)}
         </span>
         <button onClick={reset} title="Terminalni boshlang'ich holatga qaytarish">
-          <RotateCcw /> Qayta boshlash
+          <RotateCcw aria-hidden /> Qayta boshlash
         </button>
       </div>
       <div
         className="term-body"
         ref={body}
         onClick={focusInput}
-        style={height ? ({ '--term-h': `${height}px` } as React.CSSProperties) : undefined}
+        style={height && !fill ? ({ '--term-h': `${height}px` } as React.CSSProperties) : undefined}
       >
         {entries.map((entry, i) => {
           if (entry.kind === 'cmd') {

@@ -91,7 +91,7 @@ export function ReviewPage() {
         failed ? (
           <div className="empty">
             <Layers />
-            <h3>Kartochkalarni yuklab bo'lmadi</h3>
+            <h2>Kartochkalarni yuklab bo'lmadi</h2>
             <p>Internet aloqasini tekshirib, sahifani yangilang.</p>
             <button className="btn primary" onClick={() => window.location.reload()}>
               Sahifani yangilash
@@ -105,7 +105,7 @@ export function ReviewPage() {
       ) : total === 0 ? (
         <div className="empty">
           <Layers />
-          <h3>Hali kartochka yo'q</h3>
+          <h2>Hali kartochka yo'q</h2>
           <p>Biror darsni tugatsangiz, uning asosiy tushunchalari shu yerga avtomatik qo'shiladi.</p>
           <Link to="/xarita" className="btn primary">
             Yo'l xaritasiga o'tish <ArrowRight />
@@ -114,7 +114,7 @@ export function ReviewPage() {
       ) : !card ? (
         <div className="empty">
           <PartyPopper />
-          <h3>{queue.length ? 'Bugungi takrorlash tugadi!' : "Bugunga takrorlash yo'q"}</h3>
+          <h2>{queue.length ? 'Bugungi takrorlash tugadi!' : "Bugunga takrorlash yo'q"}</h2>
           <p>
             {queue.length
               ? `${queue.length} ta kartochka takrorlandi. Ertaga yana qayting — muntazamlik hamma narsadan muhim.`

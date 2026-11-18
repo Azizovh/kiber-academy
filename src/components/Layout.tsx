@@ -10,6 +10,8 @@ import {
   LogIn,
   Map,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   MessagesSquare,
   NotebookPen,
   Settings,
@@ -18,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useDueCards, useToday } from '../hooks/useLearning';
 import { useAuth } from '../store/auth';
+import { useUi } from '../store/ui';
 import { Ring } from './ui';
 
 interface Item {
@@ -60,43 +63,91 @@ export function Brand() {
   );
 }
 
+/** Practice pages need the width for the terminal, so the menu folds to icons there unless the learner opens it. */
+function isWorkspace(pathname: string): boolean {
+  return pathname.startsWith('/lab/') || pathname.startsWith('/ctf/');
+}
+
 export function Layout() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const due = useDueCards();
   const today = useToday();
   const auth = useAuth();
+  const userCollapsed = useUi((s) => s.sidebarCollapsed);
+  const toggleSidebar = useUi((s) => s.toggleSidebar);
+  // On lab and CTF pages: folded by default; the toggle opens it only until the learner leaves the page.
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const workspace = isWorkspace(pathname);
+  const collapsed = workspace ? !workspaceOpen : userCollapsed;
 
   useEffect(() => {
     setOpen(false);
+    setWorkspaceOpen(false);
     window.scrollTo(0, 0);
   }, [pathname]);
 
+  const toggle = () => (workspace ? setWorkspaceOpen((v) => !v) : toggleSidebar());
+
+  // Ctrl+B (Cmd+B) folds and unfolds the menu, as in many editors.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b' && !e.altKey) {
+        e.preventDefault();
+        toggle();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   const link = (item: Item, count?: number) => (
-    <Link key={item.to} to={item.to} className={`nav-link ${isActive(pathname, item) ? 'active' : ''}`}>
-      <item.icon />
-      {item.label}
-      {!!count && <span className="nav-count">{count}</span>}
+    <Link
+      key={item.to}
+      to={item.to}
+      className={`nav-link ${isActive(pathname, item) ? 'active' : ''}`}
+      title={collapsed ? item.label + (count ? ` (${count})` : '') : undefined}
+      aria-current={isActive(pathname, item) ? 'page' : undefined}
+    >
+      <item.icon aria-hidden />
+      <span className="nav-text">{item.label}</span>
+      {!!count && <span className="nav-count" aria-label={`${count} ta`}>{count}</span>}
     </Link>
   );
 
   return (
-    <div className="shell">
+    <div className={`shell ${collapsed ? 'collapsed' : ''}`}>
+      <a href="#main" className="skip-link">
+        Asosiy qismga o'tish
+      </a>
       {open && <div className="scrim" onClick={() => setOpen(false)} />}
-      <aside className={`sidebar ${open ? 'open' : ''}`}>
-        <Brand />
-        {LEARN.map((i) => link(i))}
-        <div className="nav-label">Mashq</div>
-        {PRACTICE.map((i) => link(i, i.to === '/takrorlash' ? due.length : 0))}
-        <div className="nav-label">Ma'lumot</div>
-        {REFERENCE.map((i) => link(i))}
+      <aside className={`sidebar ${open ? 'open' : ''}`} aria-label="Asosiy menyu">
+        <div className="sidebar-top">
+          <Brand />
+          <button
+            className="icon-btn sidebar-toggle"
+            onClick={toggle}
+            aria-label={collapsed ? 'Menyuni ochish (Ctrl+B)' : "Menyuni yig'ish (Ctrl+B)"}
+            title={collapsed ? 'Menyuni ochish (Ctrl+B)' : "Menyuni yig'ish (Ctrl+B)"}
+            aria-expanded={!collapsed}
+          >
+            {collapsed ? <PanelLeftOpen aria-hidden /> : <PanelLeftClose aria-hidden />}
+          </button>
+        </div>
+        <nav className="stack" style={{ gap: 4 }} aria-label="Bo'limlar">
+          {LEARN.map((i) => link(i))}
+          <div className="nav-label">Mashq</div>
+          {PRACTICE.map((i) => link(i, i.to === '/takrorlash' ? due.length : 0))}
+          <div className="nav-label">Ma'lumot</div>
+          {REFERENCE.map((i) => link(i))}
+        </nav>
 
         <div className="sidebar-foot stack">
-          <Link to="/" className="today-card" title="Bugungi maqsad">
+          <Link to="/" className="today-card" title={`Bugungi maqsad: ${today.minutes} / ${today.goal} daq · ${today.streak} kun ketma-ket`}>
             <Ring value={today.ratio} size={42}>
-              <Flame size={16} style={{ color: today.streak ? 'var(--warn)' : 'var(--text-3)' }} />
+              <Flame size={16} aria-hidden style={{ color: today.streak ? 'var(--warn)' : 'var(--text-3)' }} />
             </Ring>
-            <div>
+            <div className="nav-text">
               <strong>{today.streak} kun ketma-ket</strong>
               <span>
                 Bugun {today.minutes} / {today.goal} daq
@@ -116,14 +167,16 @@ export function Layout() {
 
       <div className="main">
         <div className="mobile-bar">
-          <button className="icon-btn" onClick={() => setOpen(true)} aria-label="Menyu">
-            <Menu />
+          <button className="icon-btn" onClick={() => setOpen(true)} aria-label="Menyuni ochish">
+            <Menu aria-hidden />
           </button>
           <Brand />
         </div>
-        <Suspense fallback={<PageLoading />}>
-          <Outlet />
-        </Suspense>
+        <main id="main" tabIndex={-1}>
+          <Suspense fallback={<PageLoading />}>
+            <Outlet />
+          </Suspense>
+        </main>
       </div>
     </div>
   );

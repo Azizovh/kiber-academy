@@ -60,7 +60,7 @@ export function PracticePage() {
                   <span className="eyebrow">Lab {i + 1}</span>
                   {done && <CheckCircle2 size={18} style={{ color: 'var(--ok)' }} />}
                 </div>
-                <h3>{lab.title}</h3>
+                <h2>{lab.title}</h2>
                 <p>{lab.summary}</p>
                 <div className="tile-foot">
                   <Level level={lab.level} />
@@ -85,7 +85,7 @@ export function PracticePage() {
                   <span className="eyebrow">{CTF_CATEGORIES[ch.category]}</span>
                   {solved && <CheckCircle2 size={18} style={{ color: 'var(--ok)' }} />}
                 </div>
-                <h3>{ch.title}</h3>
+                <h2>{ch.title}</h2>
                 <p>{ch.description.split('\n')[0]}</p>
                 <div className="tile-foot">
                   <Level level={ch.level} />
@@ -106,7 +106,7 @@ export function PracticePage() {
           {EXTERNAL.map((p) => (
             <a key={p.url} href={p.url} target="_blank" rel="noreferrer" className="card tile">
               <div className="row between">
-                <h3>{p.title}</h3>
+                <h2>{p.title}</h2>
                 <ExternalLink size={16} className="faint" />
               </div>
               <p>{p.text}</p>

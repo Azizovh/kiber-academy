@@ -65,7 +65,7 @@ export function AccountPage() {
         </header>
         <div className="empty">
           <CloudOff />
-          <h3>Bu nusxada akkauntlar yoqilmagan</h3>
+          <h2>Bu nusxada akkauntlar yoqilmagan</h2>
           <p>
             Progress shu qurilmada saqlanadi. Bulut sinxroni uchun dastur Supabase kalitlari bilan yig'ilishi kerak
             (docs/SUPABASE.md).

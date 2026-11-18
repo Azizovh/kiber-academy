@@ -45,25 +45,138 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
     }
   };
 
+  const crumbs = (
+    <nav className="crumbs" aria-label="Yo'l">
+      <Link to="/amaliyot">Amaliyot</Link>
+      <ChevronRight aria-hidden />
+      <span>CTF · {CTF_CATEGORIES[challenge.category]}</span>
+    </nav>
+  );
+
+  const chips = (
+    <>
+      <Level level={challenge.level} />
+      <span className="chip">{CTF_CATEGORIES[challenge.category]}</span>
+      {solved && (
+        <span className="chip ok">
+          <CheckCircle2 aria-hidden /> Yechilgan
+        </span>
+      )}
+    </>
+  );
+
+  const hintsCard = (
+    <div className="card pad">
+      <div className="row between" style={{ marginBottom: 10 }}>
+        <h2 className="side-title">Maslahatlar</h2>
+        <span className="small faint">
+          {hints} / {challenge.hints.length} ochilgan
+        </span>
+      </div>
+      <div className="stack" style={{ gap: 8 }}>
+        {challenge.hints.slice(0, hints).map((h, i) => (
+          <div key={i} className="task-hint" style={{ marginTop: 0 }}>
+            <Markdown text={h} className="prose small-prose" />
+          </div>
+        ))}
+        {hints < challenge.hints.length ? (
+          <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => revealHint(challenge.id, hints + 1)}>
+            <Lightbulb aria-hidden /> {hints === 0 ? 'Maslahat olish' : 'Yana bir maslahat'}
+          </button>
+        ) : (
+          <span className="small faint">Barcha maslahatlar ochildi.</span>
+        )}
+      </div>
+      <p className="small faint" style={{ marginTop: 10 }}>
+        Avval kamida 10 daqiqa o'zingiz urinib ko'ring — tiqilib qolish o'rganishning bir qismi.
+      </p>
+    </div>
+  );
+
+  const flagBlock = solved ? (
+    <div className="notice ok">
+      <CheckCircle2 aria-hidden />
+      <div className="row between wrap">
+        <span>
+          <b>Flag to'g'ri!</b> Topshiriq yechildi.
+        </span>
+        {nextOpen ? (
+          <Link to={`/ctf/${nextOpen.id}`} className="btn primary sm">
+            Keyingi topshiriq <ArrowRight aria-hidden />
+          </Link>
+        ) : (
+          <Link to="/amaliyot" className="btn sm">
+            Barcha topshiriqlar
+          </Link>
+        )}
+      </div>
+    </div>
+  ) : (
+    <form key={wrong} className={`card pad ${wrong ? 'shake' : ''}`} onSubmit={submit}>
+      <div className="field">
+        <label htmlFor="flag">
+          <Flag size={14} aria-hidden style={{ verticalAlign: -2 }} /> Flag
+        </label>
+        <div className="flag-form">
+          <input
+            id="flag"
+            className="input"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="flag{...}"
+            autoFocus={wrong > 0}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <button className="btn primary" disabled={!value.trim()}>
+            Tekshirish
+          </button>
+        </div>
+        {wrong > 0 && (
+          <div className="hint" style={{ color: 'var(--danger)' }} role="alert">
+            Noto'g'ri flag. Formatga e'tibor bering: <code>flag{'{...}'}</code>
+          </div>
+        )}
+      </div>
+    </form>
+  );
+
+  if (challenge.shell) {
+    // Terminal challenges use the workspace: everything to read and submit on the left, the terminal on the right.
+    return (
+      <div className="page workspace">
+        <header className="workspace-head">
+          {crumbs}
+          <div className="row wrap" style={{ gap: 10 }}>
+            <h1 className="page-title workspace-title">{challenge.title}</h1>
+            {chips}
+          </div>
+        </header>
+        <div className="ctf-layout">
+          <div className="ctf-side">
+            <div className="card pad">
+              <Markdown text={challenge.description} />
+            </div>
+            {challenge.data && <CodeBlock code={challenge.data} />}
+            {flagBlock}
+            {hintsCard}
+          </div>
+          <div className="ctf-terminal">
+            <TerminalView init={challenge.shell} fill autoFocus={false} banner="Topshiriq terminali. Buyruqlar ro'yxati: help" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page narrow">
-      <nav className="crumbs">
-        <Link to="/amaliyot">Amaliyot</Link>
-        <ChevronRight />
-        <span>CTF · {CTF_CATEGORIES[challenge.category]}</span>
-      </nav>
-
+      {crumbs}
       <header className="page-head">
         <div>
           <h1 className="page-title">{challenge.title}</h1>
           <div className="row wrap" style={{ marginTop: 12, gap: 8 }}>
-            <Level level={challenge.level} />
-            <span className="chip">{CTF_CATEGORIES[challenge.category]}</span>
-            {solved && (
-              <span className="chip ok">
-                <CheckCircle2 /> Yechilgan
-              </span>
-            )}
+            {chips}
           </div>
         </div>
       </header>
@@ -71,88 +184,8 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
       <div className="stack" style={{ gap: 20 }}>
         <Markdown text={challenge.description} />
         {challenge.data && <CodeBlock code={challenge.data} />}
-        {challenge.shell && (
-          <TerminalView
-            init={challenge.shell}
-            height={340}
-            autoFocus={false}
-            banner="Topshiriq terminali. Buyruqlar ro'yxati: help"
-          />
-        )}
-
-        <div className="card pad">
-          <div className="row between" style={{ marginBottom: 10 }}>
-            <b>Maslahatlar</b>
-            <span className="small faint">
-              {hints} / {challenge.hints.length} ochilgan
-            </span>
-          </div>
-          <div className="stack" style={{ gap: 8 }}>
-            {challenge.hints.slice(0, hints).map((h, i) => (
-              <div key={i} className="task-hint" style={{ marginTop: 0 }}>
-                <Markdown text={h} className="prose small-prose" />
-              </div>
-            ))}
-            {hints < challenge.hints.length ? (
-              <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => revealHint(challenge.id, hints + 1)}>
-                <Lightbulb /> {hints === 0 ? 'Maslahat olish' : 'Yana bir maslahat'}
-              </button>
-            ) : (
-              <span className="small faint">Barcha maslahatlar ochildi.</span>
-            )}
-          </div>
-          <p className="small faint" style={{ marginTop: 10 }}>
-            Avval kamida 10 daqiqa o'zingiz urinib ko'ring — tiqilib qolish o'rganishning bir qismi.
-          </p>
-        </div>
-
-        {solved ? (
-          <div className="notice ok">
-            <CheckCircle2 />
-            <div className="row between wrap">
-              <span>
-                <b>Flag to'g'ri!</b> Topshiriq yechildi.
-              </span>
-              {nextOpen ? (
-                <Link to={`/ctf/${nextOpen.id}`} className="btn primary sm">
-                  Keyingi topshiriq <ArrowRight />
-                </Link>
-              ) : (
-                <Link to="/amaliyot" className="btn sm">
-                  Barcha topshiriqlar
-                </Link>
-              )}
-            </div>
-          </div>
-        ) : (
-          <form key={wrong} className={`card pad ${wrong ? 'shake' : ''}`} onSubmit={submit}>
-            <div className="field">
-              <label htmlFor="flag">
-                <Flag size={14} style={{ verticalAlign: -2 }} /> Flag
-              </label>
-              <div className="flag-form">
-                <input
-                  id="flag"
-                  className="input"
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  placeholder="flag{...}"
-                  autoFocus={wrong > 0}
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <button className="btn primary" disabled={!value.trim()}>
-                  Tekshirish
-                </button>
-              </div>
-              {wrong > 0 && (
-                <div className="hint" style={{ color: 'var(--danger)' }}>
-                  Noto'g'ri flag. Formatga e'tibor bering: <code>flag{'{...}'}</code>
-                </div>
-              )}
-            </div>
-          </form>
-        )}
+        {hintsCard}
+        {flagBlock}
       </div>
     </div>
   );
