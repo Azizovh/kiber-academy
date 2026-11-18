@@ -245,6 +245,12 @@ export const DOCS: CommandDoc[] = [
     ['-r', "Matnni qo'shtirnoqsiz chiqaradi.", "jq -r '.ip' log.json"],
     ['-c', 'Har obyekt bir qatorda.', "jq -c 'select(.EventID == 4625)' events.json"],
     ['-s', "Hamma qatorlarni bitta massivga yig'adi.", "jq -s 'length' events.json"],
+    ['keys', 'Obyekt maydon nomlari (alifbo tartibida).', "jq -c 'keys' event.json"],
+    ['length', 'Massiv uzunligi yoki obyektdagi maydonlar soni.', "jq -s 'length' events.json"],
+    ['and / or', "Shartlarni birlashtirish: ikkalasi ham (and) yoki bittasi (or).", "jq 'select(.EventID == 4625 and .LogonType == 10)' ev.json"],
+    ['test(REGEX)', 'Matn regexga mos keladimi (true/false).', "jq 'select(.path | test(\"admin\"))' log.json"],
+    ['map(F)', "Massivning har bir elementiga F ni qo'llaydi.", "jq -s 'map(.ip)' log.json"],
+    ['unique', 'Massivni tartiblab, takrorlarni olib tashlaydi.', "jq -s -c 'map(.user) | unique' log.json"],
   ], [["jq -r '.sourceIPAddress' cloudtrail.json | sort | uniq -c", 'CloudTrail: qaysi IP lardan chaqiruvlar bo\'lgan']]),
 
   // ── permissions
