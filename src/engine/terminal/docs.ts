@@ -1,0 +1,435 @@
+/*
+ * The command reference: one entry per command, with every flag the simulator supports, each explained in Uzbek
+ * with an example. It feeds `help` and `man` in the terminal, the "Buyruqlar" page, and the "new command" cards a
+ * lab shows before a task that needs a command for the first time.
+ */
+
+export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript';
+
+export interface CommandDoc {
+  name: string;
+  category: DocCategory;
+  /** One sentence: what it is for. */
+  summary: string;
+  usage: string;
+  /** [flag, what it does, example] */
+  flags: [string, string, string?][];
+  /** [command line, what it shows] */
+  examples: [string, string][];
+  /** Where the simulator does less than the real tool. */
+  note?: string;
+}
+
+export const DOC_CATEGORIES: Record<DocCategory, string> = {
+  fayl: 'Fayl va kataloglar',
+  matn: 'Matn bilan ishlash',
+  ruxsat: 'Ruxsatlar',
+  jarayon: 'Jarayonlar va xizmatlar',
+  foydalanuvchi: 'Foydalanuvchilar',
+  tarmoq: 'Tarmoq',
+  tizim: 'Tizim haqida',
+  xavfsizlik: 'Kodlash va yaxlitlik',
+  skript: 'Skript va muhit',
+};
+
+const d = (
+  name: string,
+  category: DocCategory,
+  summary: string,
+  usage: string,
+  flags: [string, string, string?][],
+  examples: [string, string][],
+  note?: string,
+): CommandDoc => ({ name, category, summary, usage, flags, examples, note });
+
+export const DOCS: CommandDoc[] = [
+  // ── files and directories
+  d('pwd', 'fayl', "Hozir qaysi katalogda turganingizni ko'rsatadi (print working directory).", 'pwd', [], [['pwd', '/home/talaba']]),
+  d('ls', 'fayl', "Katalog ichidagi fayl va kataloglar ro'yxati.", "ls [FLAGLAR] [YO'L...]", [
+    ['-l', "Batafsil ro'yxat: ruxsatlar, egasi, hajmi, o'zgartirilgan vaqti.", 'ls -l'],
+    ['-a', "Yashirin (nuqta bilan boshlanuvchi) fayllarni ham, . va .. ni ham ko'rsatadi.", 'ls -a'],
+    ['-A', "Yashirinlarni ko'rsatadi, lekin . va .. siz.", 'ls -A'],
+    ['-h', "-l bilan birga hajmni o'qishga oson ko'rsatadi (4.9K, 12M).", 'ls -lh'],
+    ['-t', "O'zgartirilgan vaqt bo'yicha saralaydi: eng yangisi birinchi.", 'ls -lt'],
+    ['-S', "Hajm bo'yicha saralaydi: eng kattasi birinchi.", 'ls -lS'],
+    ['-r', 'Tartibni teskari qiladi (masalan, eng eskisi birinchi).', 'ls -ltr'],
+    ['-R', "Ichki kataloglarni ham ochib ko'rsatadi (rekursiv).", 'ls -R loyiha'],
+    ['-1', 'Har bir nomni alohida qatorda chiqaradi.', 'ls -1'],
+    ['-d', "Katalog ichini emas, katalogning o'zini ko'rsatadi.", 'ls -ld /etc'],
+    ['-F', "Turini belgi bilan ko'rsatadi: / katalog, * bajariladigan, @ havola.", 'ls -F'],
+  ], [
+    ['ls -la', "Hamma narsa, yashirinlari bilan, batafsil — eng ko'p ishlatiladigan shakl"],
+    ['ls -lhS /var/log', 'Loglar katalogida eng katta fayllar tepada'],
+    ['ls -ltr', "Oxirgi o'zgargan fayl ro'yxat oxirida"],
+  ]),
+  d('cd', 'fayl', 'Boshqa katalogga o\'tadi (change directory).', "cd [KATALOG]", [
+    ['..', 'Bir pog\'ona yuqoriga.', 'cd ..'],
+    ['~', 'Uy katalogingizga (shunchaki cd ham shunday qiladi).', 'cd ~'],
+    ['-', 'Oldingi turgan joyingizga qaytadi.', 'cd -'],
+    ['/', "Mutlaq yo'l: ildizdan boshlab.", 'cd /var/log'],
+  ], [['cd /etc && pwd', "/etc ga o'tib, tekshiradi"], ['cd ../..', 'Ikki pog\'ona yuqoriga']]),
+  d('tree', 'fayl', "Katalog tuzilmasini daraxt ko'rinishida chiqaradi.", "tree [-a] [-d] [-L N] [YO'L]", [
+    ['-a', "Yashirin fayllarni ham ko'rsatadi.", 'tree -a'],
+    ['-d', "Faqat kataloglarni ko'rsatadi.", 'tree -d /etc'],
+    ['-L N', 'Faqat N pog\'ona chuqurlikkacha.', 'tree -L 1'],
+  ], [['tree loyiha', "Loyiha tuzilmasi bir qarashda"]]),
+  d('mkdir', 'fayl', 'Yangi katalog yaratadi.', 'mkdir [-p] [-v] [-m REJIM] KATALOG...', [
+    ['-p', "Oraliq kataloglarni ham yaratadi; katalog bor bo'lsa xato bermaydi.", 'mkdir -p a/b/c'],
+    ['-v', 'Har yaratilgan katalog haqida xabar beradi.', 'mkdir -v zaxira'],
+    ['-m REJIM', "Yaratishda ruxsatini darhol belgilaydi.", 'mkdir -m 700 maxfiy'],
+  ], [['mkdir -p loyiha/{src,docs}', "Simulyatorda {a,b} ochilmaydi: mkdir -p loyiha/src loyiha/docs deb yozing"]]),
+  d('touch', 'fayl', "Bo'sh fayl yaratadi yoki mavjud faylning o'zgartirilgan vaqtini yangilaydi.", 'touch [-c] [-d SANA] [-r FAYL] FAYL...', [
+    ['-d SANA', "Vaqtni ko'rsatilgan sanaga qo'yadi.", 'touch -d "2026-11-01 14:30" eski.txt'],
+    ['-r FAYL', "Boshqa faylning vaqtini ko'chiradi.", 'touch -r a.txt b.txt'],
+    ['-c', "Fayl yo'q bo'lsa yaratmaydi.", 'touch -c yoq.txt'],
+  ], [['touch hisobot.txt', "Bo'sh fayl"], ['touch -d yesterday log.txt', 'Kecha o\'zgargandek']],
+  "Hujumchilar ba'zan touch -d bilan fayl vaqtini soxtalashtiradi (timestomping) — forensics'da shuni yodda tuting."),
+  d('cp', 'fayl', 'Fayl yoki katalogdan nusxa oladi.', 'cp [-r] [-p] [-v] [-n] MANBA... MANZIL', [
+    ['-r', 'Katalogni ichidagilari bilan nusxalaydi.', 'cp -r loyiha zaxira/'],
+    ['-p', "Egasi, ruxsat va vaqtni saqlab qoladi (dalil nusxasi uchun muhim).", 'cp -p dalil.log /tmp/'],
+    ['-a', "Arxiv rejimi: -r va -p birga.", 'cp -a /etc /tmp/etc-nusxa'],
+    ['-v', 'Har bir nusxa haqida xabar beradi.', 'cp -v a.txt b.txt'],
+    ['-n', "Mavjud faylning ustiga yozmaydi.", 'cp -n a.txt b.txt'],
+    ['-i', "Ustiga yozishdan oldin so'raydi.", 'cp -i a.txt b.txt'],
+  ], [['cp /etc/passwd ~/', 'Faylni uy katalogiga nusxalash']], '-i haqiqiy tizimda tasdiq so\'raydi; simulyator faqat eslatadi.'),
+  d('mv', 'fayl', "Faylni ko'chiradi yoki nomini o'zgartiradi.", 'mv [-v] [-n] MANBA... MANZIL', [
+    ['-v', 'Har bir ko\'chirish haqida xabar beradi.', 'mv -v eski.txt yangi.txt'],
+    ['-n', "Mavjud faylning ustiga yozmaydi.", 'mv -n a.txt arxiv/'],
+    ['-i', "Ustiga yozishdan oldin so'raydi.", 'mv -i a.txt b.txt'],
+  ], [['mv hisobot.txt hisobotlar/', "Katalogga ko'chirish"], ['mv a.txt b.txt', 'Nomini o\'zgartirish']]),
+  d('rm', 'fayl', "Fayl yoki katalogni o'chiradi. Savat yo'q — qaytarib bo'lmaydi!", 'rm [-r] [-f] [-v] [-i] FAYL...', [
+    ['-r', "Katalogni ichidagilari bilan o'chiradi.", 'rm -r eski-loyiha'],
+    ['-f', "Fayl yo'q bo'lsa ham xato bermaydi, so'ramaydi.", 'rm -f vaqtincha.tmp'],
+    ['-v', "Har o'chirilgan narsa haqida xabar beradi.", 'rm -v *.tmp'],
+    ['-i', "Har fayl uchun tasdiq so'raydi.", 'rm -i muhim.txt'],
+    ['-d', "Bo'sh katalogni o'chiradi.", 'rm -d bosh-katalog'],
+  ], [['rm -rf build', "Ehtiyot bo'ling: hech narsa so'ramasdan o'chiradi"]]),
+  d('rmdir', 'fayl', "Faqat bo'sh katalogni o'chiradi.", 'rmdir KATALOG', [], [['rmdir bosh', "Ichida fayl bo'lsa: Directory not empty"]]),
+  d('ln', 'fayl', 'Havola (link) yaratadi.', 'ln [-s] [-f] [-v] MANBA HAVOLA', [
+    ['-s', "Simvolik havola: boshqa yo'lga \"yorliq\".", 'ln -s /var/log/syslog jurnal'],
+    ['-f', "Shu nomdagi narsa bo'lsa, almashtiradi.", 'ln -sf yangi.conf joriy.conf'],
+    ['-v', 'Yaratilgan havolani ko\'rsatadi.', 'ln -sv a.txt b'],
+  ], [['ls -l jurnal', "Havola ls -l da: jurnal -> /var/log/syslog"]]),
+  d('readlink', 'fayl', "Simvolik havola qayerga ko'rsatishini chiqaradi.", 'readlink [-f] HAVOLA', [['-f', "Barcha havolalarni oxirigacha kuzatib, haqiqiy yo'lni beradi.", 'readlink -f jurnal']], [['readlink jurnal', '/var/log/syslog']]),
+  d('find', 'fayl', "Fayllarni nom, tur, hajm, vaqt, ruxsat va egasi bo'yicha qidiradi.", "find [YO'L] [SHARTLAR] [-exec BUYRUQ {} \\;]", [
+    ['-name NAMUNA', "Nom bo'yicha (* va ? bilan). Qo'shtirnoqqa oling.", 'find / -name "*.conf"'],
+    ['-iname NAMUNA', "Nom bo'yicha, katta-kichik harfga qaramasdan.", 'find . -iname "readme*"'],
+    ['-type f|d|l', 'Fayl, katalog yoki simvolik havola.', 'find /etc -type d'],
+    ['-size +N|-N', "Hajm: +10k kattaroq, -1k kichikroq (c bayt, k, M, G).", 'find /var -size +1M'],
+    ['-mtime -N|+N', "O'zgartirilgan vaqt kunlarda: -1 oxirgi sutkada, +7 bir haftadan eski.", 'find /etc -mtime -1'],
+    ['-mmin -N', "Xuddi shunday, daqiqalarda.", 'find /tmp -mmin -30'],
+    ['-newer FAYL', 'Shu fayldan keyin o\'zgarganlar.', 'find / -newer /tmp/belgi'],
+    ['-perm -4000', 'Ruxsat bo\'yicha: -4000 SUID, -0002 hamma yoza oladi.', 'find / -perm -4000 -type f'],
+    ['-user NOM', 'Egasi bo\'yicha.', 'find /home -user root'],
+    ['-empty', "Bo'sh fayl va kataloglar.", 'find . -empty'],
+    ['-maxdepth N', 'Faqat N pog\'ona chuqurlikkacha.', 'find . -maxdepth 1 -type f'],
+    ['-exec CMD {} \\;', 'Har topilgan fayl uchun buyruqni bajaradi ({} — fayl nomi).', 'find . -name "*.log" -exec wc -l {} \\;'],
+    ['-delete', "Topilganlarni o'chiradi (ehtiyot bo'ling).", 'find /tmp -name "*.tmp" -delete'],
+  ], [
+    ['find / -perm -4000 -type f 2>/dev/null', 'SUID fayllar — server auditining klassik tekshiruvi'],
+    ['find /var/www -mtime -2', 'Veb-saytda oxirgi ikki kunda nima o\'zgardi? (insident tergovi)'],
+  ], 'Simulyatorda 2>/dev/null yo\'q: ruxsat xatolari natija bilan birga chiqadi.'),
+  d('stat', 'fayl', "Fayl haqida to'liq ma'lumot: hajm, ruxsat raqam va harflarda, egasi, o'zgartirilgan vaqti.", 'stat FAYL...', [], [['stat /etc/shadow', 'Access: (0640/-rw-r-----) — ruxsat raqamda va harflarda']]),
+  d('du', 'fayl', "Katalog va fayllar diskda qancha joy egallashini ko'rsatadi.", "du [-s] [-h] [-a] [-c] [-d N] [YO'L...]", [
+    ['-s', 'Har bir argument uchun faqat jami.', 'du -s /var/log'],
+    ['-h', "O'qishga oson birliklar (K, M).", 'du -sh *'],
+    ['-a', "Kataloglar bilan birga fayllarni ham.", 'du -ah loyiha'],
+    ['-c', "Oxirida umumiy jami.", 'du -ch *.log'],
+    ['-d N', 'Faqat N pog\'ona chuqurlikkacha.', 'du -h -d 1 /var'],
+  ], [['du -sh /var/log/*', 'Qaysi log eng ko\'p joy egallagan?']], 'Simulyatorda hajm fayl mazmunining baytlari bo\'yicha hisoblanadi.'),
+  d('df', 'fayl', "Disklar (fayl tizimlari) qancha to'lganini ko'rsatadi.", 'df [-h]', [['-h', "O'qishga oson birliklar.", 'df -h']], [['df -h', 'Use% 90% dan oshsa — muammo yaqin']]),
+
+  // ── text
+  d('cat', 'matn', 'Fayl mazmunini chiqaradi; bir nechta faylni birlashtiradi.', 'cat [-n] [-b] [-s] [-E] FAYL...', [
+    ['-n', 'Har qatorni raqamlaydi.', 'cat -n skript.sh'],
+    ['-b', "Faqat bo'sh bo'lmagan qatorlarni raqamlaydi.", 'cat -b fayl.txt'],
+    ['-s', "Ketma-ket bo'sh qatorlarni bittaga qisqartiradi.", 'cat -s fayl.txt'],
+    ['-E', "Har qator oxiriga $ qo'yadi (ko'rinmas bo'sh joylarni topish uchun).", 'cat -E config.txt'],
+  ], [['cat a.txt b.txt > ikkalasi.txt', 'Ikki faylni bittaga birlashtirish']]),
+  d('less', 'matn', "Uzun faylni sahifalab o'qish. Simulyatorda cat kabi butun faylni chiqaradi.", 'less FAYL', [], [['less /var/log/syslog', "Haqiqiy tizimda: bo'sh joy — keyingi sahifa, q — chiqish, /so'z — qidirish"]]),
+  d('nl', 'matn', 'Qatorlarni raqamlab chiqaradi (bo\'sh qatorlarni o\'tkazib).', 'nl FAYL', [], [['nl skript.sh', 'Kod qatorlari raqamlari bilan']]),
+  d('head', 'matn', 'Faylning boshidagi qatorlar (odatda 10 ta).', 'head [-n N] [-c N] [FAYL]', [
+    ['-n N', 'Boshidagi N ta qator.', 'head -n 5 /etc/passwd'],
+    ['-N', 'Xuddi shu, qisqa yozuv.', 'head -3 fayl.txt'],
+    ['-c N', 'Boshidagi N ta bayt.', 'head -c 16 fayl.bin'],
+  ], [['ls -lt | head -n 5', "Eng yangi 5 ta fayl (pipe bilan)"]]),
+  d('tail', 'matn', 'Faylning oxiridagi qatorlar (odatda 10 ta).', 'tail [-n N] [-n +N] [-c N] [FAYL]', [
+    ['-n N', 'Oxirgi N ta qator.', 'tail -n 20 /var/log/auth.log'],
+    ['-n +N', 'N-qatordan boshlab oxirigacha (masalan, sarlavhani tashlab).', 'tail -n +2 data.csv'],
+    ['-c N', 'Oxirgi N ta bayt.', 'tail -c 100 fayl'],
+    ['-f', "Faylga yangi qator qo'shilishini kuzatadi (jonli log).", 'tail -f /var/log/syslog'],
+  ], [['tail -n 1 /var/log/auth.log', 'Oxirgi hodisa']], "-f simulyatorda yo'q — fayllar o'zgarmaydi."),
+  d('wc', 'matn', "Qatorlar, so'zlar va baytlarni sanaydi.", 'wc [-l] [-w] [-c] [-m] [-L] [FAYL...]', [
+    ['-l', 'Qatorlar soni.', 'wc -l /etc/passwd'],
+    ['-w', "So'zlar soni.", 'wc -w matn.txt'],
+    ['-c', 'Baytlar soni.', 'wc -c fayl'],
+    ['-m', 'Belgilar soni (UTF-8 harflari bitta hisoblanadi).', 'wc -m matn.txt'],
+    ['-L', 'Eng uzun qator uzunligi.', 'wc -L fayl'],
+  ], [['grep Failed auth.log | wc -l', 'Nechta muvaffaqiyatsiz urinish?'], ['wc -l *.log', 'Bir nechta fayl — har biri va jami']]),
+  d('grep', 'matn', 'Namuna (matn yoki regex) uchragan qatorlarni topadi.', 'grep [FLAGLAR] NAMUNA [FAYL...]', [
+    ['-i', 'Katta-kichik harfga qaramaydi.', 'grep -i error syslog'],
+    ['-v', "Teskarisi: namuna YO'Q qatorlar.", 'grep -v "^#" config'],
+    ['-n', 'Qator raqamini ko\'rsatadi.', 'grep -n root /etc/passwd'],
+    ['-c', 'Mos qatorlar soni.', 'grep -c Failed auth.log'],
+    ['-r', 'Kataloglar ichida ham qidiradi.', 'grep -r password /etc'],
+    ['-l', 'Faqat mos kelgan fayl nomlari.', 'grep -rl TODO loyiha'],
+    ['-L', 'Mos kelMAgan fayl nomlari.', 'grep -L "set -e" *.sh'],
+    ['-o', 'Qatorning faqat mos kelgan qismini chiqaradi.', 'grep -o "[0-9.]*" ips.txt'],
+    ['-w', "Faqat butun so'z sifatida.", 'grep -w root /etc/passwd'],
+    ['-x', 'Butun qator aynan mos kelishi kerak.', 'grep -x admin users.txt'],
+    ['-E', "Kengaytirilgan regex: | + ? () qulayroq.", 'grep -E "Failed|Invalid" auth.log'],
+    ['-F', "Namunani regex emas, oddiy matn deb biladi (nuqta — nuqta).", 'grep -F "1.2.3.4" log'],
+    ['-A N', 'Mos qatordan keyingi N ta qatorni ham.', 'grep -A 2 error log'],
+    ['-B N', 'Mos qatordan oldingi N ta qatorni ham.', 'grep -B 2 error log'],
+    ['-C N', 'Oldin va keyin N tadan qator.', 'grep -C 1 error log'],
+    ['-m N', 'Birinchi N ta moslikdan keyin to\'xtaydi.', 'grep -m 1 Accepted auth.log'],
+    ['-q', 'Hech narsa chiqarmaydi, faqat topildi/topilmadi kodi (skriptlar uchun).', 'grep -q root /etc/passwd && echo bor'],
+    ['-H / -h', 'Fayl nomini har qatorda ko\'rsatish / ko\'rsatmaslik.', 'grep -H root /etc/passwd'],
+  ], [
+    ['grep "Failed password" /var/log/auth.log', 'SSH orqali parol urinishlari'],
+    ['grep -E -o "[0-9]{1,3}(\\.[0-9]{1,3}){3}" log | sort | uniq -c', 'Logdagi barcha IP manzillar va soni'],
+  ]),
+  d('sort', 'matn', 'Qatorlarni saralaydi.', 'sort [-r] [-n] [-u] [-f] [-k N] [-t AJRATGICH] [FAYL]', [
+    ['-n', "Son bo'yicha (aks holda 10 2 dan oldin keladi).", 'sort -n sonlar.txt'],
+    ['-r', 'Teskari tartib.', 'sort -rn'],
+    ['-u', 'Takrorlarni olib tashlaydi.', 'sort -u ips.txt'],
+    ['-f', 'Katta-kichik harfga qaramaydi.', 'sort -f ismlar.txt'],
+    ['-k N', "N-ustun bo'yicha.", 'ps aux | sort -k3 -rn'],
+    ['-t BELGI', "Ustunlarni shu belgi bo'yicha ajratadi.", 'sort -t: -k3 -n /etc/passwd'],
+  ], [['sort | uniq -c | sort -rn', "Eng ko'p uchraydiganlar tepada — log tahlilining asosiy zanjiri"]]),
+  d('uniq', 'matn', "Ketma-ket takrorlangan qatorlarni bittaga qisqartiradi. Odatda sort dan keyin.", 'uniq [-c] [-d] [-u] [-i] [FAYL]', [
+    ['-c', 'Har qator necha marta uchraganini sanaydi.', 'sort ips.txt | uniq -c'],
+    ['-d', 'Faqat takrorlangan qatorlar.', 'sort a.txt | uniq -d'],
+    ['-u', 'Faqat bir marta uchragan qatorlar.', 'sort a.txt | uniq -u'],
+    ['-i', 'Katta-kichik harfga qaramaydi.', 'sort -f a.txt | uniq -i'],
+  ], [['cut -d" " -f1 access.log | sort | uniq -c | sort -rn | head', "Eng faol 10 ta IP"]]),
+  d('cut', 'matn', 'Har qatordan kerakli ustun yoki belgilarni kesib oladi.', "cut -d AJRATGICH -f USTUNLAR [FAYL]  |  cut -c BELGILAR", [
+    ['-d BELGI', 'Ustunlar ajratgichi (odatda Tab).', "cut -d: -f1 /etc/passwd"],
+    ['-f N', 'Ustun(lar): 1 · 1,3 · 2-4 · 3- (oxirigacha) · -2 (boshidan).', "cut -d, -f2-4 data.csv"],
+    ['-c N', 'Belgi(lar) pozitsiyasi bo\'yicha.', 'cut -c1-8 hash.txt'],
+  ], [["cut -d: -f1,7 /etc/passwd", 'Foydalanuvchi nomi va qobig\'i']]),
+  d('tr', 'matn', "Belgilarni almashtiradi yoki o'chiradi.", "tr TO'PLAM1 TO'PLAM2   |   tr -d TO'PLAM", [
+    ['a-z A-Z', 'Kichik harflarni kattaga.', "echo salom | tr 'a-z' 'A-Z'"],
+    ['-d', "Belgilarni o'chiradi.", "echo 'a-b-c' | tr -d '-'"],
+  ], [["echo 'uryyb' | tr 'a-z' 'n-za-m'", 'ROT13 ni ochish']]),
+  d('rev', 'matn', 'Har qatorni teskari yozadi.', 'rev [FAYL]', [], [['echo salom | rev', 'molas'], ["rev | cut -d. -f1,2 | rev", "Domenning oxirgi ikki qismini olish usuli"]]),
+  d('awk', 'matn', 'Ustunlar bilan ishlash: tanlash, shart bo\'yicha filtrlash.', "awk [-F AJRATGICH] '[SHART] {print $1, $3}' [FAYL]", [
+    ['{print $N}', 'N-ustunni chiqaradi ($0 — butun qator, $NF — oxirgisi).', "awk '{print $1}' access.log"],
+    ['-F BELGI', 'Ustun ajratgichi.', "awk -F: '{print $1}' /etc/passwd"],
+    ['SHART', 'Faqat shartga mos qatorlar: $9 == 404, $3 > 100, $7 ~ /admin/, NR > 1.', "awk '$9 == 404' access.log"],
+    ['&&', 'Bir nechta shart birga.', "awk '$1 == \"10.0.0.5\" && $9 == 200' access.log"],
+  ], [["awk -F: '$3 == 0 {print $1}' /etc/passwd", 'UID 0 — ya\'ni root huquqli akkauntlar']], "Simulyatorda faqat shart va { print ... } bor; o'zgaruvchilar, BEGIN/END yo'q."),
+  d('sed', 'matn', "Matnni almashtiradi yoki qatorlarni o'chiradi; -i bilan faylning o'zini o'zgartiradi.", "sed [-i] [-n] 's/ESKI/YANGI/g' [FAYL]", [
+    ['s/a/b/', 'Har qatordagi birinchi a ni b ga almashtiradi.', "sed 's/http/https/' urls.txt"],
+    ['s/a/b/g', 'Barcha uchrashlarni almashtiradi.', "sed 's/ /_/g' fayl"],
+    ['-i', "Faylning o'zini o'zgartiradi (natija ekranga chiqmaydi).", "sudo sed -i 's/yes/no/' /etc/ssh/sshd_config"],
+    ['/namuna/d', "Mos qatorlarni o'chiradi.", "sed '/^#/d' config"],
+    ['-n /namuna/p', 'Faqat mos qatorlarni chiqaradi.', "sed -n '/error/p' log"],
+  ], [["sed 's/^PermitRootLogin yes/PermitRootLogin no/' sshd_config", 'Konfiguratsiyani tuzatishning xavfsiz ko\'rinishi (avval -i siz tekshiring)']]),
+  d('diff', 'matn', 'Ikki faylni qatorma-qator solishtiradi.', 'diff [-u] [-q] [-i] ESKI YANGI', [
+    ['-u', "Birlashgan format: - olib tashlangan, + qo'shilgan qatorlar.", 'diff -u eski.conf yangi.conf'],
+    ['-q', "Faqat farq bor-yo'qligini aytadi.", 'diff -q a b'],
+    ['-i', 'Katta-kichik harfga qaramaydi.', 'diff -i a b'],
+  ], [['diff /etc/passwd /tmp/passwd.bak', "Kecha va bugun o'rtasida qaysi akkaunt qo'shilgan?"]]),
+  d('tee', 'matn', "Kirgan ma'lumotni ham ekranga, ham faylga yozadi.", 'tee [-a] FAYL...', [['-a', "Faylning oxiriga qo'shadi.", 'echo qator | tee -a log.txt']], [['grep Failed auth.log | tee natija.txt | wc -l', 'Natijani saqlab, ayni paytda sanash']]),
+  d('xargs', 'matn', "Kirgan ro'yxatni boshqa buyruqqa argument qilib beradi.", 'xargs [-n N] [-I {}] BUYRUQ', [
+    ['-n N', 'Har safar N tadan argument.', 'echo a b c | xargs -n 1 echo'],
+    ['-I {}', "Har element uchun alohida, {} o'rniga qo'yib.", 'ls | xargs -I {} echo fayl: {}'],
+  ], [['find . -name "*.log" | xargs wc -l', 'Topilgan har bir logdagi qatorlar soni']]),
+  d('jq', 'matn', "JSON bilan ishlaydi: maydon olish, filtrlash, jadval qilish.", "jq [-r] [-c] [-s] 'FILTR' [FAYL]", [
+    ['.', 'Butun JSON ni chiroyli chiqaradi.', 'jq . data.json'],
+    ['.maydon', 'Maydon qiymati (.a.b — ichma-ich).', "jq '.userIdentity.userName' event.json"],
+    ['.[]', "Massiv elementlari bittadan.", "jq '.Records[]' trail.json"],
+    ['select(SHART)', 'Shartga mos obyektlar.', "jq 'select(.status == 404)' log.json"],
+    ['[.a, .b] | @tsv', 'Bir nechta maydonni jadval qatori qilib.', "jq -r '[.time, .ip] | @tsv' log.json"],
+    ['-r', "Matnni qo'shtirnoqsiz chiqaradi.", "jq -r '.ip' log.json"],
+    ['-c', 'Har obyekt bir qatorda.', "jq -c 'select(.EventID == 4625)' events.json"],
+    ['-s', "Hamma qatorlarni bitta massivga yig'adi.", "jq -s 'length' events.json"],
+  ], [["jq -r '.sourceIPAddress' cloudtrail.json | sort | uniq -c", 'CloudTrail: qaysi IP lardan chaqiruvlar bo\'lgan']]),
+
+  // ── permissions
+  d('chmod', 'ruxsat', "Fayl ruxsatlarini o'zgartiradi.", 'chmod REJIM FAYL...', [
+    ['644', "Raqamli: egasi o'qiydi-yozadi, qolganlar faqat o'qiydi (r=4, w=2, x=1).", 'chmod 644 index.html'],
+    ['600', "Faqat egasi o'qiydi va yozadi — maxfiy kalitlar uchun.", 'chmod 600 id_rsa'],
+    ['755', "Egasi hamma narsa, qolganlar o'qish va bajarish — skript va kataloglar.", 'chmod 755 skript.sh'],
+    ['u+x', "Belgili: egasiga (u) bajarishni (x) qo'shish. g — guruh, o — boshqalar, a — hamma.", 'chmod u+x skript.sh'],
+    ['o-w', 'Boshqalardan yozish huquqini olish.', 'chmod o-w fayl'],
+    ['u-s', "SUID bitini olib tashlash.", 'sudo chmod u-s /usr/local/bin/dastur'],
+  ], [['chmod -R 750 /srv/app', "Butun katalogga (simulyatorda -R e'tiborsiz qoldiriladi)"]]),
+  d('chown', 'ruxsat', "Fayl egasini o'zgartiradi (faqat root).", 'sudo chown EGA[:GURUH] FAYL', [], [['sudo chown www-data /var/www/index.html', 'Veb-server foydalanuvchisiga berish']]),
+  d('sudo', 'ruxsat', 'Buyruqni root (administrator) nomidan bajaradi.', 'sudo BUYRUQ', [['-l', 'Sizga sudo orqali nima ruxsat etilganini ko\'rsatadi.', 'sudo -l']], [['sudo cat /etc/shadow', "Oddiy foydalanuvchi o'qiy olmaydigan fayl"]], "Simulyatorda parol so'ralmaydi va root sessiyasiga (sudo su) o'tilmaydi."),
+
+  // ── processes and services
+  d('ps', 'jarayon', 'Ishlayotgan jarayonlar ro\'yxati.', 'ps [aux | -ef]', [
+    ['aux', "Hamma foydalanuvchilarning jarayonlari, CPU va xotira bilan.", 'ps aux'],
+    ['-ef', "Ota jarayon (PPID) bilan to'liq ro'yxat.", 'ps -ef'],
+  ], [['ps aux | sort -k3 -rn | head -n 5', "Eng ko'p CPU ishlatayotgan 5 ta jarayon"], ['ps aux | grep nginx', 'Muayyan dastur ishlayaptimi']]),
+  d('pgrep', 'jarayon', "Nomi bo'yicha jarayon PID'ini topadi.", 'pgrep [-l] [-a] [-f] NAMUNA', [
+    ['-l', 'PID bilan birga nomini.', 'pgrep -l ssh'],
+    ['-a', "PID bilan to'liq buyruq qatorini.", 'pgrep -a python'],
+    ['-f', 'Butun buyruq qatoridan qidiradi.', 'pgrep -f config.json'],
+  ], [['pgrep -l nginx', '812 nginx']]),
+  d('kill', 'jarayon', "Jarayonga signal yuboradi — odatda to'xtatish uchun.", 'kill [-9] PID...', [
+    ['(signalsiz)', "SIGTERM (15): jarayondan to'xtashni so'raydi.", 'kill 2231'],
+    ['-9', "SIGKILL: darhol majburan to'xtatadi.", 'kill -9 2231'],
+    ['-l', "Signallar ro'yxati.", 'kill -l'],
+  ], [['sudo kill -9 2231', "Boshqa foydalanuvchining jarayoni uchun sudo kerak"]], 'Insidentda avval dalillarni saqlang, keyin to\'xtating.'),
+  d('systemctl', 'jarayon', 'systemd xizmatlarini boshqaradi.', 'systemctl BUYRUQ XIZMAT', [
+    ['status', "Holati, asosiy PID, oxirgi jurnal qatorlari.", 'systemctl status nginx'],
+    ['start / stop / restart', 'Ishga tushirish, to\'xtatish, qayta ishga tushirish (sudo).', 'sudo systemctl restart nginx'],
+    ['enable / disable', 'Yuklanishda avtomatik ishga tushishni yoqish/o\'chirish.', 'sudo systemctl disable telnet'],
+    ['--now', 'enable/disable bilan birga darhol start/stop ham.', 'sudo systemctl disable --now xizmat'],
+    ['is-active / is-enabled', "Qisqa javob: active/inactive, enabled/disabled.", 'systemctl is-active ssh'],
+    ['cat', "Xizmatning unit faylini ko'rsatadi (qaysi dasturni ishga tushiradi).", 'systemctl cat ssh'],
+    ['list-units --type=service', "Xizmatlar ro'yxati; --state=running yoki --state=failed bilan filtr.", 'systemctl list-units --state=failed'],
+    ['list-unit-files', "Barcha xizmatlar va yuklanishdagi holati.", 'systemctl list-unit-files'],
+  ], [['systemctl list-units --type=service --state=running', 'Hozir nima ishlayapti — begona xizmat bormi?']]),
+  d('journalctl', 'jarayon', 'systemd jurnali: xizmat nima uchun ishlamayotgani shu yerda.', 'journalctl -u XIZMAT [-n N]', [
+    ['-u XIZMAT', 'Faqat shu xizmat yozuvlari.', 'journalctl -u nginx'],
+    ['-n N', 'Oxirgi N ta yozuv.', 'journalctl -u ssh -n 20'],
+    ['-xeu', "Oxirgi xatolar izohlari bilan (status xabarida tavsiya qilinadi).", 'journalctl -xeu nginx'],
+  ], [['journalctl -u nginx -n 5', 'Oxirgi besh yozuv — odatda xato sababi shunda']]),
+  d('ss', 'jarayon', 'Tinglayotgan portlar va ularni ochgan jarayonlar.', 'ss -tulpn', [
+    ['-t', 'TCP.', 'ss -t'],
+    ['-u', 'UDP.', 'ss -u'],
+    ['-l', 'Faqat tinglayotganlar.', 'ss -l'],
+    ['-p', 'Jarayon nomi va PID (boshqalarniki uchun sudo).', 'sudo ss -tlp'],
+    ['-n', 'Port va manzillarni raqam ko\'rinishida.', 'ss -tln'],
+  ], [['sudo ss -tulpn', "Serverdagi barcha ochiq portlar — auditning birinchi qadami. 0.0.0.0 — hamma interfeysda, 127.0.0.1 — faqat shu kompyuterdan"]]),
+  d('crontab', 'jarayon', "Rejalashtirilgan vazifalar (cron): ma'lum vaqtda avtomatik bajariladigan buyruqlar.", 'crontab -l | crontab FAYL | crontab -r', [
+    ['-l', "Joriy foydalanuvchining vazifalari.", 'crontab -l'],
+    ['FAYL', "Fayldagi vazifalarni o'rnatadi.", 'crontab mycron'],
+    ['-r', "Barcha vazifalarni o'chiradi.", 'crontab -r'],
+    ['-u NOM', 'Boshqa foydalanuvchiniki (root).', 'sudo crontab -u www-data -l'],
+  ], [["echo '0 3 * * * /home/talaba/zaxira.sh' > mycron", "Format: daqiqa soat kun oy hafta_kuni buyruq — bu yerda har kuni 03:00 da"]], "crontab -e (muharrir) simulyatorda yo'q. Tizim vazifalari /etc/crontab va /etc/cron.d/ da."),
+
+  // ── users
+  d('whoami', 'foydalanuvchi', 'Joriy foydalanuvchi nomi.', 'whoami', [], [['sudo whoami', 'root']]),
+  d('id', 'foydalanuvchi', 'Foydalanuvchi va guruh identifikatorlari (UID, GID, guruhlar).', 'id [-u] [-G] [FOYDALANUVCHI]', [
+    ['-u', 'Faqat UID.', 'id -u'],
+    ['-G', "Faqat guruh raqamlari.", 'id -G'],
+  ], [['id talaba', 'uid=1000(talaba) ... groups=...,27(sudo) — sudo guruhida']]),
+  d('groups', 'foydalanuvchi', 'Foydalanuvchi qaysi guruhlarda.', 'groups [FOYDALANUVCHI]', [], [['groups ali', 'ali : ali developers']]),
+  d('useradd', 'foydalanuvchi', "Yangi foydalanuvchi yaratadi (root). /etc/passwd va /etc/group o'zgaradi.", 'sudo useradd [-m] [-s QOBIQ] [-G GURUHLAR] NOM', [
+    ['-m', 'Uy katalogini (/home/NOM) yaratadi.', 'sudo useradd -m ali'],
+    ['-s QOBIQ', 'Kirish qobig\'i (odatda /bin/bash).', 'sudo useradd -m -s /bin/bash ali'],
+    ['-G G1,G2', "Qo'shimcha guruhlar.", 'sudo useradd -m -G developers ali'],
+  ], [['grep ali /etc/passwd', "Natijani tekshirish"]]),
+  d('usermod', 'foydalanuvchi', "Mavjud foydalanuvchini o'zgartiradi (root).", 'sudo usermod -aG GURUH FOYDALANUVCHI', [['-aG', "Guruhga qo'shadi (-a siz boshqa guruhlardan chiqarib yuboradi!).", 'sudo usermod -aG sudo ali']], [['groups ali', 'Tekshirish']]),
+  d('userdel', 'foydalanuvchi', "Foydalanuvchini o'chiradi (root).", 'sudo userdel [-r] FOYDALANUVCHI', [['-r', "Uy katalogini ham o'chiradi.", 'sudo userdel -r eski']], [['sudo userdel -r test', "Test akkauntini butunlay olib tashlash"]]),
+  d('passwd', 'foydalanuvchi', "Parolni o'zgartiradi.", 'passwd [-S] [-l] [FOYDALANUVCHI]', [
+    ['-S', 'Parol holati.', 'sudo passwd -S ali'],
+    ['-l', 'Akkauntni parol bo\'yicha bloklaydi.', 'sudo passwd -l eski'],
+  ], [['passwd', "O'z parolingizni almashtirish"]], "Simulyatorda parol so'ralmaydi."),
+  d('su', 'foydalanuvchi', 'Boshqa foydalanuvchiga o\'tish.', 'su [-] FOYDALANUVCHI', [], [['su - ali', "Haqiqiy tizimda ali ning paroli so'raladi"]], "Simulyatorda boshqa foydalanuvchiga o'tilmaydi — sudo ishlating."),
+  d('who', 'foydalanuvchi', 'Hozir tizimda kim bor.', 'who', [], [['who', "Kim, qaysi terminalda, qayerdan ulangan"]]),
+  d('w', 'foydalanuvchi', 'Kim tizimda va nima qilyapti, yuklama bilan.', 'w', [], [['w', 'Notanish IP dan ulangan sessiya — tekshirish kerak']]),
+  d('last', 'foydalanuvchi', 'Oxirgi kirishlar tarixi.', 'last [-n N] [FOYDALANUVCHI]', [['-n N', 'Oxirgi N ta yozuv.', 'last -n 5']], [['last root', 'root qachon kirgan']]),
+
+  // ── network
+  d('ip', 'tarmoq', 'Tarmoq interfeyslari, manzillar va marshrutlar.', 'ip a | ip r | ip link | ip neigh', [
+    ['a', "Interfeyslar va IP manzillar (inet qatori).", 'ip a'],
+    ['r', "Marshrutlar: default via — shlyuz.", 'ip r'],
+    ['link', 'Interfeyslar va MAC manzillar.', 'ip link'],
+    ['neigh', 'ARP jadvali: tarmoqdagi qo\'shnilar.', 'ip neigh'],
+  ], [['ip a', 'Mening manzilim: inet 10.10.10.2/24']], 'Eski ifconfig va netstat o\'rniga ip va ss ishlatiladi.'),
+  d('ping', 'tarmoq', 'Host javob beradimi va qanchalik tez (ICMP).', 'ping [-c N] HOST', [['-c N', "N ta so'rovdan keyin to'xtaydi.", 'ping -c 3 srv.lab']], [['ping -c 1 db.lab', "Javob yo'q — host o'chiq yoki ICMP firewall'da yopilgan"]]),
+  d('traceroute', 'tarmoq', "Paket manzilga qaysi routerlar orqali borishini ko'rsatadi.", 'traceroute HOST', [], [['traceroute example.com', 'Har qator — bitta "sakrash" (hop)']]),
+  d('dig', 'tarmoq', "DNS so'rovi: nom qaysi manzilga va boshqa yozuvlar.", 'dig [+short] NOM [A|MX|TXT|NS]  |  dig -x IP', [
+    ['+short', 'Faqat javobning o\'zi.', 'dig +short srv.lab'],
+    ['MX / TXT / NS', "Yozuv turi: pochta serveri, matn (SPF), nom serverlari.", 'dig example.com MX'],
+    ['-x IP', "Teskari so'rov: IP qaysi nomga tegishli.", 'dig -x 10.10.10.20'],
+  ], [['dig +short example.com TXT', 'SPF yozuvi — pochta xavfsizligi (s5 phishing darsi)']]),
+  d('nslookup', 'tarmoq', "DNS so'rovi (oddiyroq chiqish).", 'nslookup NOM|IP', [], [['nslookup example.com', 'Name va Address']]),
+  d('host', 'tarmoq', "Eng qisqa DNS so'rovi.", 'host NOM|IP', [], [['host example.com', 'has address ... mail is handled by ...']]),
+  d('nc', 'tarmoq', 'netcat: portga ulanish yoki port ochiqligini tekshirish.', 'nc -zv HOST PORT[-PORT]  |  nc HOST PORT', [
+    ['-z', "Ma'lumot yubormasdan faqat ochiqligini tekshiradi.", 'nc -z srv.lab 22'],
+    ['-v', 'Batafsil: har port natijasi.', 'nc -zv srv.lab 20-25'],
+  ], [['nc srv.lab 22', "Xizmat o'zi haqida aytgan qator (banner): SSH versiyasi"]], 'Faqat o\'z laboratoriyangiz yoki ruxsat berilgan tizimlarda.'),
+  d('curl', 'tarmoq', "URL bo'yicha so'rov yuboradi va javobni chiqaradi.", 'curl [-i] [-I] [-s] [-L] [-o FAYL] URL', [
+    ['-i', 'Javob sarlavhalari bilan birga.', 'curl -i http://srv.lab/'],
+    ['-I', 'Faqat sarlavhalar (HEAD).', 'curl -I http://srv.lab/'],
+    ['-s', 'Jim rejim: progress chiqmaydi.', 'curl -s http://srv.lab/api/status'],
+    ['-L', 'Yo\'naltirishlarga (301/302) ergashadi.', 'curl -L http://srv.lab/old'],
+    ['-o FAYL', "Javobni faylga saqlaydi.", 'curl -o sahifa.html http://srv.lab/'],
+  ], [['curl -s http://srv.lab/api/status | jq .', "API javobini chiroyli ko'rish"]]),
+  d('wget', 'tarmoq', 'Faylni yuklab oladi.', 'wget [-q] [-O FAYL] URL', [
+    ['-O FAYL', 'Shu nom bilan saqlaydi (-O - ekranga).', 'wget -O r.txt http://srv.lab/robots.txt'],
+    ['-q', 'Jim rejim.', 'wget -q http://srv.lab/robots.txt'],
+  ], [['wget http://srv.lab/robots.txt', "robots.txt ni yuklab olish"]]),
+
+  // ── system
+  d('hostname', 'tizim', 'Kompyuter nomi.', 'hostname', [], [['hostname', 'srv01']]),
+  d('uname', 'tizim', "Operatsion tizim va yadro haqida ma'lumot.", 'uname [-a] [-r] [-n] [-m]', [
+    ['-a', "Hammasi.", 'uname -a'],
+    ['-r', 'Yadro versiyasi (zaifliklarni tekshirishda muhim).', 'uname -r'],
+    ['-n', 'Kompyuter nomi.', 'uname -n'],
+    ['-m', 'Arxitektura.', 'uname -m'],
+  ], [['uname -r', '6.8.11-amd64']]),
+  d('uptime', 'tizim', "Tizim qancha vaqtdan beri ishlayapti va yuklama.", 'uptime [-p]', [['-p', "Oddiy so'zlar bilan.", 'uptime -p']], [['uptime', 'load average — oxirgi 1, 5, 15 daqiqadagi o\'rtacha yuklama']]),
+  d('free', 'tizim', 'Operativ xotira va swap holati.', 'free [-h]', [['-h', "O'qishga oson birliklar.", 'free -h']], [['free -h', 'available — haqiqatan bo\'sh xotira']]),
+  d('date', 'tizim', 'Joriy sana va vaqt (simulyator soati).', 'date [+FORMAT]', [
+    ['+%F', 'YYYY-MM-DD.', 'date +%F'],
+    ['+%T', 'HH:MM:SS.', 'date +%T'],
+    ['+%s', 'Unix vaqti (1970 dan beri soniyalar).', 'date +%s'],
+  ], [['cp log.txt log-$(date +%F).txt', "Haqiqiy tizimda fayl nomiga sana qo'shish (simulyatorda $(...) yo'q)"]]),
+  d('apt', 'tizim', "Debian/Ubuntu/Kali paket menejeri: dastur o'rnatish va yangilash.", 'apt update | upgrade | install | remove | list | search | show', [
+    ['update', "Paketlar ro'yxatini yangilaydi (sudo).", 'sudo apt update'],
+    ['upgrade', 'O\'rnatilganlarni yangilaydi — xavfsizlik yamoqlari (sudo).', 'sudo apt upgrade'],
+    ['install PAKET', "O'rnatadi (sudo).", 'sudo apt install tree'],
+    ['remove PAKET', "O'chiradi (sudo).", 'sudo apt remove telnet'],
+    ['list --installed', "O'rnatilgan paketlar.", 'apt list --installed'],
+    ['list --upgradable', 'Yangilanishi kerak bo\'lganlar.', 'apt list --upgradable'],
+    ['search SO\'Z', 'Paket qidirish.', 'apt search firewall'],
+    ['show PAKET', "Paket haqida.", 'apt show fail2ban'],
+  ], [['sudo apt update && sudo apt upgrade', 'Muntazam yangilash — eng oddiy va eng muhim himoya']], "Simulyatorda internetdan hech narsa yuklanmaydi; o'rnatilganlar ro'yxati o'zgaradi xolos."),
+  d('history', 'tizim', 'Kiritilgan buyruqlar tarixi.', 'history', [], [['history | grep ssh', 'Avval qaysi ssh buyruqlari yozilgan']]),
+  d('which', 'tizim', 'Buyruq dasturi qayerda joylashganini ko\'rsatadi.', 'which BUYRUQ', [], [['which python3', '/usr/bin/python3']]),
+  d('man', 'tizim', 'Buyruq qo\'llanmasi: barcha flaglar va misollar.', 'man BUYRUQ', [], [['man grep', 'grep ning barcha flaglari']]),
+  d('help', 'tizim', "Barcha buyruqlar ro'yxati.", 'help', [], [['help', "Ro'yxat"]]),
+  d('clear', 'tizim', 'Ekranni tozalaydi (Ctrl+L ham).', 'clear', [], [['clear', '']]),
+
+  // ── encoding and integrity
+  d('base64', 'xavfsizlik', "Base64 ga kodlaydi yoki qayta ochadi. Bu shifrlash emas!", 'base64 [-d] [FAYL]', [['-d', 'Dekodlash (ochish).', 'echo c2Fsb20= | base64 -d']], [['echo salom | base64', 'c2Fsb20K']]),
+  d('xxd', 'xavfsizlik', "Faylni hex ko'rinishida ko'rsatadi; hex'dan qayta tiklaydi.", 'xxd [-p] [-r -p] [FAYL]', [
+    ['-p', 'Faqat hex, manzil va matn ustunisiz.', 'echo hi | xxd -p'],
+    ['-r -p', "Hex'dan asl ma'lumotga.", 'echo 6869 | xxd -r -p'],
+  ], [['xxd fayl.bin | head', 'Fayl boshidagi "sehrli baytlar" — haqiqiy turini aniqlash']]),
+  d('sha256sum', 'xavfsizlik', 'Faylning SHA-256 xeshi; ro\'yxat bilan solishtirib, o\'zgarganini topadi.', 'sha256sum FAYL...  |  sha256sum -c RO\'YXAT', [['-c', "Ro'yxatdagi xeshlarni tekshiradi: OK yoki FAILED.", 'sha256sum -c baseline.sha256']], [['sha256sum /usr/bin/ls', 'Ishonchli manbadagi xesh bilan solishtiring']]),
+  d('file', 'xavfsizlik', "Fayl turini mazmuniga qarab aniqlaydi (kengaytmaga emas).", 'file FAYL...', [], [['file hisobot.pdf', 'PNG image data — kengaytma aldagan']]),
+
+  // ── scripts and environment
+  d('echo', 'skript', 'Matnni chiqaradi; > bilan faylga yozadi, >> bilan oxiriga qo\'shadi.', 'echo [-n] [-e] MATN', [
+    ['-e', '\\n (yangi qator) va \\t (tab) ni tushunadi.', 'echo -e "a\\nb"'],
+    ['-n', 'Oxirida yangi qator qo\'ymaydi.', 'echo -n salom'],
+  ], [['echo "salom" > fayl.txt', 'Faylga yozish (eski mazmun o\'chadi)'], ['echo "yana" >> fayl.txt', "Oxiriga qo'shish"]]),
+  d('bash', 'skript', 'Skriptni bajaradi.', 'bash SKRIPT [ARGUMENTLAR]   yoki   ./SKRIPT', [], [['bash skript.sh', "Bajarish ruxsati shart emas"], ['./skript.sh', 'chmod +x kerak']], "Simulyatorda skript qatorma-qator bajariladi: o'zgaruvchilar, $1..$9, $@, $# bor; if, for, while, $(...) yo'q."),
+  d('export', 'skript', "O'zgaruvchini muhitga qo'shadi.", 'export NOM=QIYMAT', [], [['export LOYIHA=qaydnoma && echo $LOYIHA', 'qaydnoma']]),
+  d('unset', 'skript', "O'zgaruvchini o'chiradi.", 'unset NOM', [], [['unset LOYIHA', '']]),
+  d('env', 'skript', "Muhit o'zgaruvchilari ro'yxati.", 'env', [], [['env | grep PATH', 'Dasturlar qidiriladigan kataloglar']]),
+  d('basename', 'skript', "Yo'ldan faqat fayl nomini oladi.", 'basename YO\'L [SUFFIKS]', [], [['basename /var/log/auth.log .log', 'auth']]),
+  d('dirname', 'skript', "Yo'ldan katalog qismini oladi.", "dirname YO'L", [], [['dirname /var/log/auth.log', '/var/log']]),
+  d('realpath', 'skript', "To'liq, havolalarsiz yo'lni beradi.", "realpath YO'L", [], [['realpath ../a.txt', '/home/a.txt']]),
+];
+
+const index = new Map(DOCS.map((c) => [c.name, c]));
+
+export function getDoc(name: string): CommandDoc | null {
+  return index.get(name) ?? null;
+}
+
+/** Plain-text manual page for the terminal's `man`. */
+export function manText(doc: CommandDoc): string {
+  const lines = [doc.name.toUpperCase(), '', `  ${doc.summary}`, '', `  Ishlatilishi: ${doc.usage}`];
+  if (doc.flags.length) {
+    lines.push('', '  Flaglar:');
+    const w = Math.min(22, Math.max(...doc.flags.map(([f]) => f.length)));
+    for (const [f, t, e] of doc.flags) lines.push(`    ${f.padEnd(w)}  ${t}${e ? `\n    ${''.padEnd(w)}  masalan: ${e}` : ''}`);
+  }
+  if (doc.examples.length) {
+    lines.push('', '  Misollar:');
+    for (const [c, n] of doc.examples) lines.push(`    $ ${c}${n ? `\n      ${n}` : ''}`);
+  }
+  if (doc.note) lines.push('', `  Eslatma: ${doc.note}`);
+  return lines.join('\n');
+}

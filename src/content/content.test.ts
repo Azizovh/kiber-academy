@@ -257,3 +257,27 @@ describe('CTF', () => {
     expect(line14).toContain("LIKE '%{q}%'");
   });
 });
+
+describe('lab teaching notes', () => {
+  it('only name documented commands and flags', async () => {
+    const { getDoc } = await import('../engine/terminal/docs');
+    const problems: string[] = [];
+    for (const lab of LABS) {
+      for (const task of lab.tasks) {
+        for (const entry of task.teach ?? []) {
+          const [cmd, ...rest] = entry.split(/\s+/);
+          const doc = getDoc(cmd!);
+          if (!doc) {
+            problems.push(`${lab.id}/${task.id}: no doc for ${cmd}`);
+            continue;
+          }
+          const flag = rest.join(' ');
+          if (flag && !doc.flags.some(([f]) => f === flag || f.split(/\s*\/\s*|\s+/).includes(flag))) {
+            problems.push(`${lab.id}/${task.id}: ${cmd} has no documented flag ${flag}`);
+          }
+        }
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+});

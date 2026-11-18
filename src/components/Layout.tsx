@@ -4,6 +4,7 @@ import {
   BookA,
   Cloud,
   CloudOff,
+  FlaskConical,
   Flame,
   Home,
   Layers,
@@ -36,11 +37,12 @@ const LEARN: Item[] = [
   { to: '/xarita', label: "Yo'l xaritasi", icon: Map, also: ['/bosqich', '/mavzu'] },
 ];
 const PRACTICE: Item[] = [
-  { to: '/amaliyot', label: 'Amaliyot', icon: SquareTerminal, also: ['/lab', '/ctf'] },
+  { to: '/amaliyot', label: 'Amaliyot', icon: FlaskConical, also: ['/lab', '/ctf'] },
   { to: '/takrorlash', label: 'Takrorlash', icon: Layers },
 ];
 const REFERENCE: Item[] = [
   { to: '/lugat', label: "Lug'at", icon: BookA },
+  { to: '/buyruqlar', label: 'Buyruqlar', icon: SquareTerminal },
   { to: '/qaydlar', label: 'Qaydlar', icon: NotebookPen },
   { to: '/intervyu', label: 'Intervyu', icon: MessagesSquare },
 ];

@@ -2412,3 +2412,202 @@ main:focus {
     order: -1;
   }
 }
+
+/* ── Command reference ─────────────────────────────────────────────────── */
+
+.seg.wrap {
+  flex-wrap: wrap;
+}
+
+.cmd-card {
+  padding: 18px 20px;
+  scroll-margin-top: 16px;
+}
+
+.cmd-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin-bottom: 10px;
+}
+
+.cmd-head p {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.cmd-name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  color: var(--accent);
+}
+
+.cmd-usage {
+  display: block;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--term-bg);
+  color: var(--term-text);
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.cmd-flags {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.cmd-flags th,
+.cmd-flags td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.cmd-flags th {
+  color: var(--text-3);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.cmd-flags td:first-child {
+  white-space: nowrap;
+}
+
+.cmd-flags code,
+.cmd-examples code {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--accent-strong);
+}
+
+.cmd-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cmd-examples > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cmd-examples span {
+  color: var(--text-2);
+  font-size: 0.86rem;
+}
+
+.cmd-note {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 640px) {
+  .cmd-flags thead {
+    display: none;
+  }
+
+  .cmd-flags tr {
+    display: block;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cmd-flags td {
+    display: block;
+    padding: 2px 0;
+    border: 0;
+  }
+}
+
+/* "New command" panel shown above a lab task. */
+.teach {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--info-soft);
+  border: 1px solid color-mix(in srgb, var(--info) 30%, transparent);
+}
+
+.teach-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--info);
+}
+
+.teach-title svg {
+  width: 15px;
+  height: 15px;
+}
+
+.teach-item + .teach-item {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.teach-item p {
+  margin: 2px 0 6px;
+  font-size: 0.9rem;
+}
+
+.teach-flags {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.teach-flags dt code {
+  font-family: var(--font-mono);
+  color: var(--accent-strong);
+}
+
+.teach-flags dd {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.lab-cmds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lab-cmds button {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.lab-cmds button:hover,
+.lab-cmds button.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.task.challenge .num {
+  border-color: var(--warn);
+  color: var(--warn);
+}

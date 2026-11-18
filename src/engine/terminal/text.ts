@@ -720,10 +720,4 @@ export const sha256sum: Command = (args, ctx) => {
   return ok(out.join('\n'));
 };
 
-export const TEXT_MANUAL: Record<string, { usage: string; text: string }> = {
-  awk: { usage: "awk [-F AJRATGICH] '[shart] {print $1, $3}' [FAYL]", text: "Ustunlar bilan ishlaydi: `awk '{print $1}'` — birinchi ustun; `-F:` — ajratgich; shart: `$9 == 404`, `$3 ~ /admin/`, `NR > 1`." },
-  sed: { usage: "sed [-i] [-n] 's/eski/yangi/g' [FAYL]", text: "Matnni almashtiradi. -i — faylning o'zini o'zgartiradi; '/namuna/d' — qatorni o'chiradi; -n '/namuna/p' — faqat mos qatorlar." },
-  jq: { usage: "jq [-r] [-c] 'FILTR' [FAYL]", text: "JSON bilan ishlaydi: `.eventName`, `.[]`, `select(.status == 404)`, `[.a, .b] | @tsv`. -r — qo'shtirnoqsiz, -c — bir qatorda." },
-  sha256sum: { usage: 'sha256sum FAYL...   |   sha256sum -c ROYXAT', text: "Fayl xeshi (SHA-256). -c — ro'yxatdagi xeshlar bilan solishtirib, o'zgargan fayllarni ko'rsatadi." },
-};
 

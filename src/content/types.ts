@@ -102,6 +102,13 @@ export interface LabTask {
   id: string;
   text: string;
   hint: string;
+  /**
+   * Commands or flags this task uses for the first time, explained above the task before the learner starts:
+   * "ls" (the command), "ls -a" (one flag of it).
+   */
+  teach?: string[];
+  /** A final, independent task: several commands combined, the hint only on request. */
+  challenge?: boolean;
   /** One command line (or several) that solves the task; used by tests. */
   solution: string[];
   check: (ctx: LabCheckCtx) => boolean;

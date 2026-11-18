@@ -36,6 +36,7 @@ const page = <K extends string>(load: () => Promise<Record<K, React.ComponentTyp
   );
 const AccountPage = page(() => import('./pages/AccountPage'), 'AccountPage');
 const AdminPage = page(() => import('./pages/AdminPage'), 'AdminPage');
+const CommandsPage = page(() => import('./pages/CommandsPage'), 'CommandsPage');
 const CtfPage = page(() => import('./pages/CtfPage'), 'CtfPage');
 const GlossaryPage = page(() => import('./pages/GlossaryPage'), 'GlossaryPage');
 const InterviewPage = page(() => import('./pages/InterviewPage'), 'InterviewPage');
@@ -78,6 +79,7 @@ export function App() {
         <Route path="ctf/:ctfId" element={<CtfPage />} />
         <Route path="takrorlash" element={<ReviewPage />} />
         <Route path="lugat" element={<GlossaryPage />} />
+        <Route path="buyruqlar" element={<CommandsPage />} />
         <Route path="qaydlar" element={<NotesPage />} />
         <Route path="intervyu" element={<InterviewPage />} />
         <Route path="sozlamalar" element={<SettingsPage />} />

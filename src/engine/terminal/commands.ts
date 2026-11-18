@@ -50,8 +50,9 @@ import {
   w,
   who,
 } from './users';
-import { SYSTEM_MANUAL, journalctl, kill, pgrep, ps, ss, systemctl } from './system';
-import { TEXT_MANUAL, awk, jq, sed, sha256sum } from './text';
+import { getDoc, manText } from './docs';
+import { journalctl, kill, pgrep, ps, ss, systemctl } from './system';
+import { awk, jq, sed, sha256sum } from './text';
 
 /*
  * Error texts are the real English ones on purpose: learners must recognise
@@ -179,66 +180,20 @@ function expandSet(set: string): string {
   });
 }
 
-/* ── manual ──────────────────────────────────────────────────────────── */
-
-export const MANUAL: Record<string, { usage: string; text: string }> = {
-  help: { usage: 'help', text: "Mavjud buyruqlar ro'yxati." },
-  man: { usage: 'man BUYRUQ', text: "Buyruq haqida qisqa qo'llanma." },
-  pwd: { usage: 'pwd', text: "Hozir turgan katalogingizning to'liq yo'lini ko'rsatadi (print working directory)." },
-  ls: { usage: 'ls [-l] [-a] [YO\'L]', text: "Katalog ichidagilarni ko'rsatadi. -l batafsil (ruxsatlar, egasi, hajmi), -a yashirin (nuqta bilan boshlanuvchi) fayllarni ham." },
-  cd: { usage: 'cd [KATALOG]', text: "Katalogni almashtiradi. `cd ..` — bir pog'ona yuqoriga, `cd ~` yoki `cd` — uy katalogiga, `cd -` — oldingi joyga." },
-  cat: { usage: 'cat FAYL...', text: "Fayl mazmunini ekranga chiqaradi." },
-  echo: { usage: 'echo MATN', text: "Matnni chiqaradi. `echo salom > fayl.txt` — faylga yozadi, `>>` — oxiriga qo'shadi." },
-  mkdir: { usage: 'mkdir [-p] KATALOG', text: "Yangi katalog yaratadi. -p — oraliq kataloglarni ham yaratadi." },
-  touch: { usage: 'touch FAYL', text: "Bo'sh fayl yaratadi." },
-  rm: { usage: 'rm [-r] FAYL', text: "Faylni o'chiradi. -r — katalogni ichidagilari bilan. Ehtiyot bo'ling: savat yo'q!" },
-  rmdir: { usage: 'rmdir KATALOG', text: "Bo'sh katalogni o'chiradi." },
-  cp: { usage: 'cp [-r] MANBA MANZIL', text: "Nusxa oladi. Katalog uchun -r kerak." },
-  mv: { usage: 'mv MANBA MANZIL', text: "Ko'chiradi yoki nomini o'zgartiradi." },
-  grep: { usage: 'grep [-i] [-n] [-v] [-c] [-r] NAMUNA [FAYL]', text: "Namuna uchragan qatorlarni topadi. -i harf katta-kichikligiga qaramaydi, -n qator raqami, -v teskarisi, -c soni, -r kataloglar ichida." },
-  head: { usage: 'head [-n N] [FAYL]', text: "Boshidagi N ta qator (odatda 10)." },
-  tail: { usage: 'tail [-n N] [FAYL]', text: "Oxiridagi N ta qator (odatda 10)." },
-  wc: { usage: 'wc [-l] [-w] [-c] [FAYL]', text: "Qatorlar (-l), so'zlar (-w), belgilar (-c) sonini sanaydi." },
-  sort: { usage: 'sort [-r] [-n] [-u] [-k N] [-t AJRATGICH] [FAYL]', text: "Qatorlarni saralaydi. -r teskari, -n son bo'yicha, -u takrorlarsiz, -k N — N-ustun bo'yicha (masalan: ps aux | sort -k3 -rn)." },
-  uniq: { usage: 'uniq [-c] [FAYL]', text: "Ketma-ket takrorlangan qatorlarni bittaga qisqartiradi. -c — necha marta uchraganini sanaydi. Odatda `sort | uniq -c`." },
-  cut: { usage: "cut -d 'AJRATGICH' -f N [FAYL]", text: "Har qatordan kerakli ustunni kesib oladi." },
-  tr: { usage: "tr 'TO\\'PLAM1' 'TO\\'PLAM2'", text: "Belgilarni almashtiradi. Masalan: `tr 'a-z' 'A-Z'`. -d — belgilarni o'chiradi." },
-  rev: { usage: 'rev [FAYL]', text: "Har qatorni teskari yozadi." },
-  find: { usage: 'find [YO\'L] [-name NAMUNA] [-type f|d] [-perm -4000] [-user EGA]', text: "Fayllarni qidiradi. Masalan: `find / -name \"*.txt\"`; SUID fayllar: `find / -perm -4000 -type f`." },
-  file: { usage: 'file FAYL', text: "Fayl turini aniqlaydi." },
-  chmod: { usage: 'chmod REJIM FAYL', text: "Ruxsatlarni o'zgartiradi. Raqamli: `chmod 644 f` yoki belgili: `chmod u+x f`." },
-  chown: { usage: 'chown EGA FAYL', text: "Fayl egasini o'zgartiradi (faqat root)." },
-  sudo: { usage: 'sudo BUYRUQ', text: "Buyruqni root (administrator) nomidan bajaradi." },
-  whoami: { usage: 'whoami', text: "Joriy foydalanuvchi nomi." },
-  id: { usage: 'id', text: "Foydalanuvchi va guruh identifikatorlari." },
-  hostname: { usage: 'hostname', text: "Kompyuter nomi." },
-  uname: { usage: 'uname [-a]', text: "Tizim haqida ma'lumot." },
-  date: { usage: 'date', text: "Joriy sana va vaqt." },
-  history: { usage: 'history', text: "Kiritilgan buyruqlar tarixi." },
-  which: { usage: 'which BUYRUQ', text: "Buyruq dasturi qayerda joylashganini ko'rsatadi." },
-  base64: { usage: 'base64 [-d] [FAYL]', text: "Base64 ga kodlaydi; -d — qayta ochadi (dekodlaydi)." },
-  xxd: { usage: 'xxd [-p] [-r -p] [FAYL]', text: "Hex ko'rinish. -p — faqat hex; -r -p — hex'dan matnga qaytaradi." },
-  env: { usage: 'env', text: "Muhit o'zgaruvchilari." },
-  clear: { usage: 'clear', text: "Ekranni tozalaydi." },
-  bash: { usage: 'bash SKRIPT [ARGUMENTLAR]   yoki   ./SKRIPT', text: "Skriptni bajaradi. ./skript.sh uchun bajarish ruxsati kerak (chmod +x). Simulyatorda skript qatorma-qator bajariladi: o'zgaruvchilar va $1..$9 bor, if/for yo'q." },
-  ...SYSTEM_MANUAL,
-  ...TEXT_MANUAL,
-};
-
 /* ── commands ────────────────────────────────────────────────────────── */
 
 const help: Command = (_args, ctx) => {
   const names = ctx.commandNames();
-  const rows = names.map((n) => `  ${n.padEnd(10)} ${MANUAL[n]?.text.split('.')[0] ?? "lab buyrug'i"}`);
-  return ok(['Mavjud buyruqlar:', ...rows, '', "Batafsil: man BUYRUQ   ·   Tab — to'ldirish   ·   ↑/↓ — tarix"].join('\n'));
+  const rows = names.map((n) => `  ${n.padEnd(11)} ${getDoc(n)?.summary ?? "lab buyrug'i"}`);
+  return ok(['Mavjud buyruqlar:', ...rows, '', "Batafsil (barcha flaglar va misollar): man BUYRUQ   ·   Tab — to'ldirish   ·   ↑/↓ — tarix"].join('\n'));
 };
 
 const man: Command = (args) => {
   const name = args[0];
   if (!name) return fail('Qaysi buyruq? Masalan: man ls');
-  const entry = MANUAL[name];
-  if (!entry) return fail(`man: ${name} uchun qo'llanma yo'q`);
-  return ok(`${name.toUpperCase()}\n\n  Ishlatilishi: ${entry.usage}\n\n  ${entry.text}`);
+  const doc = getDoc(name);
+  if (!doc) return fail(`man: ${name} uchun qo'llanma yo'q`);
+  return ok(manText(doc));
 };
 
 const pwd: Command = (_a, ctx) => ok(ctx.state.cwd);

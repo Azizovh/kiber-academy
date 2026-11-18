@@ -325,12 +325,4 @@ export const ss: Command = (args, ctx) => {
   return ok(['Netid State   Recv-Q Send-Q Local Address:Port     Peer Address:Port Process', ...rows].join('\n') + note);
 };
 
-export const SYSTEM_MANUAL: Record<string, { usage: string; text: string }> = {
-  ps: { usage: 'ps [aux | -ef]', text: "Ishlayotgan jarayonlar. `ps aux` — hamma foydalanuvchilarniki, CPU va xotira bilan; `ps -ef` — ota jarayon (PPID) bilan." },
-  pgrep: { usage: 'pgrep [-l] [-a] [-f] NAMUNA', text: "Nomi bo'yicha jarayon PID'ini topadi. -l nomi bilan, -a to'liq buyruq bilan, -f butun buyruq qatoridan qidiradi." },
-  kill: { usage: 'kill [-9] PID', text: "Jarayonga signal yuboradi (odatda to'xtatadi). Boshqa foydalanuvchining jarayoni uchun sudo kerak." },
-  systemctl: { usage: 'systemctl status|start|stop|restart|enable|disable|cat XIZMAT', text: "systemd xizmatlarini boshqaradi. `systemctl list-units --type=service` — ro'yxat; `--state=failed` — ishlamay qolganlar." },
-  journalctl: { usage: 'journalctl -u XIZMAT [-n N]', text: "Xizmat jurnali: nima uchun ishga tushmagani shu yerda yoziladi." },
-  ss: { usage: 'ss -tulpn', text: "Tinglayotgan portlar: -t TCP, -u UDP, -l faqat tinglayotganlar, -p jarayon, -n raqamlar bilan." },
-};
 

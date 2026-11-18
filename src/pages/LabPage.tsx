@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowRight, Check, ChevronRight, Info, Lightbulb, PartyPopper } from 'lucide-react';
+import { CommandCard } from '../components/CommandCard';
 import { Markdown } from '../components/Markdown';
+import { TeachPanel, teachGroups } from '../components/TeachPanel';
+import { getDoc } from '../engine/terminal/docs';
 import { TerminalView } from '../components/TerminalView';
 import { Bar, Level } from '../components/ui';
 import { LABS, getLab } from '../content/labs';
@@ -82,6 +85,9 @@ function LabRun({ lab }: { lab: Lab }) {
   };
 
   const current = lab.tasks[solved];
+  // Every command the lab teaches, in order, for the side reference.
+  const labCommands = [...new Set(lab.tasks.flatMap((t) => teachGroups(t.teach ?? []).map((g) => g.cmd)))];
+  const [refOpen, setRefOpen] = useState<string | null>(null);
   const currentRef = useRef<HTMLLIElement>(null);
 
   // Keep the current task visible inside the task list (desktop only: on phones the list sits below the terminal,
@@ -138,10 +144,12 @@ function LabRun({ lab }: { lab: Lab }) {
                   <div className="current-head">
                     <span className="current-step">
                       {solved + 1}-topshiriq · {lab.tasks.length} tadan
+                      {current.challenge && <span className="chip warn" style={{ marginLeft: 8 }}>Mustaqil vazifa</span>}
                     </span>
                     <Bar value={solved / lab.tasks.length} />
                   </div>
-                  <p className="current-text">
+                  {current.teach && <TeachPanel key={current.id} entries={current.teach} />}
+                  <p className="current-text" style={current.teach ? { marginTop: 12 } : undefined}>
                     <Inline text={current.text} />
                   </p>
                   {hint ? (
@@ -150,7 +158,7 @@ function LabRun({ lab }: { lab: Lab }) {
                     </div>
                   ) : (
                     <button className="btn sm ghost current-hint-btn" onClick={() => setHint(true)}>
-                      <Lightbulb aria-hidden /> Maslahat
+                      <Lightbulb aria-hidden /> {current.challenge ? "Maslahat (avval o'zingiz urinib ko'ring)" : 'Maslahat'}
                     </button>
                   )}
                 </>
@@ -180,6 +188,26 @@ function LabRun({ lab }: { lab: Lab }) {
             <Markdown text={lab.intro} className="prose small-prose" />
           </details>
 
+          {labCommands.length > 0 && (
+            <div className="card pad">
+              <h2 className="side-title" style={{ marginBottom: 10 }}>
+                Bu labdagi buyruqlar
+              </h2>
+              <div className="lab-cmds">
+                {labCommands.map((c) => (
+                  <button key={c} className={refOpen === c ? 'on' : ''} onClick={() => setRefOpen(refOpen === c ? null : c)} aria-expanded={refOpen === c}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+              {refOpen && getDoc(refOpen) && (
+                <div style={{ marginTop: 12 }}>
+                  <CommandCard doc={getDoc(refOpen)!} />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="card pad">
             <div className="row between" style={{ marginBottom: 10 }}>
               <h2 className="side-title">Topshiriqlar</h2>
@@ -191,7 +219,7 @@ function LabRun({ lab }: { lab: Lab }) {
               {lab.tasks.map((task, i) => {
                 const state = i < solved ? 'done' : i === solved ? 'current' : '';
                 return (
-                  <li key={task.id} ref={i === solved ? currentRef : undefined} className={`task ${state}`} aria-current={i === solved ? 'step' : undefined}>
+                  <li key={task.id} ref={i === solved ? currentRef : undefined} className={`task ${state} ${task.challenge ? 'challenge' : ''}`} aria-current={i === solved ? 'step' : undefined}>
                     <span className="num" aria-hidden>
                       {i < solved ? <Check strokeWidth={3.5} /> : i + 1}
                     </span>
