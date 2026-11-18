@@ -172,7 +172,7 @@ export const MANUAL: Record<string, { usage: string; text: string }> = {
   head: { usage: 'head [-n N] [FAYL]', text: "Boshidagi N ta qator (odatda 10)." },
   tail: { usage: 'tail [-n N] [FAYL]', text: "Oxiridagi N ta qator (odatda 10)." },
   wc: { usage: 'wc [-l] [-w] [-c] [FAYL]', text: "Qatorlar (-l), so'zlar (-w), belgilar (-c) sonini sanaydi." },
-  sort: { usage: 'sort [-r] [-n] [-u] [FAYL]', text: "Qatorlarni saralaydi. -r teskari, -n son bo'yicha, -u takrorlarsiz." },
+  sort: { usage: 'sort [-r] [-n] [-u] [-k N] [-t AJRATGICH] [FAYL]', text: "Qatorlarni saralaydi. -r teskari, -n son bo'yicha, -u takrorlarsiz, -k N — N-ustun bo'yicha (masalan: ps aux | sort -k3 -rn)." },
   uniq: { usage: 'uniq [-c] [FAYL]', text: "Ketma-ket takrorlangan qatorlarni bittaga qisqartiradi. -c — necha marta uchraganini sanaydi. Odatda `sort | uniq -c`." },
   cut: { usage: "cut -d 'AJRATGICH' -f N [FAYL]", text: "Har qatordan kerakli ustunni kesib oladi." },
   tr: { usage: "tr 'TO\\'PLAM1' 'TO\\'PLAM2'", text: "Belgilarni almashtiradi. Masalan: `tr 'a-z' 'A-Z'`. -d — belgilarni o'chiradi." },
@@ -496,11 +496,24 @@ const wc: Command = (args, ctx) => {
 };
 
 const sort: Command = (args, ctx) => {
-  const { flags, rest } = parseFlags(args);
+  const { flags, values, rest } = parseFlags(args, 'kt');
   const input = readInput('sort', rest, ctx);
   if ('err' in input) return fail(input.err);
   let lines = toLines(input.text);
-  lines.sort(flags.has('n') ? (a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0) : (a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  // -k N[,N]: sort by the N-th field (whitespace-separated, or by -t); "-k3n" style suffixes are accepted.
+  const keySpec = values.k ? /^(\d+)/.exec(values.k) : null;
+  const numeric = flags.has('n') || /n/.test(values.k ?? '');
+  const sep = values.t;
+  const key = (line: string): string => {
+    if (!keySpec) return line;
+    const fields = sep ? line.split(sep) : line.trim().split(/\s+/);
+    return fields[Number(keySpec[1]) - 1] ?? '';
+  };
+  lines.sort(
+    numeric
+      ? (a, b) => (parseFloat(key(a)) || 0) - (parseFloat(key(b)) || 0)
+      : (a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0),
+  );
   if (flags.has('r')) lines.reverse();
   if (flags.has('u')) lines = lines.filter((l, i) => i === 0 || l !== lines[i - 1]);
   return ok(lines.join('\n'));

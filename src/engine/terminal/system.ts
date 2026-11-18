@@ -35,6 +35,8 @@ export interface Service {
   journal?: string[];
   /** Starting fails (with these journal lines) until the condition holds. */
   startCheck?: (ctx: CmdCtx) => string[] | null;
+  /** Sockets the service opens when it starts; `local` may read the config, so a fixed bind address shows up. */
+  listen?: { proto: 'tcp' | 'udp'; local: string | ((ctx: CmdCtx) => string) }[];
 }
 
 export interface Socket {
@@ -253,6 +255,9 @@ export const systemctl: Command = (args, ctx) => {
         }
         const pid = state.nextPid++;
         state.procs.push({ pid, ppid: 1, user: s.user ?? 'root', cmd: s.exec, start: '10:15' });
+        for (const l of s.listen ?? []) {
+          state.sockets.push({ proto: l.proto, local: typeof l.local === 'string' ? l.local : l.local(ctx), pid });
+        }
         s.pid = pid;
         s.active = 'active';
         s.journal?.push(`${stamp()} systemd[1]: Started ${s.description}.`);
