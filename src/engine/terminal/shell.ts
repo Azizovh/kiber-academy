@@ -74,7 +74,8 @@ export function createShell(init: ShellInit): ShellState {
   const homeNode = getNode(root, home);
   if (homeNode) chownTree(homeNode, user);
   const tmp = getNode(root, '/tmp');
-  if (tmp) tmp.mode = 0o777;
+  // /tmp: everyone may write, only the owner may delete (sticky bit), as on a real system.
+  if (tmp) tmp.mode = 0o1777;
   return {
     root,
     cwd: init.cwd ?? (homeNode ? home : '/'),
