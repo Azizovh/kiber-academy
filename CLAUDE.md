@@ -21,7 +21,7 @@ track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
 decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 6 terminal labs, 11 CTF
-challenges, glossary, interview bank (47 questions; SOC 15, Cloud 12, AppSec only 3 — worth extending).
+challenges, glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
