@@ -167,6 +167,24 @@ describe('CTF', () => {
     'web-source': 'flag{devtools_dost}',
     'net-subnet': 'flag{192.168.10.64_192.168.10.127}',
     'for-magic': 'flag{png}',
+    'lin-cron': 'flag{cron_doim_tekshiriladi}',
+    'lin-fake-process': 'flag{3317}',
+    'lin-suid': 'flag{netdiag}',
+    'for-integrity': 'flag{login}',
+    'log-webscan': 'flag{198.51.100.61_sqlmap}',
+    'log-useradd': 'flag{support}',
+    'log-timeline': 'flag{44}',
+    'log-dns': 'flag{example-sync.net}',
+    'for-phish': 'flag{mybank-secure.example}',
+    'web-jwt': 'flag{aziz_auditor}',
+    'web-headers': 'flag{strict-transport-security}',
+    'web-code-review': 'flag{14}',
+    'web-authz': 'flag{/api/v1/admin/export}',
+    'cloud-s3-policy': 'flag{qaydnoma-backups}',
+    'cloud-sg': 'flag{5432}',
+    'cloud-iam': 'flag{getobject_putobject}',
+    'cloud-trail-user': 'flag{ops-temp}',
+    'cry-hash-id': 'flag{sha256}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -207,5 +225,35 @@ describe('CTF', () => {
     const top = execLine(s2, 'grep "Failed password" /var/log/auth.log | cut -d " " -f 11 | sort | uniq -c | sort -rn | head -n 1').output;
     expect(top.trim().split(/\s+/)[1]).toBe('203.0.113.45');
     expect(execLine(s2, 'grep Accepted /var/log/auth.log | grep 203.0.113.45').output).toContain('for deploy from');
+  });
+
+  it('the second set can be solved with the tools the course teaches', () => {
+    const solve = (id: string, ...lines: string[]) => {
+      const s = createShell(CTF.find((c) => c.id === id)!.shell!());
+      return lines.map((l) => execLine(s, l).output).pop()!.trim();
+    };
+
+    const cronLine = solve('lin-cron', 'cat /etc/cron.d/sysupdate');
+    const b64 = /echo (\S+) \|/.exec(cronLine)![1]!;
+    expect(solve('lin-cron', `echo ${b64} | base64 -d`)).toBe(answers['lin-cron']);
+
+    expect(solve('lin-fake-process', 'ps aux | grep /dev/shm')).toMatch(/^www-data\s+3317\b/);
+    expect(solve('lin-suid', 'find / -perm -4000 -type f')).toContain('/opt/tools/netdiag');
+    expect(solve('for-integrity', 'sudo sha256sum -c /root/baseline.sha256')).toContain('/usr/bin/login: FAILED');
+
+    expect(solve('log-webscan', "awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -n 1")).toContain('198.51.100.61');
+    expect(solve('log-webscan', `awk -F'"' '{print $6}' access.log | sort | uniq -c`)).toContain('sqlmap/');
+    expect(solve('log-useradd', 'grep -i useradd /var/log/auth.log')).toContain('name=support');
+    expect(
+      solve('log-dns', "cut -d= -f3 /var/log/dns.log | cut -d' ' -f1 | rev | cut -d. -f1,2 | rev | sort | uniq -c | sort -rn | head -n 1"),
+    ).toMatch(/^10 example-sync\.net$/);
+    expect(solve('cloud-trail-user', `jq -r 'select(.eventName == "CreateUser") | .requestParameters.userName' cloudtrail.json`)).toBe('ops-temp');
+
+    // Data challenges: the JWT payload decodes as stated, and line 14 is the injectable one.
+    const jwt = CTF.find((c) => c.id === 'web-jwt')!.data!.split('.')[1]!;
+    const s = createShell({ fs: { home: { talaba: {} } } });
+    expect(execLine(s, `echo ${jwt} | base64 -d`).output).toContain('"user":"aziz","role":"auditor"');
+    const line14 = CTF.find((c) => c.id === 'web-code-review')!.data!.split('\n').find((l) => l.trimStart().startsWith('14 '));
+    expect(line14).toContain("LIKE '%{q}%'");
   });
 });

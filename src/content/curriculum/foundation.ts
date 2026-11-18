@@ -183,7 +183,7 @@ export const FOUNDATION: Stage[] = [
           "GET/POST farqini va asosiy status kodlarni bilaman",
           "Cookie va sessiya nima ekanini tushuntira olaman",
           "HTTPS nimani himoya qilishini bilaman",
-        ], [r.thm('HTTP in Detail'), r.docs('MDN — HTTP', 'https://developer.mozilla.org/en-US/docs/Web/HTTP')]),
+        ], [r.thm('HTTP in Detail'), r.docs('MDN — HTTP', 'https://developer.mozilla.org/en-US/docs/Web/HTTP')], { ctf: ['web-headers'] }),
         topic('dhcp-nat-routing', 'DHCP, NAT va marshrutlash', 5, "Manzil qayerdan keladi va paket internetga qanday chiqadi.", [
           "DHCP manzil berish jarayonini bilaman",
           "NAT nima uchun kerakligini tushuntira olaman",
@@ -247,12 +247,12 @@ export const FOUNDATION: Stage[] = [
           "`ls -l` chiqishidagi ruxsatlarni o'qiy olaman",
           "`chmod` ni raqamli va belgili usulda ishlataman",
           "sudo va root nima ekanini, SUID xavfini bilaman",
-        ], [r.thm('Linux Fundamentals Part 2'), bandit], { labs: ['ruxsatlar'] }),
+        ], [r.thm('Linux Fundamentals Part 2'), bandit], { labs: ['ruxsatlar'], ctf: ['lin-suid'] }),
         topic('jarayonlar-va-xizmatlar', 'Jarayonlar va xizmatlar', 6, "ps, top, kill, systemctl, cron.", [
           "Ishlayotgan jarayonlarni ko'rib, to'xtata olaman",
           "`systemctl` bilan xizmatni boshqara olaman",
           "cron vazifasi nima ekanini bilaman",
-        ], [r.thm('Linux Fundamentals Part 3'), r.docs('Kali Linux hujjatlari', 'https://www.kali.org/docs/')]),
+        ], [r.thm('Linux Fundamentals Part 3'), r.docs('Kali Linux hujjatlari', 'https://www.kali.org/docs/')], { labs: ['jarayonlar-va-xizmatlar'], ctf: ['lin-fake-process'] }),
         topic('paketlar-va-tarmoq-buyruqlari', 'Paketlar va tarmoq buyruqlari', 6, "apt, ip, ss, ping, curl, wget, nc.", [
           "`apt` bilan dastur o'rnata olaman",
           "`ip a`, `ss -tlnp`, `ping` natijasini o'qiy olaman",
@@ -262,12 +262,12 @@ export const FOUNDATION: Stage[] = [
           "Bajariladigan skript fayl yarata olaman",
           "O'zgaruvchi, `if`, `for`, `while` ishlataman",
           "IP ro'yxatini ping qiluvchi skript yoza olaman",
-        ], [r.thm('Bash Scripting'), r.article('Bash Guide (Greg\'s Wiki)', 'https://mywiki.wooledge.org/BashGuide')]),
+        ], [r.thm('Bash Scripting'), r.article('Bash Guide (Greg\'s Wiki)', 'https://mywiki.wooledge.org/BashGuide')], { labs: ['bash-skriptlar'], ctf: ['lin-cron'] }),
         topic('loglar-va-ssh', 'Loglar va SSH', 6, "/var/log, journalctl, SSH kalitlari.", [
           "Asosiy log fayllar qayerdaligini bilaman",
           "auth.log dan muvaffaqiyatsiz kirishlarni topa olaman",
           "SSH kalit juftligi yaratib, kalit bilan ulana olaman",
-        ], [bandit, r.article('DigitalOcean — SSH Essentials', 'https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys')], { ctf: ['log-bruteforce'] }),
+        ], [bandit, r.article('DigitalOcean — SSH Essentials', 'https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys')], { ctf: ['log-bruteforce', 'log-useradd', 'log-timeline'] }),
       ]),
     ],
   },
@@ -349,7 +349,7 @@ export const FOUNDATION: Stage[] = [
           "Phishing xatning belgilarini topa olaman",
           "Pretexting, baiting, tailgating nima ekanini bilaman",
           "Shubhali havolani xavfsiz tekshira olaman",
-        ], [r.thm('Phishing Analysis Fundamentals'), r.lab('Google — Phishing Quiz', 'https://phishingquiz.withgoogle.com/')]),
+        ], [r.thm('Phishing Analysis Fundamentals'), r.lab('Google — Phishing Quiz', 'https://phishingquiz.withgoogle.com/')], { ctf: ['for-phish'] }),
       ]),
       mod('s5-kripto', 'Kriptografiya va kirish', [
         topic('kriptografiya-asoslari', 'Kriptografiya asoslari', 6, "Simmetrik va asimmetrik shifrlash, kalit almashish.", [
@@ -361,7 +361,7 @@ export const FOUNDATION: Stage[] = [
           "Xesh va shifrlash farqini bilaman",
           "Salt nima uchun kerakligini tushuntira olaman",
           "Kuchli parol siyosati va parol menejeri haqida bilaman",
-        ], [r.thm('Hashing Basics'), r.tool('CrackStation — xesh qidirish', 'https://crackstation.net/')]),
+        ], [r.thm('Hashing Basics'), r.tool('CrackStation — xesh qidirish', 'https://crackstation.net/')], { ctf: ['cry-hash-id'] }),
         topic('tls-va-pki', 'TLS, sertifikatlar va PKI', 4, "HTTPS qulfi ortida nima bor.", [
           "TLS handshake'ni umumiy tushuntira olaman",
           "Sertifikat va sertifikat markazi (CA) nimaligini bilaman",

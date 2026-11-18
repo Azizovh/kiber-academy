@@ -197,6 +197,8 @@ Brauzerda: DevTools → **Network** (sarlavhalar) va **Application** → Cookies
 - **Koddagi zaifliklarni tuzatishni** — buni a2 bosqichida qilasiz.
 - **Brauzerlar orasidagi farqlarni** — ba'zi xatti-harakatlar (masalan, standart `SameSite`) brauzerga qarab farq qilishi mumkin; aniq yozish — eng ishonchli.
 
+:::lab http-tekshiruvi
+
 :::try
 **1. Cookie atributlari.** Qaydnoma'ga kiring va DevTools → Application → Cookies'da sessiya cookie'sini toping. Qaysi atributlar bor? Yuqoridagi `app.config.update(...)` ni qo'shing (lokal HTTP sinov uchun `SESSION_COOKIE_SECURE=False` qoldiring) va farqni ko'ring.
 

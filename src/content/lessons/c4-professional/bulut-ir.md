@@ -216,6 +216,8 @@ Avtomatik javob tez — lekin xato topilmada ishlab chiqarishni to'xtatishi mumk
 - Tozalash ildiz sababni tuzatmasa, insident takrorlanadi.
 - Avtomatlashtirish noto'g'ri sozlansa, o'zi insidentga aylanadi.
 
+:::lab cloudtrail-tergovi
+
 :::try
 1. Yuqoridagi vaqt chizig'ini o'qing va javob bering: hujumchi kirgandan persistence yaratguncha qancha vaqt o'tdi? Bizning javobimiz qancha kechikdi? Qaysi oldindan sozlangan nazorat haqiqatan ishladi?
 2. O'quv hisobingizda test IAM foydalanuvchi va kalit yarating. Uni `Inactive` qiling, so'ng `get-access-key-last-used` bilan tekshiring. Keyin foydalanuvchiga `aws:TokenIssueTime` shartli `Deny` siyosatini qo'shing.

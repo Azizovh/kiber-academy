@@ -196,6 +196,8 @@ YO'Q QILISH VA TIKLASH
 - **Bir zumda kelmaydi** — CloudTrail yozuvlari bir necha daqiqa kechikishi mumkin.
 - **Provayderlar orasida bir xil emas** — har bir bulutning o'z formati va nomlari.
 
+:::lab cloudtrail-tergovi
+
 :::try
 **1. JSON'ni o'qing.** Darsdagi CloudTrail yozuvini qayta o'qing va javob bering: kim, qachon (mahalliy vaqtda, UTC+5), qayerdan, qanday vosita bilan, nima qildi? Nega bu shubhali?
 

@@ -30,7 +30,7 @@ export const SOC: Stage[] = [
           "4624, 4625, 4688, 4720, 7045 kabi ID'larni yoddan bilaman",
           "Event Viewer va PowerShell bilan log qidira olaman",
           "Logon turlarini (Type 2, 3, 10) farqlayman",
-        ], [r.thm('Windows Event Logs'), sansPosters]),
+        ], [r.thm('Windows Event Logs'), sansPosters], { labs: ['windows-hodisalari'] }),
         topic('sysmon', 'Sysmon', 10, "Jarayon, tarmoq ulanishi va fayl hodisalarini batafsil yozish.", [
           "Sysmon o'rnatib, konfiguratsiya qo'llay olaman",
           "Event ID 1, 3, 11, 13 ni tahlil qila olaman",
@@ -38,11 +38,11 @@ export const SOC: Stage[] = [
         topic('linux-loglari', 'Linux loglari va auditd', 10, "auth.log, syslog, journald, auditd.", [
           "SSH brute force izini logdan topa olaman",
           "auditd qoidasi yoza olaman",
-        ], [r.thm('Linux Logs Investigations'), cyberdefenders], { labs: ['grep-va-pipe'], ctf: ['log-bruteforce'] }),
+        ], [r.thm('Linux Logs Investigations'), cyberdefenders], { labs: ['grep-va-pipe'], ctf: ['log-bruteforce', 'log-useradd'] }),
         topic('tarmoq-loglari', 'Tarmoq loglari: firewall, proxy, DNS', 10, "Tarmoq qurilmalari nimani yozadi va undan nimani bilish mumkin.", [
           "Firewall va proxy logini o'qiy olaman",
           "DNS logidan shubhali domenni ajrata olaman",
-        ], [r.thm('Intro to Logs'), r.docs('Zeek hujjatlari', 'https://docs.zeek.org/')]),
+        ], [r.thm('Intro to Logs'), r.docs('Zeek hujjatlari', 'https://docs.zeek.org/')], { labs: ['veb-log-tergovi'], ctf: ['log-dns', 'log-webscan'] }),
         topic('trafik-tahlili', 'Tarmoq trafigi tahlili', 16, "Wireshark chuqur, Zeek, PCAP'dan hujumni tiklash.", [
           "PCAP'dan yuklangan faylni ajratib ola olaman",
           "C2 trafigi belgilarini bilaman",
@@ -52,7 +52,7 @@ export const SOC: Stage[] = [
           "Xat sarlavhasidan haqiqiy jo'natuvchini aniqlay olaman",
           "Ilova va havolani xavfsiz muhitda tekshira olaman",
           "Phishing bo'yicha tahlil hisobotini yoza olaman",
-        ], [r.thm('Phishing Analysis Fundamentals'), r.tool('VirusTotal', 'https://www.virustotal.com/')]),
+        ], [r.thm('Phishing Analysis Fundamentals'), r.tool('VirusTotal', 'https://www.virustotal.com/')], { ctf: ['for-phish'] }),
       ]),
     ],
   },
@@ -143,7 +143,7 @@ export const SOC: Stage[] = [
         topic('linux-forensics', 'Linux forensics', 10, "Bash tarixi, cron, loglar, persistence joylari.", [
           "Buzilgan Linux serverda izlarni topa olaman",
           "Persistence mexanizmlarini tekshirib chiqa olaman",
-        ], [r.thm('Linux Forensics'), cyberdefenders]),
+        ], [r.thm('Linux Forensics'), cyberdefenders], { ctf: ['for-integrity', 'lin-cron'] }),
       ]),
       mod('b3-malware', 'Malware tahlili', [
         topic('malware-statik', 'Statik tahlil', 14, "Xesh, satrlar, PE tuzilmasi, importlar, packer.", [
@@ -157,7 +157,7 @@ export const SOC: Stage[] = [
         topic('ir-hisobot', 'Vaqt chizig\'i va IR hisoboti', 16, "Topilmalarni yagona hikoyaga yig'ish.", [
           "Hujum vaqt chizig'ini tuza olaman",
           "To'liq insident hisobotini yozdim",
-        ], [cyberdefenders, r.article('The DFIR Report — haqiqiy insident tahlillari', 'https://thedfirreport.com/')]),
+        ], [cyberdefenders, r.article('The DFIR Report — haqiqiy insident tahlillari', 'https://thedfirreport.com/')], { ctf: ['log-timeline'] }),
       ]),
     ],
   },
@@ -180,7 +180,7 @@ export const SOC: Stage[] = [
         ], [r.thm('SOAR'), r.docs('VirusTotal API', 'https://docs.virustotal.com/reference/overview')]),
         topic('bulut-loglari', 'Bulut loglari', 10, "CloudTrail, Azure Activity/Entra loglari.", [
           "CloudTrail logidan shubhali amalni topa olaman",
-        ], [r.thm('AWS: Cloud 101'), r.docs('AWS CloudTrail', 'https://docs.aws.amazon.com/awscloudtrail/latest/userguide/')]),
+        ], [r.thm('AWS: Cloud 101'), r.docs('AWS CloudTrail', 'https://docs.aws.amazon.com/awscloudtrail/latest/userguide/')], { labs: ['cloudtrail-tergovi'], ctf: ['cloud-trail-user'] }),
         topic('purple-team', 'Purple team: hujumni o\'zingiz bajaring', 12, "Atomic Red Team bilan texnikani bajarib, aniqlashni sinash.", [
           "Atomic test ishga tushirib, uni SIEM'da topdim",
           "Aniqlanmagan texnika uchun qoida yozdim",

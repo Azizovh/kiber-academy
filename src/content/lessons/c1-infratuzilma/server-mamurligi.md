@@ -299,6 +299,8 @@ Har bir qadamni o'zingiz o'ylab topishingiz shart emas. [[cis|CIS]] Benchmarks �
 - fail2ban va port o'zgartirish — shovqinni kamaytiradi, xavfsizlik asosi emas. Asos — kalit bilan kirish va yangilanishlar.
 - Bir martalik sozlash vaqt o'tib "suriladi" (configuration drift): kimdir tez yechim uchun portni ochadi va unutadi. Muntazam tekshiruv va IaC (c3) shuning uchun kerak.
 
+:::lab server-auditi
+
 :::try
 O'z kompyuteringizda virtual mashina (VirtualBox, Ubuntu Server) yoki bepul darajadagi bulut serverida:
 

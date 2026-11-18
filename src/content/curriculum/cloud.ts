@@ -19,7 +19,7 @@ export const CLOUD: Stage[] = [
           "Serverni noldan sozlab, web sayt joylay olaman",
           "SSH'ni mustahkamlay olaman (kalit, fail2ban, root taqiqi)",
           "Firewall (ufw/nftables) sozlay olaman",
-        ], [r.article('DigitalOcean — Community Tutorials', 'https://www.digitalocean.com/community/tutorials'), cis]),
+        ], [r.article('DigitalOcean — Community Tutorials', 'https://www.digitalocean.com/community/tutorials'), cis], { labs: ['jarayonlar-va-xizmatlar', 'server-auditi'] }),
         topic('tarmoq-chuqur', 'Tarmoq chuqur: VLAN, marshrutlash, VPN', 16, "Segmentatsiya, statik va dinamik marshrut, WireGuard/IPsec.", [
           "Tarmoqni segmentlarga bo'lish rejasini tuza olaman",
           "WireGuard VPN o'rnata olaman",
@@ -59,29 +59,29 @@ export const CLOUD: Stage[] = [
           "IAM siyosatini o'qib, nimaga ruxsat berishini ayta olaman",
           "Eng kam imtiyozli siyosat yoza olaman",
           "IAM orqali imtiyoz oshirish usullarini bilaman",
-        ], [r.docs('AWS IAM — User Guide', 'https://docs.aws.amazon.com/IAM/latest/UserGuide/'), r.article('Rhino Security Labs — AWS privilege escalation', 'https://rhinosecuritylabs.com/aws/aws-privilege-escalation-methods-mitigation/')]),
+        ], [r.docs('AWS IAM — User Guide', 'https://docs.aws.amazon.com/IAM/latest/UserGuide/'), r.article('Rhino Security Labs — AWS privilege escalation', 'https://rhinosecuritylabs.com/aws/aws-privilege-escalation-methods-mitigation/')], { ctf: ['cloud-iam'] }),
         topic('bulut-tarmoq-xavfsizligi', 'Bulut tarmoq xavfsizligi', 16, "Security group, NACL, xususiy subnet, WAF, endpointlar.", [
           "Ommaviy va xususiy subnetli VPC loyihalay olaman",
           "Security group va NACL farqini bilaman",
-        ], [awsDocs, r.docs('AWS WAF', 'https://docs.aws.amazon.com/waf/latest/developerguide/')]),
+        ], [awsDocs, r.docs('AWS WAF', 'https://docs.aws.amazon.com/waf/latest/developerguide/')], { ctf: ['cloud-sg'] }),
         topic('bulut-malumot-himoyasi', 'Ma\'lumot himoyasi', 14, "Shifrlash, KMS, S3 siyosatlari, ommaviy kirishni bloklash.", [
           "S3 bucket ochiq qolganini tekshira olaman",
           "KMS kalit siyosatini tushunaman",
-        ], [r.docs('AWS KMS', 'https://docs.aws.amazon.com/kms/latest/developerguide/'), awsDocs]),
+        ], [r.docs('AWS KMS', 'https://docs.aws.amazon.com/kms/latest/developerguide/'), awsDocs], { ctf: ['cloud-s3-policy'] }),
         topic('bulut-monitoring', 'Jurnal va monitoring', 16, "CloudTrail, CloudWatch, GuardDuty, Config, Security Hub.", [
           "CloudTrail'ni yoqib, shubhali amalni topa olaman",
           "GuardDuty topilmasini tahlil qila olaman",
-        ], [r.docs('AWS CloudTrail', 'https://docs.aws.amazon.com/awscloudtrail/latest/userguide/'), skillbuilder]),
+        ], [r.docs('AWS CloudTrail', 'https://docs.aws.amazon.com/awscloudtrail/latest/userguide/'), skillbuilder], { labs: ['cloudtrail-tergovi'] }),
       ]),
       mod('c2-hujum', 'Hujum va tekshiruv', [
         topic('bulut-misconfig', 'Keng tarqalgan xatolar va hujumlar', 24, "Ochiq bucket, metadata xizmati (SSRF → kalit), sizib chiqqan kalitlar.", [
           "flaws.cloud ning barcha darajalarini yechdim",
           "IMDS orqali kalit o'g'irlash qanday ishlashini va himoyasini bilaman",
-        ], [r.lab('flaws.cloud', 'http://flaws.cloud/'), r.lab('CloudGoat', 'https://github.com/RhinoSecurityLabs/cloudgoat')]),
+        ], [r.lab('flaws.cloud', 'http://flaws.cloud/'), r.lab('CloudGoat', 'https://github.com/RhinoSecurityLabs/cloudgoat')], { ctf: ['cloud-s3-policy', 'cloud-sg'] }),
         topic('cspm-benchmarks', 'CIS Benchmarks va holatni tekshirish', 14, "Prowler, ScoutSuite: akkauntni avtomatik audit qilish.", [
           "Prowler ishga tushirib, natijani ustuvorlik bo'yicha saralay olaman",
           "Topilmalarni tuzatish rejasini tuza olaman",
-        ], [r.tool('Prowler', 'https://github.com/prowler-cloud/prowler'), cis]),
+        ], [r.tool('Prowler', 'https://github.com/prowler-cloud/prowler'), cis], { labs: ['server-auditi'] }),
         topic('bulut-sirlari', 'Sirlarni boshqarish', 10, "Secrets Manager, Parameter Store, kalitlarni almashtirish.", [
           "Ilova sirlarini kodda emas, sir omborida saqlay olaman",
         ], [r.docs('AWS Secrets Manager', 'https://docs.aws.amazon.com/secretsmanager/latest/userguide/'), r.docs('OWASP — Secrets Management Cheat Sheet', 'https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html')]),
@@ -140,7 +140,7 @@ export const CLOUD: Stage[] = [
         topic('bulut-ir', 'Bulutda insidentga javob', 14, "Sizib chiqqan kalit, buzilgan instans: cheklash va tergov.", [
           "Sizib chiqqan kalit uchun javob rejasini bajara olaman",
           "CloudTrail asosida vaqt chizig'ini tuza olaman",
-        ], [r.docs('AWS Security Incident Response Guide', 'https://docs.aws.amazon.com/whitepapers/latest/aws-security-incident-response-guide/'), r.lab('flaws2.cloud', 'http://flaws2.cloud/')]),
+        ], [r.docs('AWS Security Incident Response Guide', 'https://docs.aws.amazon.com/whitepapers/latest/aws-security-incident-response-guide/'), r.lab('flaws2.cloud', 'http://flaws2.cloud/')], { labs: ['cloudtrail-tergovi'], ctf: ['cloud-trail-user'] }),
         topic('zero-trust', 'Zero trust va identifikatsiya', 10, "Hech kimga sukut bo'yicha ishonmaslik; SSO, shartli kirish.", [
           "Zero trust tamoyillarini tushuntira olaman",
         ], [r.docs('NIST SP 800-207 — Zero Trust Architecture', 'https://csrc.nist.gov/pubs/sp/800/207/final'), r.article('Cloudflare — Zero Trust', 'https://www.cloudflare.com/learning/security/glossary/what-is-zero-trust/')]),

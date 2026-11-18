@@ -369,6 +369,8 @@ Taxminiy qoida:
 
 Keyingi bosqichda Python'ni o'rganasiz — u xavfsizlik sohasining asosiy tili.
 
+:::lab bash-skriptlar
+
 :::try
 Yuqoridagi **kirish-hisoboti.sh** skriptini Kali VM'ingizda yozing va ishga tushiring:
 

@@ -252,6 +252,8 @@ Buni qo'lda bajarish sekin. Aynan shu sababli SOC'lar barcha loglarni bitta joyg
 - **Ichki trafikni** — agar u firewall yoki sensordan o'tmasa (bitta tarmoq segmentidagi ikki kompyuter o'zaro to'g'ridan-to'g'ri gaplashadi).
 - **DoH so'rovlarini** — DNS serverda ko'rinmaydi.
 
+:::lab veb-log-tergovi
+
 :::try
 **1. Mini-tahlil.** Quyidagi DNS log parchasida shubhali yozuvlarni toping va nega shubhali ekanini tushuntiring:
 

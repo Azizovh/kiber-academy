@@ -119,7 +119,7 @@ export interface Lab {
   tasks: LabTask[];
 }
 
-export type CtfCategory = 'kodlash' | 'kripto' | 'linux' | 'tarmoq' | 'web' | 'forensics' | 'loglar';
+export type CtfCategory = 'kodlash' | 'kripto' | 'linux' | 'tarmoq' | 'web' | 'forensics' | 'loglar' | 'cloud';
 
 export interface CtfChallenge {
   id: string;

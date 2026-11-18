@@ -270,6 +270,8 @@ Diqqatni tortadigan belgilar: dastur `/tmp`, `/dev/shm` yoki uy katalogidan ishg
 Haqiqiy insidentda jarayonni darhol "o'ldirishga" shoshilmang. Avval ma'lumot yig'ing — u xotirada turgan dalil. "Kompyuter qanday ishlaydi" darsidagi qoida: o'chirilgan jarayon bilan birga uning xotiradagi izlari ham yo'qoladi.
 :::
 
+:::lab jarayonlar-va-xizmatlar
+
 :::try
 Kali VM'ingizda (yoki istalgan Linux'da) bajaring:
 

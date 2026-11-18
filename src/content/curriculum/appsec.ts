@@ -25,7 +25,7 @@ export const APPSEC: Stage[] = [
         topic('http-chuqur', 'HTTP chuqur: cookie, CORS, keshlash', 12, "Sarlavhalar, cookie atributlari, CORS, kesh.", [
           "Cookie'ning Secure, HttpOnly, SameSite atributlarini tushuntira olaman",
           "CORS qanday ishlashini va noto'g'ri sozlash xavfini bilaman",
-        ], [r.docs('MDN — HTTP', 'https://developer.mozilla.org/en-US/docs/Web/HTTP'), r.ps('CORS', 'cors')]),
+        ], [r.docs('MDN — HTTP', 'https://developer.mozilla.org/en-US/docs/Web/HTTP'), r.ps('CORS', 'cors')], { labs: ['http-tekshiruvi'], ctf: ['web-headers'] }),
         topic('brauzer-xavfsizlik-modeli', 'Brauzer xavfsizlik modeli', 10, "Same-Origin Policy, CSP, sandbox, xavfsizlik sarlavhalari.", [
           "Same-Origin Policy ni misol bilan tushuntira olaman",
           "CSP siyosati yozib, sinay olaman",
@@ -34,7 +34,7 @@ export const APPSEC: Stage[] = [
           "Sessiya va token asosidagi auth farqini bilaman",
           "OAuth authorization code oqimini chizib bera olaman",
           "Parolni to'g'ri saqlashni (argon2/bcrypt) bilaman",
-        ], [cheat, r.ps('OAuth', 'oauth')]),
+        ], [cheat, r.ps('OAuth', 'oauth')], { ctf: ['web-jwt'] }),
       ]),
     ],
   },
@@ -50,7 +50,7 @@ export const APPSEC: Stage[] = [
         topic('as-injection', 'Injection va uning himoyasi', 14, "SQL, NoSQL, OS command, LDAP; parametrlangan so'rovlar.", [
           "Zaif kodni ko'rib, injection nuqtasini topa olaman",
           "Uni parametrlangan so'rov bilan tuzata olaman",
-        ], [r.ps('SQL injection', 'sql-injection'), cheat]),
+        ], [r.ps('SQL injection', 'sql-injection'), cheat], { ctf: ['web-code-review'] }),
         topic('as-xss-csp', 'XSS, output encoding va CSP', 14, "Kontekstga mos kodlash, sanitizatsiya, CSP.", [
           "Har bir kontekst (HTML, atribut, JS, URL) uchun to'g'ri kodlashni bilaman",
           "Freymvorklarning avtomatik himoyasi qayerda ishlamasligini bilaman",
@@ -61,7 +61,7 @@ export const APPSEC: Stage[] = [
         topic('as-access-control', 'Kirish nazorati dizayni', 14, "RBAC, ABAC, server tomonda tekshirish, IDOR'ning oldini olish.", [
           "Markazlashgan avtorizatsiya qatlamini loyihalay olaman",
           "Har bir endpointda ruxsat tekshirilishini test bilan isbotlayman",
-        ], [r.ps('Access control', 'access-control'), cheat]),
+        ], [r.ps('Access control', 'access-control'), cheat], { labs: ['http-tekshiruvi'], ctf: ['web-authz'] }),
         topic('as-kripto-xatolar', 'Kriptografik xatolar', 10, "Zaif algoritm, qattiq kodlangan kalit, noto'g'ri tasodifiylik.", [
           "Kodda kriptografik xatolarni taniy olaman",
           "Kalit va sirlarni qayerda saqlashni bilaman",
@@ -72,7 +72,7 @@ export const APPSEC: Stage[] = [
         ], [r.ps('SSRF', 'ssrf'), r.ps('Insecure deserialization', 'deserialization')]),
         topic('as-misconfig', 'Xavfsizlik konfiguratsiyasi xatolari', 8, "Standart parollar, ochiq debug, keraksiz xizmatlar, xato xabarlari.", [
           "Ilova va serverni mustahkamlash (hardening) ro'yxatim bor",
-        ], [r.docs('OWASP — Security Misconfiguration', 'https://owasp.org/Top10/A05_2021-Security_Misconfiguration/'), cheat]),
+        ], [r.docs('OWASP — Security Misconfiguration', 'https://owasp.org/Top10/A05_2021-Security_Misconfiguration/'), cheat], { labs: ['http-tekshiruvi'] }),
         topic('as-biznes-mantiq', 'Biznes mantiq zaifliklari', 10, "Skaner topa olmaydigan xatolar: narx, miqdor, ketma-ketlik, poyga holati.", [
           "Ilova oqimida mantiqiy xatolarni izlay olaman",
           "Race condition nima ekanini bilaman",
@@ -111,7 +111,7 @@ export const APPSEC: Stage[] = [
         topic('secure-code-review', 'Xavfsiz kod ko\'rib chiqish', 24, "Manbadan sink'gacha kuzatish; pull request'da nimaga qarash kerak.", [
           "Notanish kodda xavfli funksiyalarni tez topa olaman",
           "Ochiq kodli loyihada kamida 3 ta zaiflikni topdim (yoki ma'lum CVE'larni tahlil qildim)",
-        ], [r.docs('OWASP Code Review Guide', 'https://owasp.org/www-project-code-review-guide/'), r.lab('PentesterLab — kod tahlili mashqlari', 'https://pentesterlab.com/', "Bir qismi bepul.")]),
+        ], [r.docs('OWASP Code Review Guide', 'https://owasp.org/www-project-code-review-guide/'), r.lab('PentesterLab — kod tahlili mashqlari', 'https://pentesterlab.com/', "Bir qismi bepul.")], { ctf: ['web-code-review'] }),
         topic('sast', 'SAST: Semgrep va CodeQL', 18, "Statik tahlil, o'z qoidalaringizni yozish.", [
           "Semgrep'ni loyihada ishga tushirib, natijani saralay olaman",
           "O'z Semgrep qoidamni yozdim",

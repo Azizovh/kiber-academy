@@ -1,5 +1,6 @@
 import { dir } from '../engine/terminal/fs';
 import { AUTH_LOG } from './labs/analysis';
+import { CTF_MORE } from './ctfMore';
 import type { CtfCategory, CtfChallenge } from './types';
 
 export const CTF_CATEGORIES: Record<CtfCategory, string> = {
@@ -10,13 +11,14 @@ export const CTF_CATEGORIES: Record<CtfCategory, string> = {
   web: 'Web',
   forensics: 'Forensics',
   loglar: 'Loglar',
+  cloud: 'Cloud',
 };
 
 /**
  * Flags are stored as cyrb53 hashes (see engine/hash.ts); the plain answers
  * live only in the solutions used by content.test.ts.
  */
-export const CTF: CtfChallenge[] = [
+const FIRST_SET: CtfChallenge[] = [
   {
     id: 'enc-base64',
     title: 'Oxirida tenglik belgisi',
@@ -213,6 +215,9 @@ export const CTF: CtfChallenge[] = [
     flagHash: '03393b6f62c1a5',
   },
 ];
+
+/** All challenges: the first set above, then Linux administration, logs, AppSec and cloud (ctfMore.ts). */
+export const CTF: CtfChallenge[] = [...FIRST_SET, ...CTF_MORE];
 
 const index = new Map(CTF.map((c) => [c.id, c]));
 

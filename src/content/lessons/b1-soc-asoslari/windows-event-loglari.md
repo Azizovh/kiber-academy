@@ -290,6 +290,8 @@ Halol bo'laylik — Windows'ning standart jurnallarida katta bo'shliqlar bor:
 
 Aynan shu bo'shliqlarni to'ldirish uchun **Sysmon** yaratilgan — keyingi darsning mavzusi.
 
+:::lab windows-hodisalari
+
 :::try
 Bu mashqlarni **o'z Windows kompyuteringizda** bajaring. PowerShell'ni administrator sifatida oching.
 
