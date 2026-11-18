@@ -27,7 +27,7 @@ import { StatusDot, pct, tone } from '../components/ui';
 import { getCtf } from '../content/ctf';
 import { getTopicRef, getTrack, neighbours, stageNumber } from '../content/curriculum';
 import { getLab } from '../content/labs';
-import { getLesson, lessonInfo } from '../content/lessons';
+import { lessonInfo, lessonMeta, useLesson } from '../content/lessons';
 import type { ResourceKind } from '../content/types';
 import { formatMinutes } from '../engine/dates';
 import { PASS_SCORE, topicStatus, type TopicRef } from '../engine/progress';
@@ -60,7 +60,9 @@ export function TopicPage() {
 function TopicView({ topicRef }: { topicRef: TopicRef }) {
   useStudyTimer();
   const { stage, module, topic } = topicRef;
-  const lesson = getLesson(topic.id);
+  const loaded = useLesson(topic.id);
+  const lesson = loaded.lesson;
+  const meta = lessonMeta(topic.id);
   const info = lessonInfo(topic.id);
 
   const progress = useProgress((s) => s.topics[topic.id]);
@@ -74,7 +76,7 @@ function TopicView({ topicRef }: { topicRef: TopicRef }) {
   const note = useNotes((s) => s.notes[topic.id]?.text ?? '');
   const setNote = useNotes((s) => s.setNote);
 
-  const [tab, setTab] = useState<Tab>(lesson ? 'dars' : 'manbalar');
+  const [tab, setTab] = useState<Tab>(meta ? 'dars' : 'manbalar');
   const status = topicStatus(topic, progress, info);
   const { prev, next } = neighbours(topic.id);
   const track = getTrack(stage.track);
@@ -144,9 +146,9 @@ function TopicView({ topicRef }: { topicRef: TopicRef }) {
           <span className="chip" title="Dars, mashq va tashqi manbalar bilan birga">
             <Clock /> jami {formatMinutes(topic.minutes)}
           </span>
-          {lesson && (
+          {meta && (
             <span className="chip">
-              <BookOpenText /> dars ~{lesson.readMinutes} daq
+              <BookOpenText /> dars ~{meta.readMinutes} daq
             </span>
           )}
           {progress?.quizBest !== undefined && (
@@ -159,20 +161,24 @@ function TopicView({ topicRef }: { topicRef: TopicRef }) {
 
       <div className="topic-layout">
         <div>
-          {lesson && (
+          {meta && (
             <div className="tabs" style={{ marginBottom: 28 }}>
               <button className={`tab ${tab === 'dars' ? 'active' : ''}`} onClick={() => setTab('dars')}>
                 <BookOpenText /> Dars
               </button>
               {info.hasQuiz && (
                 <button className={`tab ${tab === 'test' ? 'active' : ''}`} onClick={() => setTab('test')}>
-                  <ListChecks /> Test · {lesson.quiz.length}
+                  <ListChecks /> Test · {meta.quiz}
                 </button>
               )}
               <button className={`tab ${tab === 'manbalar' ? 'active' : ''}`} onClick={() => setTab('manbalar')}>
                 <Hammer /> Amaliyot va manbalar
               </button>
             </div>
+          )}
+
+          {(tab === 'dars' || tab === 'test') && meta && !lesson && (
+            <LessonPending status={loaded.status} onRetry={loaded.retry} />
           )}
 
           {tab === 'dars' && lesson && (
@@ -201,7 +207,7 @@ function TopicView({ topicRef }: { topicRef: TopicRef }) {
 
           {tab === 'manbalar' && (
             <div className="stack" style={{ gap: 28 }}>
-              {!lesson && (
+              {!meta && (
                 <div className="notice">
                   <BookOpenText />
                   <div>
@@ -329,7 +335,7 @@ function TopicView({ topicRef }: { topicRef: TopicRef }) {
               </button>
             ))}
             <p className="small faint" style={{ marginTop: 10 }}>
-              {lesson
+              {meta
                 ? "O'zingizni tekshiring: har birini rostdan ham qila olasizmi?"
                 : 'Hammasini belgilasangiz, mavzu tugallangan hisoblanadi.'}
             </p>
@@ -352,6 +358,41 @@ function TopicView({ topicRef }: { topicRef: TopicRef }) {
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+/** Shown while a lesson chunk is downloading, or when it could not be fetched (offline, or a newer deploy). */
+function LessonPending({ status, onRetry }: { status: string; onRetry: () => void }) {
+  if (status === 'error') {
+    return (
+      <div className="notice">
+        <BookOpenText />
+        <div className="row between wrap">
+          <span>
+            <b>Darsni yuklab bo'lmadi.</b> Internet aloqasini tekshiring. Sayt yangilangan bo'lsa, sahifani qayta yuklang.
+          </span>
+          <span className="row" style={{ gap: 8 }}>
+            <button className="btn sm" onClick={onRetry}>
+              Qayta urinish
+            </button>
+            <button className="btn sm ghost" onClick={() => window.location.reload()}>
+              Sahifani yangilash
+            </button>
+          </span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="lesson-skeleton" aria-busy="true" aria-label="Dars yuklanmoqda">
+      <i style={{ width: '62%' }} />
+      <i />
+      <i />
+      <i style={{ width: '84%' }} />
+      <i style={{ width: '40%', marginTop: 28 }} />
+      <i />
+      <i style={{ width: '90%' }} />
     </div>
   );
 }

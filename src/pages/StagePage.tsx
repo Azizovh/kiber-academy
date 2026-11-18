@@ -2,7 +2,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { BookOpenText, ChevronRight, Clock, Flag, SquareTerminal, Target } from 'lucide-react';
 import { Bar, Ring, StatusDot, pct, tone } from '../components/ui';
 import { getStage, getTrack, stageNumber } from '../content/curriculum';
-import { getLesson, lessonInfo } from '../content/lessons';
+import { lessonInfo, lessonMeta } from '../content/lessons';
 import { formatDate, formatHours, formatMinutes } from '../engine/dates';
 import { stageStats, topicStatus } from '../engine/progress';
 import { useLearning } from '../hooks/useLearning';
@@ -20,7 +20,7 @@ export function StagePage() {
   const stats = stageStats(stage, topics, lessonInfo);
   const finish = learning.finishOf(stage.id);
   const nextId = learning.next?.topic.id;
-  const withLessons = stage.modules.flatMap((m) => m.topics).filter((t) => getLesson(t.id)).length;
+  const withLessons = stage.modules.flatMap((m) => m.topics).filter((t) => lessonMeta(t.id)).length;
 
   return (
     <div className="page" style={tone(stage.track)}>
@@ -91,7 +91,7 @@ export function StagePage() {
           <div className="card topic-list">
             {module.topics.map((topic) => {
               const status = topicStatus(topic, topics[topic.id], lessonInfo(topic.id));
-              const lesson = getLesson(topic.id);
+              const lesson = lessonMeta(topic.id);
               return (
                 <Link key={topic.id} to={`/mavzu/${topic.id}`} className={`topic-row ${topic.id === nextId ? 'next' : ''}`}>
                   <StatusDot status={status} />

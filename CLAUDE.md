@@ -66,6 +66,15 @@ node scripts/check-links.mjs   # check external resource links
 3. `npm test`, then `npm run build`.
 4. For a release: bump `version` in `package.json` **and** `src/version.ts`, tick the row in `docs/TZ.md` §7.
 
+### How lessons reach the app
+
+Each lesson is its own lazily loaded chunk (`src/content/lessons.ts`, `useLesson`, `loadCards`). Pages that only need
+"has a lesson / quiz count / reading time" use `lessonMeta`/`lessonInfo`, which come from `virtual:lesson-meta`, built
+from the Markdown by `scripts/lessonMetaPlugin.ts`. A test checks the metadata matches the parsed lessons. Only tests may
+import `lessonsEager.ts` — anywhere else it pulls every lesson back into the main bundle.
+
+The share image and home-screen icons in `public/` are rendered by `npx electron scripts/make-og.cjs`.
+
 ### Format
 
 Plain Markdown plus `:::` blocks (the marker must be alone on its line; a block ends with `:::`):
@@ -192,5 +201,6 @@ lesson was rewritten without it. Practical consequences:
 - No subject-matter expert has reviewed the lessons; the tests check structure, not facts.
 - Links were last checked at v1.0: 11 answered 403 (bot protection) and were not opened in a browser, and
   `git-scm.com` did not resolve from this network. Links added since then have not been checked.
-- The JS bundle is ~1.4 MB because lessons are bundled eagerly — fine locally, split by stage before a web launch.
+- Main JS is ~630 kB (~190 kB gzip): lessons and secondary pages are separate chunks. The remaining weight is the
+  glossary, curriculum, terminal engine and Supabase client.
 - v2 (see TZ): accounts and Supabase sync, AI tutor, Russian/English interface, code signing for a real `.exe`.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   BookA,
@@ -121,7 +121,21 @@ export function Layout() {
           </button>
           <Brand />
         </div>
-        <Outlet />
+        <Suspense fallback={<PageLoading />}>
+          <Outlet />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+function PageLoading() {
+  return (
+    <div className="page">
+      <div className="lesson-skeleton" aria-busy="true" aria-label="Yuklanmoqda">
+        <i style={{ width: '38%', height: 30 }} />
+        <i style={{ width: '70%' }} />
+        <i style={{ height: 120, marginTop: 16 }} />
       </div>
     </div>
   );

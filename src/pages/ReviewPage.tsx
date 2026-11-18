@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Layers, PartyPopper } from 'lucide-react';
 import { Bar } from '../components/ui';
 import { getTopicRef } from '../content/curriculum';
-import { getCard } from '../content/lessons';
+import { loadCards } from '../content/lessons';
+import type { Flashcard } from '../content/types';
 import { INTERVALS, isMature, type Grade } from '../engine/srs';
 import { useDueCards } from '../hooks/useLearning';
 import { useStudyTimer } from '../hooks/useStudyTimer';
@@ -25,14 +26,28 @@ export function ReviewPage() {
   const due = useDueCards();
 
   // The queue is fixed when the session starts, so a graded card does not reshuffle it.
-  const [queue] = useState(() => due.filter((id) => getCard(id)));
+  // Card texts live in the lessons, which load on demand: fetch the ones behind today's queue first.
+  const [deck, setDeck] = useState<Map<string, Flashcard> | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [startDue] = useState(due);
+  useEffect(() => {
+    let alive = true;
+    loadCards(startDue).then(
+      (found) => alive && setDeck(found),
+      () => alive && setFailed(true),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [startDue]);
+  const queue = useMemo(() => (deck ? startDue.filter((id) => deck.has(id)) : []), [deck, startDue]);
   const [index, setIndex] = useState(0);
   const [shown, setShown] = useState(false);
 
   const total = Object.keys(cards).length;
   const mature = useMemo(() => Object.values(cards).filter((c) => c && isMature(c)).length, [cards]);
   const currentId = queue[index];
-  const card = currentId ? getCard(currentId) : null;
+  const card = currentId ? deck?.get(currentId) ?? null : null;
   const state = currentId ? cards[currentId] : undefined;
 
   const answer = (g: Grade) => {
@@ -72,7 +87,22 @@ export function ReviewPage() {
         </div>
       </header>
 
-      {total === 0 ? (
+      {total > 0 && startDue.length > 0 && !deck ? (
+        failed ? (
+          <div className="empty">
+            <Layers />
+            <h3>Kartochkalarni yuklab bo'lmadi</h3>
+            <p>Internet aloqasini tekshirib, sahifani yangilang.</p>
+            <button className="btn primary" onClick={() => window.location.reload()}>
+              Sahifani yangilash
+            </button>
+          </div>
+        ) : (
+          <div className="lesson-skeleton" aria-busy="true" aria-label="Kartochkalar yuklanmoqda">
+            <i style={{ height: 180 }} />
+          </div>
+        )
+      ) : total === 0 ? (
         <div className="empty">
           <Layers />
           <h3>Hali kartochka yo'q</h3>

@@ -2,13 +2,37 @@
 <html lang="uz">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="dark light" />
-    <title>KiberAkademiya</title>
+    <meta name="theme-color" content="#0b0f14" />
+    <title>KiberAkademiya — noldan kiberxavfsizlik mutaxassisigacha</title>
+    <meta
+      name="description"
+      content="O'zbek tilidagi bepul kiberxavfsizlik kursi: poydevordan SOC, AppSec, Cloud va Pentest yo'nalishlarigacha. Darslar, testlar, terminal labi, CTF va takrorlash kartochkalari."
+    />
+
+    <!-- Link previews (Telegram, LinkedIn, X). Absolute URLs: crawlers do not resolve relative ones. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="KiberAkademiya" />
+    <meta property="og:title" content="KiberAkademiya — noldan kiberxavfsizlik mutaxassisigacha" />
+    <meta
+      property="og:description"
+      content="O'zbek tilida darslar, terminal labi, CTF va takrorlash kartochkalari. SOC, AppSec, Cloud va Pentest yo'nalishlari. Bepul."
+    />
+    <meta property="og:url" content="https://cbersecurity-learning-platform.vercel.app/" />
+    <meta property="og:image" content="https://cbersecurity-learning-platform.vercel.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="uz_UZ" />
+    <meta name="twitter:card" content="summary_large_image" />
+
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>KiberAkademiya ishlashi uchun brauzerda JavaScript yoqilgan bo'lishi kerak.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

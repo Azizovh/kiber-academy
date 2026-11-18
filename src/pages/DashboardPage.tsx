@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CalendarCheck, CheckCircle2, Clock, Flame, Layers, PartyPopper, TrendingUp } from 'lucide-react';
 import { Bar, Ring, pct, tone } from '../components/ui';
 import { getTrack, stageNumber } from '../content/curriculum';
-import { getLesson } from '../content/lessons';
+import { lessonMeta } from '../content/lessons';
 import { addDays, dayKey, formatDate, formatMinutes, formatSpan, isActiveDay, weekdayShort } from '../engine/dates';
 import { stageStats } from '../engine/progress';
 import { useDueCards, useLearning, useToday } from '../hooks/useLearning';
@@ -64,7 +64,7 @@ export function DashboardPage() {
 
   const stage = next?.stage;
   const stats = stage ? stageStats(stage, topics, lessonInfo) : null;
-  const lesson = next ? getLesson(next.topic.id) : null;
+  const lesson = next ? lessonMeta(next.topic.id) : null;
   const started = next ? !!topics[next.topic.id] : false;
   const remaining = Math.max(0, today.goal - today.minutes);
 

@@ -7,7 +7,8 @@ import { GLOSSARY, getTerm } from './glossary';
 import { INTERVIEW } from './interview';
 import { LABS, getLab } from './labs';
 import { glossaryRefs } from './lessonParser';
-import { LESSON_SOURCES, getLesson, lessonIds } from './lessons';
+import { LESSON_SOURCES, getLesson, lessonIds } from './lessonsEager';
+import META from 'virtual:lesson-meta';
 
 function duplicates(ids: string[]): string[] {
   return ids.filter((id, i) => ids.indexOf(id) !== i);
@@ -57,6 +58,14 @@ const FINISHED_STAGES = ['s0-kirish', 's1-kompyuter', 's2-tarmoq', 's3-linux', '
 
 describe('lessons', () => {
   const ids = lessonIds();
+
+  it('match the build-time metadata the app uses before a lesson is loaded', () => {
+    expect(Object.keys(META).sort()).toEqual([...ids].sort());
+    for (const id of ids) {
+      const lesson = getLesson(id)!;
+      expect(META[id], id).toEqual({ readMinutes: lesson.readMinutes, quiz: lesson.quiz.length, cards: lesson.cards.length });
+    }
+  });
 
   it('exist for every topic of the finished stages', () => {
     const expected = ALL_STAGES.filter((s) => FINISHED_STAGES.includes(s.id)).flatMap((s) =>
