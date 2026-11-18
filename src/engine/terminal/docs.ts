@@ -358,12 +358,14 @@ export const DOCS: CommandDoc[] = [
     ['-p PORTLAR', "Faqat shu portlar: 22,80 yoki 1-1000.", 'nmap -p 22,80 srv.lab'],
     ['-A', "Kengaytirilgan: versiyalar va qo'shimcha ma'lumot.", 'nmap -A srv.lab'],
   ], [['nmap -sV -p 3306 portal.lab', "Ma'lumotlar bazasi porti va versiyasi"]], "Bu buyruq faqat Tarmoq razvedkasi labida bor (o'quv simulyatsiyasi). Haqiqiy hayotda faqat o'z tarmog'ingiz yoki yozma ruxsat bilan."),
-  d('curl', 'tarmoq', "URL bo'yicha so'rov yuboradi va javobni chiqaradi.", 'curl [-i] [-I] [-s] [-L] [-o FAYL] URL', [
+  d('curl', 'tarmoq', "URL bo'yicha so'rov yuboradi va javobni chiqaradi.", 'curl [-i] [-I] [-s] [-L] [-X METOD] [-H SARLAVHA] [-o FAYL] URL', [
     ['-i', 'Javob sarlavhalari bilan birga.', 'curl -i http://srv.lab/'],
     ['-I', 'Faqat sarlavhalar (HEAD).', 'curl -I http://srv.lab/'],
     ['-s', 'Jim rejim: progress chiqmaydi.', 'curl -s http://srv.lab/api/status'],
     ['-L', 'Yo\'naltirishlarga (301/302) ergashadi.', 'curl -L http://srv.lab/old'],
     ['-o FAYL', "Javobni faylga saqlaydi.", 'curl -o sahifa.html http://srv.lab/'],
+    ['-X METOD', 'HTTP metodi: GET, POST, DELETE, OPTIONS...', 'curl -i -X OPTIONS http://srv.lab/'],
+    ['-H SARLAVHA', "So'rovga sarlavha qo'shadi (bir nechta -H mumkin).", 'curl -H "Accept: application/json" http://srv.lab/api/status'],
   ], [['curl -s http://srv.lab/api/status | jq .', "API javobini chiroyli ko'rish"]]),
   d('wget', 'tarmoq', 'Faylni yuklab oladi.', 'wget [-q] [-O FAYL] URL', [
     ['-O FAYL', 'Shu nom bilan saqlaydi (-O - ekranga).', 'wget -O r.txt http://srv.lab/robots.txt'],
