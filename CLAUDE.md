@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.7.0)
+## State (v1.8.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -151,7 +151,7 @@ lesson was rewritten without it. Practical consequences:
   `pt-web-amaliyot` in p2. `himoyadan-otish` is written strictly as "how AV/EDR detect and what traces a tester
   leaves"; it says outright that evasion is not taught. Keep it that way.
 
-## Accounts and cloud sync (added after v1.7.0)
+## Accounts and cloud sync (v1.8.0)
 
 - Optional sign-in through Supabase (email + password everywhere, Google on the website only; Electron cannot take an
   OAuth redirect to `file://`). Without `VITE_SUPABASE_*` keys the app is local-only, exactly as before — keep that

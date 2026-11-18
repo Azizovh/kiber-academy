@@ -156,7 +156,8 @@ Kasblar va maoshlar, sertifikatlar yo'l xaritasi, portfolio, rezyume, LinkedIn, 
 | **v1.5** ✓ | AppSec tarmog'i darslari to'liq (a1–a4, 28 mavzu) — butun tarmoq bo'ylab o'quv ilovasi “Qaydnoma” bilan |
 | **v1.6** ✓ | Cloud tarmog'i darslari to'liq (c1–c4, 24 mavzu) — Qaydnoma'ni bulutga chiqarish orqali; intervyu bazasiga bulut savollari qo'shildi |
 | **v1.7** ✓ | Pentest tarmog'i darslari qisman (17 mavzu): p1 to'liq (metodologiya, qamrov, razvedka, skanerlash, vositalar), p4 to'liq (hisobot, mustaqil amaliyot, bug bounty, red team, himoya vositalari, sertifikat), p2 dan Burp Suite, web razvedka va web amaliyot. Zaifliklar bo'yicha p2 darslari (8 ta) va p3 (imtiyoz oshirish, tarmoq, Active Directory) ataylab faqat roadmap rejimida qoldi — kontent chegaralari sababli; har bir zaiflik a2 da himoyachi tomondan yoritilgan |
-| **v2.0** | Sayt sifatida chiqarish: akkaunt, Supabase sinxronlash, AI-ustoz, rus/ingliz interfeysi |
+| **v1.8** ✓ | Ixtiyoriy akkaunt (Google va email), Supabase orqali bulut sinxroni (progress avtomatik birlashtiriladi), admin panel, maxfiylik siyosati sahifasi; sayt Vercel'da |
+| **v2.0** | AI-ustoz, rus/ingliz interfeysi |
 
 v1 doirasidan tashqarida: akkauntlar, server, AI-ustoz, XP/reyting/sertifikat, interfeysning boshqa tillari, matn ichida rang bilan belgilash.
 
