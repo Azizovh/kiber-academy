@@ -19,6 +19,37 @@ create table if not exists public.user_state (
   updated_at timestamptz not null default now()
 );
 
+-- ── Tables that already existed with another layout (e.g. the KiberTyping schema was run in this project first) ──
+-- "create table if not exists" skips them, so bring them up to this layout instead.
+alter table public.profiles   add column if not exists email        text;
+alter table public.profiles   add column if not exists display_name text;
+alter table public.profiles   add column if not exists is_admin     boolean not null default false;
+alter table public.profiles   add column if not exists created_at   timestamptz not null default now();
+alter table public.profiles   add column if not exists last_seen_at timestamptz;
+alter table public.user_state add column if not exists data         jsonb not null default '{}'::jsonb;
+alter table public.user_state add column if not exists summary      jsonb;
+alter table public.user_state add column if not exists updated_at   timestamptz not null default now();
+
+do $$
+begin
+  -- A KiberTyping profile requires a username; this app does not ask for one.
+  if exists (select 1 from information_schema.columns
+             where table_schema = 'public' and table_name = 'profiles' and column_name = 'username') then
+    execute 'alter table public.profiles alter column username drop not null';
+    execute 'alter table public.profiles drop constraint if exists profiles_username_check';
+  end if;
+end $$;
+
+-- Policies from other schemas. "profiles are public" would let anyone read every email address.
+drop policy if exists "profiles are public" on public.profiles;
+drop policy if exists "users update their own profile" on public.profiles;
+drop policy if exists "users read their own state" on public.user_state;
+drop policy if exists "users insert their own state" on public.user_state;
+drop policy if exists "users update their own state" on public.user_state;
+
+-- Profiles created by another trigger before this ran: fill in the email.
+update public.profiles p set email = u.email from auth.users u where p.id = u.id and p.email is null;
+
 alter table public.profiles   enable row level security;
 alter table public.user_state enable row level security;
 
