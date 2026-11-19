@@ -7,6 +7,7 @@ import { webLogInvestigation, windowsEvents } from './soc';
 import { bashScripts, processesAndServices, serverAudit } from './sysadmin';
 import { winAudit, winBasics, winIncident } from './windows';
 import { trafficBasics, trafficCleartext, trafficIncident } from './traffic';
+import { containerAudit, dockerBasics, k8sIncident } from './containers';
 
 /** Terminal labs in the recommended order. */
 export const LABS: Lab[] = [
@@ -28,6 +29,9 @@ export const LABS: Lab[] = [
   winAudit,
   winIncident,
   httpAudit,
+  dockerBasics,
+  containerAudit,
+  k8sIncident,
   cloudTrailInvestigation,
 ];
 
