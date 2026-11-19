@@ -87,7 +87,7 @@ export function formatOutput(values: PsVal[]): string {
     const same = (o: PsObj) => (v.group ? o.group === v.group : o.type === v.type && !o.group);
     while (j < items.length && isObj(items[j]!) && same(items[j] as PsObj)) j++;
     const group = items.slice(i, j);
-    if (v.header) parts.push(v.header + '\n');
+    if (v.header) parts.push((parts.length ? '\n' : '') + v.header + '\n');
     if (v.type === 'FormatText' || v.plain) parts.push(...group.map((g) => toStr(g)));
     else if (v.group?.startsWith('fs:')) parts.push(formatTable(group, fsColumns()) + '\n');
     else if (useList(v)) parts.push(formatList(group, columnsOf(defaultColumns(v))));

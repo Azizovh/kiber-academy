@@ -20,6 +20,7 @@ function processObj(win: WinState, p: WinProcess, withUser = false): PsObj {
     Company: p.company ?? null,
     CPU: p.cpu ?? 0,
     WorkingSet64: Math.round(ws * 1024 * 1024),
+    WS: Math.round(ws * 1024 * 1024),
     StartTime: p.start !== undefined ? date(p.start) : date(win.boot),
     Parent: null,
     Handles: 100 + ((p.id * 7) % 900),

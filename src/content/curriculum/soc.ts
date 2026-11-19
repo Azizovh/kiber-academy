@@ -30,7 +30,7 @@ export const SOC: Stage[] = [
           "4624, 4625, 4688, 4720, 7045 kabi ID'larni yoddan bilaman",
           "Event Viewer va PowerShell bilan log qidira olaman",
           "Logon turlarini (Type 2, 3, 10) farqlayman",
-        ], [r.thm('Windows Event Logs'), sansPosters], { labs: ['windows-hodisalari'] }),
+        ], [r.thm('Windows Event Logs'), sansPosters], { labs: ['windows-hodisalari', 'windows-insident'] }),
         topic('sysmon', 'Sysmon', 10, "Jarayon, tarmoq ulanishi va fayl hodisalarini batafsil yozish.", [
           "Sysmon o'rnatib, konfiguratsiya qo'llay olaman",
           "Event ID 1, 3, 11, 13 ni tahlil qila olaman",
@@ -120,18 +120,18 @@ export const SOC: Stage[] = [
         topic('ir-jarayoni', 'IR jarayoni', 10, "Tayyorgarlik, aniqlash, cheklash, yo'q qilish, tiklash, saboqlar.", [
           "NIST va SANS IR bosqichlarini bilaman",
           "Ransomware uchun javob rejasini (playbook) tuza olaman",
-        ], [r.docs('NIST SP 800-61 — Incident Handling Guide', 'https://csrc.nist.gov/pubs/sp/800/61/r2/final'), r.thm('Incident Response Process')]),
+        ], [r.docs('NIST SP 800-61 — Incident Handling Guide', 'https://csrc.nist.gov/pubs/sp/800/61/r2/final'), r.thm('Incident Response Process')], { labs: ['windows-insident'] }),
         topic('dalil-yigish', 'Dalil yig\'ish va saqlash', 8, "O'zgaruvchanlik tartibi, disk va xotira nusxasi, chain of custody.", [
           "Dalilni buzmasdan nusxa ola olaman",
           "Order of volatility'ni bilaman",
-        ], [sansPosters, r.thm('Intro to Digital Forensics')]),
+        ], [sansPosters, r.thm('Intro to Digital Forensics')], { labs: ['windows-insident'] }),
       ]),
       mod('b3-forensics', 'Forensics', [
         topic('windows-forensics', 'Windows forensics', 20, "Registry, Prefetch, MFT, Amcache, brauzer tarixi, LNK.", [
           "Dastur ishga tushirilganini artefaktlardan isbotlay olaman",
           "USB ulanish tarixini tiklay olaman",
           "Eric Zimmerman vositalarini ishlataman",
-        ], [r.video('13Cubed', 'https://www.youtube.com/@13Cubed'), r.thm('Windows Forensics 1 & 2')]),
+        ], [r.video('13Cubed', 'https://www.youtube.com/@13Cubed'), r.thm('Windows Forensics 1 & 2')], { labs: ['windows-insident'] }),
         topic('disk-forensics', 'Disk tahlili: Autopsy', 12, "Disk tasviri, o'chirilgan fayllar, vaqt chizig'i.", [
           "Autopsy'da keys ochib, tahlil qila olaman",
           "O'chirilgan faylni tiklay olaman",
