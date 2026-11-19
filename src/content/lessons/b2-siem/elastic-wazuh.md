@@ -215,6 +215,12 @@ Jami ~14 GB RAM — 16 GB'li kompyuterda ishlaydi, lekin bir vaqtning o'zida ham
 
 Har bir qadamni skrinshotlar bilan GitHub'dagi README'ga yozib boring. "O'z SOC laboratoriyamni qurdim: Wazuh + Sysmon + o'zim yozgan qoidalar" — boshlang'ich darajadagi intervyuda juda kuchli argument.
 
+### Sentinel KQL'ni mashq qilish
+
+WS-BUX-014 labining oxirgi topshiriqlari **Kusto (Sentinel)** tilida: o'sha savollarni Microsoft Defender jadvallarida (`DeviceProcessEvents`, `DeviceNetworkEvents`, `EmailEvents`) qayta berasiz. Ikki tilda bir xil savolni yozish — ular orasidagi farqni (`==` va `=~`, `has` va `contains`, `sort by` ning sukut tartibi) eng tez o'rgatadigan mashq.
+
+:::lab siem-ws-bux-014
+
 ## Elastic va Wazuh nimani qilmaydi
 
 - **O'z-o'zidan sozlanmaydi** — tayyor qoidalar shovqinli; ularni muhitingizga moslash kerak.

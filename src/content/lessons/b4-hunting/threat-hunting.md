@@ -169,6 +169,12 @@ Tashkilotlar ov qobiliyati bo'yicha farq qiladi. Mashhur model (Hunting Maturity
 
 Boshlang'ich analitik sifatida 1–2 darajadan boshlaysiz. Maqsad — 3 va 4: o'z gipotezalaringiz va ularni qoidaga aylantirish.
 
+### Ovni mashq qilish
+
+Amaliyot bo'limidagi SIEM CTF'lari — kichik ovlar: **kam uchraydigan jarayon** (`rare` bilan stack counting), **muntazam qo'ng'iroq** (beaconing'ni oraliq bo'yicha topish), **parol purkash** va **imkonsiz sayohat**. Har birida avval gipotezani yozing, keyin so'rovni.
+
+:::lab siem-ws-bux-014
+
 ## Ov nimani qilmaydi
 
 - **Har doim hujumchini topmaydi** — va bu muvaffaqiyatsizlik emas, agar xulosa asosli bo'lsa.

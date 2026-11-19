@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.9.0)
+## State (v1.15.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -20,9 +20,9 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 25 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
-analysis, three Docker/Kubernetes, three Git/code security), 49 CTF challenges (Linux admin, Windows, traffic,
-containers, git, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 27 labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs in the SIEM pane), 53 CTF challenges (Linux admin, Windows, traffic,
+containers, git, SOC logs, SIEM, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -232,6 +232,21 @@ reads package-lock.json against `ShellInit.npm.advisories` (real GHSA ids only);
 pattern-regex rules. `sed` uses basic regex like GNU sed (`-E`/`-r` for extended). **Fake secrets in source files
 are assembled from parts** (`fake('sk_', 'live_', ...)`): GitHub push protection rejected a commit with a literal
 fake Slack webhook URL.
+
+**SIEM** (`src/engine/siem/`): `ShellInit.siem` (`indexes` of `SiemEvent`s for Splunk, `tables` of rows for Sentinel,
+`lookups`, a fixed `now`; times are Unix seconds UTC) gives a lab or CTF the SIEM pane (`panes: ['siem']`, or
+`['terminal', 'siem']` for tabs over one shared machine). `spl.ts`: implicit `search` (whole-token term matching,
+OR binds tighter than AND, `!=` vs `NOT`, earliest/latest) plus where, eval (`expr.ts`, Splunk eval semantics:
+bare words are fields, `where` is case-sensitive), stats, eventstats, timechart, chart, bin, table, fields, rename,
+sort, head, tail, reverse, dedup, top, rare, rex, lookup, inputlookup, fillnull, mvexpand, makeresults; no
+subsearch, it says so. `kusto.ts`: where, project(-away/-rename), extend, summarize (count_/dcount_X names,
+arg_max, expressions over aggregates), sort/order (desc by default), take, top, count, distinct, join
+(inner/innerunique/leftouter/leftanti/leftsemi), getschema, render; unknown columns are errors. Errors use the real
+products' wording. Lab solutions write SIEM searches as `spl('...')` / `kql('...')` (`labs/run.ts`, lines
+"spl> q"); a check gets `ctx.siem = { lang, query, result }`, and helpers `colIs`, `oneNumber`, `rowWhere` in
+`labs/siem.ts`. Lab data is generated with the seeded `prng`, and expected answers are computed from it. The
+reference docs are `siem/docs.ts` (names `spl:stats`, `kql:summarize`, shown by `title`); teach entries use those
+names. The SOC incident data (`labs/siemIncident.ts`) follows the timeline in `b3-ir-forensics/ir-hisobot.md`.
 
 ## Code conventions
 

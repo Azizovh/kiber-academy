@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { checkFlag } from '../engine/hash';
 import { createShell, execLine } from '../engine/terminal/shell';
+import type { LabCheckCtx } from './types';
+import { runLabLine } from './labs/run';
+import { runSiem } from '../engine/siem';
 import { CTF } from './ctf';
 import { ALL_STAGES, TRACKS, allTopics, getTopicRef } from './curriculum';
 import { GLOSSARY, getTerm } from './glossary';
@@ -132,13 +135,12 @@ describe('terminal labs', () => {
     expect(duplicates(lab.tasks.map((t) => t.id))).toEqual([]);
 
     lab.tasks.forEach((task, i) => {
-      let ctx = { state, line: '', output: '', lines };
+      let ctx: LabCheckCtx = { state, line: '', output: '', lines };
       // A task must not be already solved before its own commands run.
       if (i > 0) expect(safe(() => task.check(ctx)), `${task.id}: solved too early`).toBe(false);
       for (const line of task.solution) {
-        const res = execLine(state, line, lab.commands);
-        lines.push(line);
-        ctx = { state, line, output: res.output, lines: [...lines] };
+        ctx = runLabLine(state, line, lines, lab.commands);
+        expect(ctx.siem?.result.error, `${task.id}: ${line}`).toBeUndefined();
       }
       expect(task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
     });
@@ -205,6 +207,10 @@ describe('CTF', () => {
     'git-reflog': 'flag{reflog_hech_narsani_unutmaydi}',
     'git-blame': 'flag{nodir@contractor.example}',
     'npm-prod': 'flag{lodash}',
+    'siem-rare': 'flag{rundl132.exe}',
+    'siem-beacon': 'flag{198.51.100.77_300}',
+    'siem-spray': 'flag{t.jurayeva}',
+    'siem-travel': 'flag{b.ergashev}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -215,6 +221,30 @@ describe('CTF', () => {
     expect(checkFlag(answers[id]!, challenge.flagHash)).toBe(true);
     expect(checkFlag('flag{notogri}', challenge.flagHash)).toBe(false);
     expect(challenge.hints.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('the SIEM challenges are solved by the searches their hints point to', () => {
+    const search = (id: string, lang: 'spl' | 'kql', q: string) => {
+      const st = createShell(CTF.find((c) => c.id === id)!.shell!());
+      const r = runSiem(st.siem!, lang, q);
+      expect(r.error, q).toBeUndefined();
+      return r;
+    };
+    const rare = search('siem-rare', 'spl', 'index=sysmon | rare limit=1 Image');
+    expect(`flag{${String(rare.rows[0]!.Image).split('\\').pop()}}`).toBe(answers['siem-rare']);
+
+    const b = search('siem-beacon', 'spl', 'index=firewall | stats count, range(_time) as davr by src_ip, dest_ip | where count > 20 | eval oraliq=round(davr/(count-1)/10)*10');
+    expect(b.rows).toHaveLength(1);
+    expect(`flag{${b.rows[0]!.dest_ip}_${b.rows[0]!.oraliq}}`).toBe(answers['siem-beacon']);
+
+    const sp = search('siem-spray', 'spl', 'index=wineventlog EventCode=4625 | stats count, dc(Account_Name) as hisoblar by Source_Network_Address | where hisoblar > 10');
+    expect(sp.rows).toHaveLength(1);
+    const won = search('siem-spray', 'spl', `index=wineventlog EventCode=4624 Source_Network_Address=${sp.rows[0]!.Source_Network_Address}`);
+    expect(`flag{${won.rows[0]!.Account_Name}}`).toBe(answers['siem-spray']);
+
+    const tr = search('siem-travel', 'kql', 'SigninLogs | where ResultType == "0" and Location != "UZ" | project UserPrincipalName, Chet = TimeGenerated, Location | join kind=inner (SigninLogs | where ResultType == "0" and Location == "UZ" | project UserPrincipalName, Uy = TimeGenerated) on UserPrincipalName | extend Farq = abs(Chet - Uy) | where Farq < 1h | distinct UserPrincipalName');
+    expect(tr.rows).toHaveLength(1);
+    expect(`flag{${String(tr.rows[0]!.UserPrincipalName).split('@')[0]}}`).toBe(answers['siem-travel']);
   });
 
   it('the data of the encoding challenges really decodes to the flag', () => {

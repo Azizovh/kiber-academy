@@ -79,6 +79,10 @@ Bu jadvaldan bir qarashda muhim **ko'rsatkichlar** chiqadi:
 
 SOC tuzilmasi darsidagi MTTD va MTTR ko'rsatkichlari endi aniq raqamlarga ega.
 
+Bu jadvalni o'qish bir narsa, uni loglardan o'zingiz tiklash — boshqa. Quyidagi labda xuddi shu insident SIEM'da: har bir qatorni (phishing xati, Word → PowerShell, payload, Run kaliti, beacon, 14 MB) so'rov bilan topasiz.
+
+:::lab siem-ws-bux-014
+
 ## IR hisoboti tuzilishi
 
 Bitta hisobot turli o'quvchilarga xizmat qiladi. Shuning uchun u **qatlamli** tuziladi: eng muhimi boshida, tafsilotlar oxirida.

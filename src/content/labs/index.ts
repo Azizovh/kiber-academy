@@ -9,6 +9,8 @@ import { winAudit, winBasics, winIncident } from './windows';
 import { trafficBasics, trafficCleartext, trafficIncident } from './traffic';
 import { containerAudit, dockerBasics, k8sIncident } from './containers';
 import { codeSecurity, gitBasics, gitSecrets } from './code';
+import { splBasics } from './siem';
+import { siemIncident } from './siemIncident';
 
 export interface LabGroup {
   id: string;
@@ -37,6 +39,12 @@ export const LAB_GROUPS: LabGroup[] = [
     title: 'Tarmoq va trafik',
     text: "Tarmoqni o'rganish, tcpdump va tshark bilan trafik tahlili: odatiy trafik, ochiq parollar, hujum.",
     labs: [networkRecon, trafficBasics, trafficCleartext, trafficIncident],
+  },
+  {
+    id: 'siem',
+    title: 'SIEM va aniqlash',
+    text: "Splunk SPL va Sentinel KQL bilan loglarni qidirish, hujumni SIEM'da tiklash.",
+    labs: [splBasics, siemIncident],
   },
   {
     id: 'windows',

@@ -281,6 +281,14 @@ Qoidani qanday to'g'ri yozish, sinash va false positive'larga qarshi sozlash —
 
 ## Qayerda mashq qilish mumkin
 
+Birinchi qadam — shu dasturning o'zida. Quyidagi lablarda Splunk'ka o'xshash qidiruv oynasi bor: so'rov yozasiz, natija hodisalar, jadval yoki grafik bo'lib chiqadi, topshiriq avtomatik tekshiriladi. Birinchisi — shu darsdagi buyruqlarning hammasi Qaydnoma loglari ustida; ikkinchisi — SOC tarmog'idagi WS-BUX-014 insidentini boshidan oxirigacha SIEM'da tiklash.
+
+:::lab siem-spl-asoslari
+
+:::lab siem-ws-bux-014
+
+Keyin haqiqiy Splunk'ka o'ting:
+
 | Manba | Nima |
 |---|---|
 | **Splunk** — bepul o'quv kurslari | Rasmiy boshlang'ich kurslar (Splunk Fundamentals va boshqalar) |

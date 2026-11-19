@@ -73,11 +73,11 @@ export const SOC: Stage[] = [
           "SPL bilan qidirib, `stats`, `table`, `timechart` ishlataman",
           "Brute force ni aniqlovchi so'rov yoza olaman",
           "Boss of the SOC (BOTS) topshiriqlarini yechdim",
-        ], [r.course('Splunk — bepul kurslar', 'https://www.splunk.com/en_us/training/free-courses/overview.html'), r.thm('Splunk: Basics')]),
+        ], [r.course('Splunk — bepul kurslar', 'https://www.splunk.com/en_us/training/free-courses/overview.html'), r.thm('Splunk: Basics')], { labs: ['siem-spl-asoslari', 'siem-ws-bux-014'], ctf: ['siem-spray'] }),
         topic('elastic-wazuh', 'Elastic va Wazuh', 18, "Ochiq kodli SIEM/XDR: o'z laboratoriyangizda o'rnatish.", [
           "Wazuh serverini o'rnatib, agent uladim",
           "KQL bilan qidira olaman",
-        ], [r.docs('Wazuh hujjatlari', 'https://documentation.wazuh.com/'), r.thm('Wazuh')]),
+        ], [r.docs('Wazuh hujjatlari', 'https://documentation.wazuh.com/'), r.thm('Wazuh')], { labs: ['siem-ws-bux-014'], ctf: ['siem-travel'] }),
       ]),
       mod('b2-aniqlash', 'Aniqlash muhandisligi', [
         topic('detection-engineering', 'Aniqlash qoidalari va Sigma', 14, "Qoida yozish, sinash, sozlash; Sigma formati.", [
@@ -157,7 +157,7 @@ export const SOC: Stage[] = [
         topic('ir-hisobot', 'Vaqt chizig\'i va IR hisoboti', 16, "Topilmalarni yagona hikoyaga yig'ish.", [
           "Hujum vaqt chizig'ini tuza olaman",
           "To'liq insident hisobotini yozdim",
-        ], [cyberdefenders, r.article('The DFIR Report — haqiqiy insident tahlillari', 'https://thedfirreport.com/')], { ctf: ['log-timeline'] }),
+        ], [cyberdefenders, r.article('The DFIR Report — haqiqiy insident tahlillari', 'https://thedfirreport.com/')], { labs: ['siem-ws-bux-014'], ctf: ['log-timeline'] }),
       ]),
     ],
   },
@@ -173,7 +173,7 @@ export const SOC: Stage[] = [
         topic('threat-hunting', 'Threat hunting metodologiyasi', 16, "Gipoteza, ma'lumot, tahlil, xulosa.", [
           "ATT&CK texnikasi asosida ov gipotezasi tuza olaman",
           "Kamida 3 ta ovni hujjatlashtirdim",
-        ], [r.thm('Threat Hunting: Introduction'), attack]),
+        ], [r.thm('Threat Hunting: Introduction'), attack], { labs: ['siem-ws-bux-014'], ctf: ['siem-rare', 'siem-beacon'] }),
         topic('soar-avtomatlashtirish', 'SOAR va Python bilan avtomatlashtirish', 14, "Takroriy tekshiruvlarni skriptga aylantirish.", [
           "IOC'ni bir nechta manbadan avtomatik tekshiruvchi skript yozdim",
           "Playbook nima ekanini bilaman",
