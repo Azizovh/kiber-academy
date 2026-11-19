@@ -12,7 +12,7 @@ import {
 import type { LabCheckCtx } from '../content/types';
 
 type Entry =
-  | { kind: 'cmd'; user: string; host: string; path: string; text: string }
+  | { kind: 'cmd'; user: string; host: string; path: string; text: string; ps?: boolean }
   | { kind: 'out'; text: string; err: boolean }
   | { kind: 'note'; text: string }
   | { kind: 'ok'; text: string };
@@ -30,7 +30,14 @@ interface Props {
   fill?: boolean;
 }
 
-function Prompt({ user, host, path }: { user: string; host: string; path: string }) {
+function Prompt({ user, host, path, ps }: { user: string; host: string; path: string; ps?: boolean }) {
+  if (ps) {
+    return (
+      <span className="term-prompt">
+        <span className="p">PS {path}</span>&gt;
+      </span>
+    );
+  }
   return (
     <span className="term-prompt">
       <span className="u">
@@ -44,8 +51,12 @@ function Prompt({ user, host, path }: { user: string; host: string; path: string
 export function TerminalView({ init, commands, onCommand, onReset, banner, height, autoFocus = true, fill = false }: Props) {
   const shell = useRef<ShellState | null>(null);
   if (!shell.current) shell.current = createShell(init());
+  // A Windows lab gets PowerShell's own banner: its help command is Get-Help, not help.
+  const bannerText = shell.current.win
+    ? "PowerShell 7.4.6 · KiberAkademiya o'quv terminali. Yordam: Get-Help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"
+    : banner;
   const lines = useRef<string[]>([]);
-  const [entries, setEntries] = useState<Entry[]>(() => (banner ? [{ kind: 'note', text: banner }] : []));
+  const [entries, setEntries] = useState<Entry[]>(() => (bannerText ? [{ kind: 'note', text: bannerText }] : []));
   const [value, setValue] = useState('');
   const [cursor, setCursor] = useState<number | null>(null);
   const body = useRef<HTMLDivElement>(null);
@@ -60,7 +71,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
   const reset = () => {
     shell.current = createShell(init());
     lines.current = [];
-    setEntries(banner ? [{ kind: 'note', text: banner }] : []);
+    setEntries(bannerText ? [{ kind: 'note', text: bannerText }] : []);
     setValue('');
     setCursor(null);
     onReset?.();
@@ -69,7 +80,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
 
   const run = (line: string) => {
     const s = shell.current!;
-    const echo: Entry = { kind: 'cmd', user: s.user, host: s.host, path: promptPath(s), text: line };
+    const echo: Entry = { kind: 'cmd', user: s.user, host: s.host, path: promptPath(s), ps: !!s.win, text: line };
     if (!line.trim()) {
       setEntries((e) => [...e, echo]);
       return;
@@ -115,7 +126,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
         const s = shell.current!;
         setEntries((en) => [
           ...en,
-          { kind: 'cmd', user: s.user, host: s.host, path: promptPath(s), text: value },
+          { kind: 'cmd', user: s.user, host: s.host, path: promptPath(s), ps: !!s.win, text: value },
           { kind: 'note', text: res.options.join('  ') },
         ]);
       }
@@ -125,7 +136,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
     } else if (e.key === 'c' && e.ctrlKey && !window.getSelection()?.toString()) {
       e.preventDefault();
       const s = shell.current!;
-      setEntries((en) => [...en, { kind: 'cmd', user: s.user, host: s.host, path: promptPath(s), text: value + '^C' }]);
+      setEntries((en) => [...en, { kind: 'cmd', user: s.user, host: s.host, path: promptPath(s), ps: !!s.win, text: value + '^C' }]);
       setValue('');
       setCursor(null);
     }
@@ -142,9 +153,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
         <i />
         <i />
         <i />
-        <span>
-          {state.user}@{state.host}: {promptPath(state)}
-        </span>
+        <span>{state.win ? `PowerShell 7 — ${state.user}@${state.host}${state.win.elevated ? ' (Administrator)' : ''}` : `${state.user}@${state.host}: ${promptPath(state)}`}</span>
         <button onClick={reset} title="Terminalni boshlang'ich holatga qaytarish">
           <RotateCcw aria-hidden /> Qayta boshlash
         </button>
@@ -159,7 +168,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
           if (entry.kind === 'cmd') {
             return (
               <div key={i} className="term-line">
-                <Prompt user={entry.user} host={entry.host} path={entry.path} />
+                <Prompt user={entry.user} host={entry.host} path={entry.path} ps={entry.ps} />
                 <pre>{entry.text}</pre>
               </div>
             );
@@ -178,7 +187,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
           );
         })}
         <div className="term-line">
-          <Prompt user={state.user} host={state.host} path={promptPath(state)} />
+          <Prompt user={state.user} host={state.host} path={promptPath(state)} ps={!!state.win} />
           <input
             ref={input}
             className="term-input"

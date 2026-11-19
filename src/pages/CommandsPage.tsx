@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { CommandCard } from '../components/CommandCard';
-import { DOCS, DOC_CATEGORIES, type DocCategory } from '../engine/terminal/docs';
+import { ALL_DOCS, DOC_CATEGORIES, type DocCategory } from '../engine/terminal/docs';
 
 export function CommandsPage() {
   const [query, setQuery] = useState('');
@@ -10,7 +10,7 @@ export function CommandsPage() {
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return DOCS.filter((d) => (cat === 'all' || d.category === cat))
+    return ALL_DOCS.filter((d) => (cat === 'all' || d.category === cat))
       .filter(
         (d) =>
           !q ||
@@ -41,7 +41,7 @@ export function CommandsPage() {
             matnni terminalda <code>man BUYRUQ</code> ham ko'rsatadi.
           </p>
         </div>
-        <span className="small faint">{DOCS.length} ta buyruq</span>
+        <span className="small faint">{ALL_DOCS.length} ta buyruq</span>
       </header>
 
       <div className="search" style={{ marginBottom: 14 }}>

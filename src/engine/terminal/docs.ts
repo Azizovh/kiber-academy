@@ -4,7 +4,9 @@
  * lab shows before a task that needs a command for the first time.
  */
 
-export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript';
+import { PS_DOCS } from '../pwsh/docs';
+
+export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'powershell';
 
 export interface CommandDoc {
   name: string;
@@ -30,6 +32,7 @@ export const DOC_CATEGORIES: Record<DocCategory, string> = {
   tizim: 'Tizim haqida',
   xavfsizlik: 'Kodlash va yaxlitlik',
   skript: 'Skript va muhit',
+  powershell: 'PowerShell (Windows)',
 };
 
 const d = (
@@ -426,7 +429,10 @@ export const DOCS: CommandDoc[] = [
   d('realpath', 'skript', "To'liq, havolalarsiz yo'lni beradi.", "realpath YO'L", [], [['realpath ../a.txt', '/home/a.txt']]),
 ];
 
-const index = new Map(DOCS.map((c) => [c.name, c]));
+/** Linux and PowerShell together, for the reference page. */
+export const ALL_DOCS: CommandDoc[] = [...DOCS, ...PS_DOCS];
+
+const index = new Map(ALL_DOCS.map((c) => [c.name, c]));
 
 export function getDoc(name: string): CommandDoc | null {
   return index.get(name) ?? null;

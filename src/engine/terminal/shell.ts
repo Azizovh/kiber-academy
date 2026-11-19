@@ -3,6 +3,8 @@ import { COMMANDS } from './commands';
 import { createNet, type NetSpec, type NetState } from './net';
 import { createSystem, type SystemSpec, type SystemState } from './system';
 import { createPackages, type SysInfoSpec } from './users';
+import { createWin, type WinSpec, type WinState } from '../pwsh/state';
+import { completePs, runPsLine } from '../pwsh';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -16,6 +18,8 @@ export interface ShellInit {
   net?: NetSpec;
   /** Sessions, logins, memory and installed packages (who, last, free, apt). */
   sysinfo?: SysInfoSpec;
+  /** A Windows machine: the terminal becomes PowerShell and `fs` is the C: drive. */
+  windows?: WinSpec;
 }
 
 export interface ShellState {
@@ -32,6 +36,8 @@ export interface ShellState {
   packages: Set<string>;
   /** Shell variables set with NAME=value (also inside scripts). */
   vars: Record<string, string>;
+  /** Present when the terminal is PowerShell on a Windows machine. */
+  win?: WinState;
 }
 
 export interface CmdResult {
@@ -73,7 +79,7 @@ export const fail = (err: string, code = 1): CmdResult => ({ out: '', err, code 
 
 export function createShell(init: ShellInit): ShellState {
   const user = init.user ?? 'talaba';
-  const home = user === 'root' ? '/root' : `/home/${user}`;
+  const home = init.windows ? `/Users/${user}` : user === 'root' ? '/root' : `/home/${user}`;
   const root = buildFs(init.fs);
   const homeNode = getNode(root, home);
   if (homeNode) chownTree(homeNode, user);
@@ -85,7 +91,7 @@ export function createShell(init: ShellInit): ShellState {
     cwd: init.cwd ?? (homeNode ? home : '/'),
     prevCwd: init.cwd ?? (homeNode ? home : '/'),
     user,
-    host: init.host ?? 'kali',
+    host: init.host ?? (init.windows ? init.windows.computer ?? 'WIN-LAB' : 'kali'),
     home,
     history: [],
     system: createSystem(init.system),
@@ -93,10 +99,12 @@ export function createShell(init: ShellInit): ShellState {
     sysinfo: init.sysinfo ?? {},
     packages: createPackages(init.sysinfo),
     vars: {},
+    ...(init.windows ? { win: createWin(init.windows, user) } : {}),
   };
 }
 
 export function promptPath(state: ShellState): string {
+  if (state.win) return 'C:' + (state.cwd === '/' ? '\\' : state.cwd.replace(/\//g, '\\'));
   if (state.cwd === state.home) return '~';
   if (state.cwd.startsWith(state.home + '/')) return '~' + state.cwd.slice(state.home.length);
   return state.cwd;
@@ -438,6 +446,7 @@ export function execLine(
   const trimmed = line.trim();
   if (!trimmed) return { output: '', code: 0, clear: false };
   state.history.push(trimmed);
+  if (state.win) return runPsLine(state, trimmed);
   return runLine(state, trimmed, custom, state.user, [], 0);
 }
 
@@ -447,6 +456,7 @@ export function complete(
   line: string,
   custom: Record<string, CustomCommand> = {},
 ): { line: string; options: string[] } {
+  if (state.win) return completePs(state, line);
   const m = /(?:^|[\s|;&>])([^\s|;&>]*)$/.exec(line);
   const word = m ? m[1]! : '';
   const before = line.slice(0, line.length - word.length);
