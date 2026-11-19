@@ -20,9 +20,9 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 22 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
-analysis, three Docker/Kubernetes), 44 CTF challenges (Linux admin, Windows, traffic, containers, SOC logs, AppSec,
-Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 25 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+analysis, three Docker/Kubernetes, three Git/code security), 49 CTF challenges (Linux admin, Windows, traffic,
+containers, git, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -220,6 +220,18 @@ auth can-i with --as, delete, scale, apply -f, cordon). `docker exec`/`kubectl e
 in `yaml.ts`. Vulnerability data in labs uses real CVEs with their real affected/fixed versions only. When array
 literals of lab objects mix different keys (secrets data, pods with/without logs), TypeScript widens them — add a
 type assertion (`<KPod[]>`, `<K8sSpec['secrets']>`).
+
+**Git and code security** (`git.ts`, `codesec.ts`): `ShellInit.git` describes repositories commit by commit
+(`changes` per commit, `branch`/`from`/`merge`, `orphan` for reset-away commits, explicit `reflog`, `stash`,
+`worktree` edits); the working tree is written into `fs`, ids are computed (labs get them with `idOf`, which runs
+`createRepos` on a throwaway root). `git` covers status/log (-S, --author, --grep, --stat, -p, --format, --diff-filter,
+A..B, -- path)/show (REV:path)/diff/blame/grep/branch/switch/checkout/add/rm --cached/commit/restore/reflog/stash/
+check-ignore/filter-repo (--path --invert-paths, --replace-text; needs --force; drops remotes, reflog, stash).
+`gitleaks git|dir|detect` uses gitleaks' rule IDs and scans refs + stash (not orphans); `npm audit|audit fix|ls`
+reads package-lock.json against `ShellInit.npm.advisories` (real GHSA ids only); `semgrep --config` runs the lab's
+pattern-regex rules. `sed` uses basic regex like GNU sed (`-E`/`-r` for extended). **Fake secrets in source files
+are assembled from parts** (`fake('sk_', 'live_', ...)`): GitHub push protection rejected a commit with a literal
+fake Slack webhook URL.
 
 ## Code conventions
 

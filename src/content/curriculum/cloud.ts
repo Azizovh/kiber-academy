@@ -84,7 +84,7 @@ export const CLOUD: Stage[] = [
         ], [r.tool('Prowler', 'https://github.com/prowler-cloud/prowler'), cis], { labs: ['server-auditi'] }),
         topic('bulut-sirlari', 'Sirlarni boshqarish', 10, "Secrets Manager, Parameter Store, kalitlarni almashtirish.", [
           "Ilova sirlarini kodda emas, sir omborida saqlay olaman",
-        ], [r.docs('AWS Secrets Manager', 'https://docs.aws.amazon.com/secretsmanager/latest/userguide/'), r.docs('OWASP — Secrets Management Cheat Sheet', 'https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html')]),
+        ], [r.docs('AWS Secrets Manager', 'https://docs.aws.amazon.com/secretsmanager/latest/userguide/'), r.docs('OWASP — Secrets Management Cheat Sheet', 'https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html')], { labs: ['git-sirlar'] }),
       ]),
     ],
   },

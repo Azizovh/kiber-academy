@@ -312,7 +312,7 @@ export const FOUNDATION: Stage[] = [
           "Repozitoriy yaratib, commit qila olaman",
           "Branch ochib, birlashtira olaman",
           "GitHub'ga kod joylay olaman",
-        ], [r.lab('Learn Git Branching', 'https://learngitbranching.js.org/'), r.book('Pro Git (bepul kitob)', 'https://git-scm.com/book/en/v2')]),
+        ], [r.lab('Learn Git Branching', 'https://learngitbranching.js.org/'), r.book('Pro Git (bepul kitob)', 'https://git-scm.com/book/en/v2')], { labs: ['git-asoslari'], ctf: ['git-deleted'] }),
         topic('web-asoslari', 'Web asoslari: HTML, CSS, JavaScript', 11, "Sahifa nimadan iborat va brauzer uni qanday ishlatadi.", [
           "HTML sahifa tuzilishini o'qiy olaman",
           "JavaScript brauzerda nima qila olishini bilaman",

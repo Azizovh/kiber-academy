@@ -50,7 +50,7 @@ export const APPSEC: Stage[] = [
         topic('as-injection', 'Injection va uning himoyasi', 14, "SQL, NoSQL, OS command, LDAP; parametrlangan so'rovlar.", [
           "Zaif kodni ko'rib, injection nuqtasini topa olaman",
           "Uni parametrlangan so'rov bilan tuzata olaman",
-        ], [r.ps('SQL injection', 'sql-injection'), cheat], { ctf: ['web-code-review'] }),
+        ], [r.ps('SQL injection', 'sql-injection'), cheat], { labs: ['kod-xavfsizligi'], ctf: ['web-code-review', 'git-blame'] }),
         topic('as-xss-csp', 'XSS, output encoding va CSP', 14, "Kontekstga mos kodlash, sanitizatsiya, CSP.", [
           "Har bir kontekst (HTML, atribut, JS, URL) uchun to'g'ri kodlashni bilaman",
           "Freymvorklarning avtomatik himoyasi qayerda ishlamasligini bilaman",
@@ -115,7 +115,7 @@ export const APPSEC: Stage[] = [
         topic('sast', 'SAST: Semgrep va CodeQL', 18, "Statik tahlil, o'z qoidalaringizni yozish.", [
           "Semgrep'ni loyihada ishga tushirib, natijani saralay olaman",
           "O'z Semgrep qoidamni yozdim",
-        ], [r.docs('Semgrep hujjatlari', 'https://semgrep.dev/docs/'), r.docs('CodeQL hujjatlari', 'https://codeql.github.com/docs/')]),
+        ], [r.docs('Semgrep hujjatlari', 'https://semgrep.dev/docs/'), r.docs('CodeQL hujjatlari', 'https://codeql.github.com/docs/')], { labs: ['kod-xavfsizligi'] }),
         topic('dast', 'DAST: OWASP ZAP', 12, "Ishlab turgan ilovani avtomatik skanerlash.", [
           "ZAP bilan autentifikatsiyali skan o'tkaza olaman",
           "ZAP'ni CI'ga ulay olaman",
@@ -123,11 +123,11 @@ export const APPSEC: Stage[] = [
         topic('sca-supply-chain', 'SCA va ta\'minot zanjiri', 12, "Kutubxonalardagi zaifliklar, SBOM, dependency confusion.", [
           "Loyiha bog'liqliklarini skanerlab, yangilash rejasini tuza olaman",
           "SBOM nima ekanini bilaman",
-        ], [r.tool('OWASP Dependency-Check', 'https://owasp.org/www-project-dependency-check/'), r.docs('OpenSSF Scorecard', 'https://securityscorecards.dev/')]),
+        ], [r.tool('OWASP Dependency-Check', 'https://owasp.org/www-project-dependency-check/'), r.docs('OpenSSF Scorecard', 'https://securityscorecards.dev/')], { labs: ['kod-xavfsizligi'], ctf: ['npm-prod'] }),
         topic('secrets-management', 'Sirlarni boshqarish', 8, "Koddagi parollar, .env, vault, gitleaks.", [
           "Repozitoriydan sizib chiqqan sirlarni topa olaman",
           "Sirlarni xavfsiz saqlash usulini joriy qila olaman",
-        ], [r.tool('Gitleaks', 'https://github.com/gitleaks/gitleaks'), cheat]),
+        ], [r.tool('Gitleaks', 'https://github.com/gitleaks/gitleaks'), cheat], { labs: ['git-sirlar'], ctf: ['git-deleted', 'git-stash', 'git-reflog'] }),
       ]),
     ],
   },

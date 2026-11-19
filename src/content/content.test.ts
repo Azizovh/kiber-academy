@@ -200,6 +200,11 @@ describe('CTF', () => {
     'k8s-secret': 'flag{secret_bu_base64}',
     'k8s-rbac': 'flag{deploy-bot}',
     'dockerfile-arg': 'flag{6}',
+    'git-deleted': 'flag{ochirilgan_fayl_tarixda}',
+    'git-stash': 'flag{stash_ham_saqlaydi}',
+    'git-reflog': 'flag{reflog_hech_narsani_unutmaydi}',
+    'git-blame': 'flag{nodir@contractor.example}',
+    'npm-prod': 'flag{lodash}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -240,6 +245,26 @@ describe('CTF', () => {
     const top = execLine(s2, 'grep "Failed password" /var/log/auth.log | cut -d " " -f 11 | sort | uniq -c | sort -rn | head -n 1').output;
     expect(top.trim().split(/\s+/)[1]).toBe('203.0.113.45');
     expect(execLine(s2, 'grep Accepted /var/log/auth.log | grep 203.0.113.45').output).toContain('for deploy from');
+  });
+
+  it('the git challenges can be solved with git', () => {
+    const solve = (id: string, cwd: string, ...lines: string[]) => {
+      const s = createShell(CTF.find((c) => c.id === id)!.shell!());
+      execLine(s, `cd ${cwd}`);
+      return lines.map((l) => execLine(s, l).output).pop()!.trim();
+    };
+    const deleted = solve('git-deleted', 'landing', 'git log --diff-filter=D --name-only --oneline');
+    expect(deleted).toContain('config/analytics.json');
+    const id = deleted.split(' ')[0]!;
+    expect(solve('git-deleted', 'landing', `git show ${id}~1:config/analytics.json`)).toContain(answers['git-deleted']);
+    expect(solve('git-stash', 'api', 'git log --all -p')).not.toContain('flag{');
+    expect(solve('git-stash', 'api', 'git stash show -p stash@{0}')).toContain(answers['git-stash']);
+    expect(solve('git-reflog', 'infra', 'git log --all -p')).not.toContain('flag{');
+    expect(solve('git-reflog', 'infra', 'git reflog')).toContain('HEAD@{2}: commit: temp: debug values');
+    expect(solve('git-reflog', 'infra', 'git show HEAD@{2}')).toContain(answers['git-reflog']);
+    const line = solve('git-blame', 'billing', 'grep -n eval src/report.js').split(':')[0];
+    const blamed = solve('git-blame', 'billing', `git blame -L ${line},${line} src/report.js`).split(' ')[0]!;
+    expect(`flag{${solve('git-blame', 'billing', `git log -n 1 --format='%ae' ${blamed}`)}}`).toBe(answers['git-blame']);
   });
 
   it('the container challenges can be solved with docker and kubectl', () => {

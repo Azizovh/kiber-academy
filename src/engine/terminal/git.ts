@@ -18,7 +18,8 @@ export interface CommitSpec {
   author: string;
   date: number;
   message: string;
-  changes: Record<string, string | null>;
+  /** null deletes; undefined (from mixed object literals) means no change. */
+  changes: Record<string, string | null | undefined>;
 }
 
 export interface GitRepoSpec {
@@ -31,10 +32,10 @@ export interface GitRepoSpec {
   /** Remote-tracking branches: "origin/main" → branch or commit it points to. */
   remoteBranches?: Record<string, string>;
   /** Uncommitted changes in the working tree (null deletes). */
-  worktree?: Record<string, string | null>;
+  worktree?: Record<string, string | null | undefined>;
   /** Explicit reflog lines, newest first: [commit message or branch ref, action]. */
   reflog?: { target: string; action: string }[];
-  stash?: { message: string; changes: Record<string, string | null>; date: number }[];
+  stash?: { message: string; changes: Record<string, string | null | undefined>; date: number }[];
   user?: { name: string; email: string };
   now?: number;
 }
@@ -95,6 +96,7 @@ export function createRepos(specs: GitRepoSpec[], root: FsDir): GitState {
         Object.assign(base, commits.get(other)!.snapshot);
       }
       for (const [p, v] of Object.entries(c.changes)) {
+        if (v === undefined) continue;
         if (v === null) delete base[p];
         else base[p] = v;
       }
@@ -131,6 +133,7 @@ export function createRepos(specs: GitRepoSpec[], root: FsDir): GitState {
       const baseId = branches.get(head)!;
       const snap = { ...commits.get(baseId)!.snapshot };
       for (const [p, v] of Object.entries(st.changes)) {
+        if (v === undefined) continue;
         if (v === null) delete snap[p];
         else snap[p] = v;
       }
@@ -138,7 +141,7 @@ export function createRepos(specs: GitRepoSpec[], root: FsDir): GitState {
     }
     // Working tree = HEAD snapshot + uncommitted changes; plus a .git directory.
     writeTree(root, spec.path, repo.index);
-    for (const [p, v] of Object.entries(spec.worktree ?? {})) setFile(root, `${spec.path}/${p}`, v);
+    for (const [p, v] of Object.entries(spec.worktree ?? {})) if (v !== undefined) setFile(root, `${spec.path}/${p}`, v);
     setFile(root, `${spec.path}/.git/HEAD`, `ref: refs/heads/${head}\n`);
     setFile(root, `${spec.path}/.git/config`, `[core]\n\trepositoryformatversion = 0\n${[...repo.remotes].map(([n, u]) => `[remote "${n}"]\n\turl = ${u}\n`).join('')}`);
     state.set(spec.path, repo);
