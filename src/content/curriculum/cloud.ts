@@ -100,21 +100,21 @@ export const CLOUD: Stage[] = [
         topic('docker', 'Docker', 16, "Image, konteyner, Dockerfile, tarmoq, volume, compose.", [
           "Ilovamni konteynerga joylay olaman",
           "Docker Compose bilan ko'p xizmatli muhit ko'tara olaman",
-        ], [r.docs('Docker — Get Started', 'https://docs.docker.com/get-started/'), r.thm('Intro to Docker')]),
+        ], [r.docs('Docker — Get Started', 'https://docs.docker.com/get-started/'), r.thm('Intro to Docker')], { labs: ['docker-asoslari'], ctf: ['docker-history'] }),
         topic('docker-xavfsizligi', 'Docker xavfsizligi', 14, "Root'siz ishlatish, minimal image, skanerlash, konteynerdan chiqib ketish.", [
           "Dockerfile'ni xavfsizlik tamoyillari bilan yoza olaman",
           "Trivy bilan image skanerlay olaman",
           "Privileged konteyner xavfini namoyish qila olaman",
-        ], [r.docs('Docker — Security', 'https://docs.docker.com/engine/security/'), r.docs('OWASP — Docker Security Cheat Sheet', 'https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html')]),
+        ], [r.docs('Docker — Security', 'https://docs.docker.com/engine/security/'), r.docs('OWASP — Docker Security Cheat Sheet', 'https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html')], { labs: ['konteyner-auditi'], ctf: ['docker-diff', 'dockerfile-arg'] }),
         topic('kubernetes-asoslari', 'Kubernetes asoslari', 24, "Pod, deployment, service, ingress, namespace, kubectl.", [
           "Lokal klasterda (kind/minikube) ilova joylay olaman",
           "Asosiy obyektlarni YAML bilan yoza olaman",
-        ], [r.docs('Kubernetes — Tutorials', 'https://kubernetes.io/docs/tutorials/'), k8sDocs]),
+        ], [r.docs('Kubernetes — Tutorials', 'https://kubernetes.io/docs/tutorials/'), k8sDocs], { labs: ['kubernetes-insident'], ctf: ['k8s-secret'] }),
         topic('kubernetes-xavfsizligi', 'Kubernetes xavfsizligi', 22, "RBAC, network policy, Pod Security, sirlar, admission control.", [
           "RBAC rolini eng kam imtiyoz bilan yoza olaman",
           "Network policy bilan podlarni ajrata olaman",
           "kube-bench natijasini tahlil qila olaman",
-        ], [r.docs('Kubernetes — Security', 'https://kubernetes.io/docs/concepts/security/'), r.docs('OWASP Kubernetes Top Ten', 'https://owasp.org/www-project-kubernetes-top-ten/')]),
+        ], [r.docs('Kubernetes — Security', 'https://kubernetes.io/docs/concepts/security/'), r.docs('OWASP Kubernetes Top Ten', 'https://owasp.org/www-project-kubernetes-top-ten/')], { labs: ['kubernetes-insident'], ctf: ['k8s-rbac', 'k8s-secret'] }),
       ]),
       mod('c3-iac', 'Kod sifatida infratuzilma', [
         topic('terraform', 'Terraform', 18, "Provider, resurs, state, modul.", [

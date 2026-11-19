@@ -195,6 +195,11 @@ describe('CTF', () => {
     'pcap-dns-exfil': 'flag{dns_tunnel_ushlandi}',
     'pcap-scan': 'flag{22_3306_8080}',
     'pcap-beacon': 'flag{cdn-sync.example_300}',
+    'docker-history': 'flag{qatlamlar_unutmaydi}',
+    'docker-diff': 'flag{diff_hammasini_aytadi}',
+    'k8s-secret': 'flag{secret_bu_base64}',
+    'k8s-rbac': 'flag{deploy-bot}',
+    'dockerfile-arg': 'flag{6}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -235,6 +240,23 @@ describe('CTF', () => {
     const top = execLine(s2, 'grep "Failed password" /var/log/auth.log | cut -d " " -f 11 | sort | uniq -c | sort -rn | head -n 1').output;
     expect(top.trim().split(/\s+/)[1]).toBe('203.0.113.45');
     expect(execLine(s2, 'grep Accepted /var/log/auth.log | grep 203.0.113.45').output).toContain('for deploy from');
+  });
+
+  it('the container challenges can be solved with docker and kubectl', () => {
+    const solve = (id: string, ...lines: string[]) => {
+      const s = createShell(CTF.find((c) => c.id === id)!.shell!());
+      return lines.map((l) => execLine(s, l).output).pop()!.trim();
+    };
+    const hist = solve('docker-history', 'docker history --no-trunc billing:3.1');
+    const b64 = /echo (\S+) \| base64 -d/.exec(hist)![1]!;
+    expect(solve('docker-history', `echo ${b64} | base64 -d`)).toBe(answers['docker-history']);
+    expect(solve('docker-history', 'docker history billing:3.1')).not.toContain(b64);
+    expect(solve('docker-diff', 'docker diff shop')).toContain('A /etc/cron.d/sync');
+    const cron = solve('docker-diff', 'docker exec shop cat /etc/cron.d/sync');
+    expect(solve('docker-diff', `echo ${/echo (\S+) \|/.exec(cron)![1]} | base64 -d`)).toBe(answers['docker-diff']);
+    expect(solve('k8s-secret', "kubectl get secret ctf-vault -n staging -o jsonpath='{.data.flag}' | base64 -d")).toBe(answers['k8s-secret']);
+    const who = ['monitor', 'deploy-bot', 'backup'].filter((sa) => solve('k8s-rbac', `kubectl auth can-i delete pods -n prod --as=system:serviceaccount:prod:${sa}`) === 'yes');
+    expect(`flag{${who.join('')}}`).toBe(answers['k8s-rbac']);
   });
 
   it('the traffic challenges can be solved with tcpdump and tshark', () => {

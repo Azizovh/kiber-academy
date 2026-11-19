@@ -20,8 +20,9 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 19 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
-analysis), 39 CTF challenges (Linux admin, Windows, traffic, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 22 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+analysis, three Docker/Kubernetes), 44 CTF challenges (Linux admin, Windows, traffic, containers, SOC logs, AppSec,
+Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -208,6 +209,17 @@ magic bytes plus Base64 JSON of `Pkt` records (addresses, ports, TCP flags, text
 `tcpdump -r` (BPF subset, `-n/-nn`, `-A`, `-X`, `-e`, `-w`), `tshark -r` (display filters, `-T fields -e`, `-z conv|
 endpoints|io,phs|io,stat|follow`) and `capinfos` print like the real tools. Labs build captures with `Capture`
 (`dns`, `tcp` sessions with exchanges, `tls`, `probe`, `ping`, `arp`) and compute expected answers with `dissect`.
+
+**Containers** (`docker.ts`, `kube.ts`, `yaml.ts`, `templates.ts` in `src/engine/terminal/`): `ShellInit.docker`
+(images with layers, vulns, secrets, fs; containers with config, logs, procs, diff, fs) drives `docker` (ps/images/
+inspect -f/history/logs/exec/run with hardening flags/stop/rm/rmi/top/stats/port/diff), `trivy image` and `hadolint`
+(real DL rule codes). `ShellInit.k8s` (namespaces, nodes, pods, deployments, services, secrets, RBAC, network
+policies, events) drives `kubectl` (get with -n/-A/-o wide|yaml|json|jsonpath/-l, describe, logs, exec, top,
+auth can-i with --as, delete, scale, apply -f, cordon). `docker exec`/`kubectl exec` run in a per-container
+`ShellState` built from the container's fs and env. Go templates and JSONPath live in `templates.ts`; YAML subset
+in `yaml.ts`. Vulnerability data in labs uses real CVEs with their real affected/fixed versions only. When array
+literals of lab objects mix different keys (secrets data, pods with/without logs), TypeScript widens them — add a
+type assertion (`<KPod[]>`, `<K8sSpec['secrets']>`).
 
 ## Code conventions
 

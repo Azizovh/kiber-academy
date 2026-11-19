@@ -147,7 +147,7 @@ export const APPSEC: Stage[] = [
         topic('konteyner-xavfsizligi-appsec', 'Konteyner va IaC skanerlash', 14, "Docker image, Trivy, Checkov.", [
           "Dockerfile'ni xavfsiz yoza olaman",
           "Image va IaC fayllarni skanerlay olaman",
-        ], [r.tool('Trivy', 'https://trivy.dev/'), r.docs('Docker — Security', 'https://docs.docker.com/engine/security/')]),
+        ], [r.tool('Trivy', 'https://trivy.dev/'), r.docs('Docker — Security', 'https://docs.docker.com/engine/security/')], { labs: ['konteyner-auditi'], ctf: ['dockerfile-arg'] }),
         topic('mobil-xavfsizlik', 'Mobil ilova xavfsizligi asoslari', 14, "OWASP MASVS, statik va dinamik tahlilga kirish.", [
           "MASVS toifalarini bilaman",
           "APK'ni ochib, kodini ko'ra olaman",
