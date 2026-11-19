@@ -10,34 +10,56 @@ import { trafficBasics, trafficCleartext, trafficIncident } from './traffic';
 import { containerAudit, dockerBasics, k8sIncident } from './containers';
 import { codeSecurity, gitBasics, gitSecrets } from './code';
 
-/** Terminal labs in the recommended order. */
-export const LABS: Lab[] = [
-  firstSteps,
-  filesAndDirs,
-  encodings,
-  grepAndPipes,
-  permissions,
-  processesAndServices,
-  bashScripts,
-  networkRecon,
-  trafficBasics,
-  trafficCleartext,
-  trafficIncident,
-  serverAudit,
-  webLogInvestigation,
-  windowsEvents,
-  winBasics,
-  winAudit,
-  winIncident,
-  httpAudit,
-  gitBasics,
-  gitSecrets,
-  codeSecurity,
-  dockerBasics,
-  containerAudit,
-  k8sIncident,
-  cloudTrailInvestigation,
+export interface LabGroup {
+  id: string;
+  title: string;
+  /** One sentence: what this group trains. */
+  text: string;
+  labs: Lab[];
+}
+
+/** Labs grouped by direction, in the recommended order (groups and labs inside them: easy to hard). */
+export const LAB_GROUPS: LabGroup[] = [
+  {
+    id: 'linux',
+    title: 'Linux asoslari',
+    text: "Terminal, fayllar, ruxsatlar, jarayonlar va xizmatlar, bash skriptlar va server auditi.",
+    labs: [firstSteps, filesAndDirs, permissions, processesAndServices, bashScripts, serverAudit],
+  },
+  {
+    id: 'loglar',
+    title: 'Matn, kodlash va loglar',
+    text: "grep va quvurlar, Base64 va xeshlar, veb-server va Windows hodisalari loglarini tahlil qilish.",
+    labs: [grepAndPipes, encodings, webLogInvestigation, windowsEvents],
+  },
+  {
+    id: 'tarmoq',
+    title: 'Tarmoq va trafik',
+    text: "Tarmoqni o'rganish, tcpdump va tshark bilan trafik tahlili: odatiy trafik, ochiq parollar, hujum.",
+    labs: [networkRecon, trafficBasics, trafficCleartext, trafficIncident],
+  },
+  {
+    id: 'windows',
+    title: 'Windows (PowerShell)',
+    text: "PowerShell asoslari, Windows server auditi va RDP orqali kirgan hujumchiga javob.",
+    labs: [winBasics, winAudit, winIncident],
+  },
+  {
+    id: 'kod',
+    title: 'Web va kod xavfsizligi',
+    text: "HTTP auditi, git tarixini tergov qilish, repozitoriydagi sirlar, SAST va bog'liqliklar.",
+    labs: [httpAudit, gitBasics, gitSecrets, codeSecurity],
+  },
+  {
+    id: 'bulut',
+    title: 'Konteynerlar va bulut',
+    text: "Docker asoslari va xavfsizligi, Kubernetes insidenti, CloudTrail tergovi.",
+    labs: [dockerBasics, containerAudit, k8sIncident, cloudTrailInvestigation],
+  },
 ];
+
+/** Terminal labs in the recommended order (group by group). */
+export const LABS: Lab[] = LAB_GROUPS.flatMap((g) => g.labs);
 
 const index = new Map(LABS.map((lab) => [lab.id, lab]));
 

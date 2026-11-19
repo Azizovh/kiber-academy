@@ -2611,3 +2611,47 @@ main:focus {
   border-color: var(--warn);
   color: var(--warn);
 }
+
+/* Practice: labs grouped by direction */
+.lab-group-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.lab-group-nav .chip {
+  cursor: pointer;
+  gap: 8px;
+}
+
+.lab-group-nav .chip:hover {
+  border-color: var(--accent-line);
+}
+
+.lab-group {
+  margin-bottom: 36px;
+  scroll-margin-top: 16px;
+}
+
+.lab-group-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.lab-group-head h2 {
+  font-size: 1.15rem;
+}
+
+.lab-group-head p {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+
+.lab-group-head .chip {
+  flex-shrink: 0;
+}

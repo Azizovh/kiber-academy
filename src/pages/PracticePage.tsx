@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle2, Clock, ExternalLink, Flag, Globe, SquareTerminal } from 'lucide-react';
 import { Level } from '../components/ui';
 import { CTF, CTF_CATEGORIES } from '../content/ctf';
-import { LABS } from '../content/labs';
+import { LAB_GROUPS, LABS } from '../content/labs';
 import { useProgress } from '../store/progress';
 
 type Tab = 'lab' | 'ctf' | 'tashqi';
@@ -51,28 +51,59 @@ export function PracticePage() {
       </div>
 
       {tab === 'lab' && (
-        <div className="grid c3">
-          {LABS.map((lab, i) => {
-            const done = labs[lab.id]?.done;
-            return (
-              <Link key={lab.id} to={`/lab/${lab.id}`} className={`card tile ${done ? 'solved' : ''}`}>
-                <div className="row between">
-                  <span className="eyebrow">Lab {i + 1}</span>
-                  {done && <CheckCircle2 size={18} style={{ color: 'var(--ok)' }} />}
-                </div>
-                <h2>{lab.title}</h2>
-                <p>{lab.summary}</p>
-                <div className="tile-foot">
-                  <Level level={lab.level} />
-                  <span className="chip">
-                    <Clock /> {lab.minutes} daq
+        <>
+          <nav className="lab-group-nav" aria-label="Lab yo'nalishlari">
+            {LAB_GROUPS.map((g) => {
+              const done = g.labs.filter((l) => labs[l.id]?.done).length;
+              return (
+                <button key={g.id} className="chip" onClick={() => document.getElementById(`labs-${g.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                  {g.title}
+                  <span className="faint">
+                    {done}/{g.labs.length}
                   </span>
-                  <span className="chip">{lab.tasks.length} topshiriq</span>
+                </button>
+              );
+            })}
+          </nav>
+          {LAB_GROUPS.map((g) => {
+            const done = g.labs.filter((l) => labs[l.id]?.done).length;
+            return (
+              <section key={g.id} id={`labs-${g.id}`} className="lab-group" aria-labelledby={`labs-${g.id}-title`}>
+                <header className="lab-group-head">
+                  <div>
+                    <h2 id={`labs-${g.id}-title`}>{g.title}</h2>
+                    <p>{g.text}</p>
+                  </div>
+                  <span className={`chip ${done === g.labs.length ? 'ok' : ''}`}>
+                    {done === g.labs.length && <CheckCircle2 />} {done}/{g.labs.length}
+                  </span>
+                </header>
+                <div className="grid c3">
+                  {g.labs.map((lab, i) => {
+                    const solved = labs[lab.id]?.done;
+                    return (
+                      <Link key={lab.id} to={`/lab/${lab.id}`} className={`card tile ${solved ? 'solved' : ''}`}>
+                        <div className="row between">
+                          <span className="eyebrow">{i + 1}-lab</span>
+                          {solved && <CheckCircle2 size={18} style={{ color: 'var(--ok)' }} />}
+                        </div>
+                        <h3>{lab.title}</h3>
+                        <p>{lab.summary}</p>
+                        <div className="tile-foot">
+                          <Level level={lab.level} />
+                          <span className="chip">
+                            <Clock /> {lab.minutes} daq
+                          </span>
+                          <span className="chip">{lab.tasks.length} topshiriq</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
-              </Link>
+              </section>
             );
           })}
-        </div>
+        </>
       )}
 
       {tab === 'ctf' && (
