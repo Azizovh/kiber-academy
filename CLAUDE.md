@@ -20,8 +20,8 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 13 terminal labs (20–24 tasks each, last one a `challenge`), 29 CTF
-challenges (Linux admin, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 16 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows), 34 CTF
+challenges (Linux admin, Windows, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -189,6 +189,17 @@ used by `help`, `man`, the /buyruqlar page and lab teaching notes. A lab task's 
 flag's row before the task (TeachPanel); a content test fails if the doc or flag row is missing — add the row to
 `docs.ts` first. `challenge: true` marks the final task, which has a vaguer hint on purpose. Lab checks compare with
 values computed from the lab's own data, never hand-typed counts.
+
+**PowerShell** (`src/engine/pwsh/`): a lab whose `shell()` returns `windows: WinSpec` gets a PowerShell 7 terminal
+(`ShellState.win`; `execLine`, `promptPath` and `complete` dispatch on it). `fs` is the C: drive (`Users/talaba` =
+`C:Users	alaba`; names match case-insensitively). `parse.ts` (argument vs expression mode, script blocks, hashtables,
+`[Type]::Member`), `eval.ts` (object pipeline, parameter binding with prefixes, aliases, PS7 concise errors),
+`format.ts` (table for ≤4 properties or a `view`, list otherwise; `group`/`header` for directory and event listings),
+`cmdlets/` (files and registry, processes/services/tasks/users/CIM, network and firewall, Get-WinEvent and Defender),
+`docs.ts` (`PS_DOCS`, category `powershell`, merged into `ALL_DOCS`). Lab checks read `state.win` (services, tasks,
+registry map keyed by lower-cased `HKLM:...` path, firewall, defender). Doc names must not clash with Linux docs —
+native tools are `whoami.exe`, `hostname.exe`, `ping.exe`. Shell heredocs mangle backslashes: write Windows content
+with the Write tool and `String.raw` (`W`) in lab files.
 
 ## Code conventions
 
