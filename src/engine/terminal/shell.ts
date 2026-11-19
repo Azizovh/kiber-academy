@@ -5,6 +5,8 @@ import { createSystem, type SystemSpec, type SystemState } from './system';
 import { createPackages, type SysInfoSpec } from './users';
 import { createWin, type WinSpec, type WinState } from '../pwsh/state';
 import { completePs, runPsLine } from '../pwsh';
+import { createDocker, type DockerSpec, type DockerState } from './docker';
+import { createK8s, type K8sSpec, type K8sState } from './kube';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -20,6 +22,10 @@ export interface ShellInit {
   sysinfo?: SysInfoSpec;
   /** A Windows machine: the terminal becomes PowerShell and `fs` is the C: drive. */
   windows?: WinSpec;
+  /** A Docker engine with images and containers (docker, trivy). */
+  docker?: DockerSpec;
+  /** A Kubernetes cluster kubectl talks to. */
+  k8s?: K8sSpec;
 }
 
 export interface ShellState {
@@ -38,6 +44,8 @@ export interface ShellState {
   vars: Record<string, string>;
   /** Present when the terminal is PowerShell on a Windows machine. */
   win?: WinState;
+  docker?: DockerState;
+  k8s?: K8sState;
 }
 
 export interface CmdResult {
@@ -100,6 +108,8 @@ export function createShell(init: ShellInit): ShellState {
     packages: createPackages(init.sysinfo),
     vars: {},
     ...(init.windows ? { win: createWin(init.windows, user) } : {}),
+    ...(init.docker ? { docker: createDocker(init.docker) } : {}),
+    ...(init.k8s ? { k8s: createK8s(init.k8s) } : {}),
   };
 }
 

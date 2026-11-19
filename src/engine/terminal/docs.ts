@@ -6,7 +6,7 @@
 
 import { PS_DOCS } from '../pwsh/docs';
 
-export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'powershell';
+export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'konteyner' | 'powershell';
 
 export interface CommandDoc {
   name: string;
@@ -35,6 +35,7 @@ export const DOC_CATEGORIES: Record<DocCategory, string> = {
   xavfsizlik: 'Kodlash va yaxlitlik',
   skript: 'Skript va muhit',
   trafik: 'Trafik tahlili',
+  konteyner: 'Konteynerlar va Kubernetes',
   powershell: 'PowerShell (Windows)',
 };
 
@@ -364,6 +365,60 @@ export const DOCS: CommandDoc[] = [
     ['-p PORTLAR', "Faqat shu portlar: 22,80 yoki 1-1000.", 'nmap -p 22,80 srv.lab'],
     ['-A', "Kengaytirilgan: versiyalar va qo'shimcha ma'lumot.", 'nmap -A srv.lab'],
   ], [['nmap -sV -p 3306 portal.lab', "Ma'lumotlar bazasi porti va versiyasi"]], "Bu buyruq faqat Tarmoq razvedkasi labida bor (o'quv simulyatsiyasi). Haqiqiy hayotda faqat o'z tarmog'ingiz yoki yozma ruxsat bilan."),
+  // ── containers and Kubernetes
+  d('docker', 'konteyner', "Konteynerlar va image'lar bilan ishlaydi: ro'yxat, sozlama, loglar, ichida buyruq, tarix, xavfsiz ishga tushirish.", 'docker BUYRUQ [FLAGLAR] [NOM]', [
+    ['ps', "Ishlayotgan konteynerlar. -a — to'xtaganlari ham, -q — faqat ID.", 'docker ps -a'],
+    ['ps --format', "Kerakli ustunlar (Go shablon): {{.Names}}, {{.Image}}, {{.Status}}, {{.Ports}}.", "docker ps --format '{{.Names}}\\t{{.Ports}}'"],
+    ['ps --filter', "Filtr: status=exited, name=web, ancestor=nginx.", 'docker ps -a --filter status=exited'],
+    ['images', "Lokal image'lar: nomi, tegi, hajmi.", 'docker images'],
+    ['inspect', "Konteyner yoki image'ning to'liq sozlamasi (JSON).", 'docker inspect web'],
+    ['inspect -f', "JSON'dan bitta maydon (Go shablon): {{.Config.User}}, {{.HostConfig.Privileged}}, {{json .Mounts}}.", "docker inspect -f '{{.HostConfig.Privileged}}' web"],
+    ['logs', "Konteyner loglari. --tail N — oxirgi N qator.", 'docker logs --tail 20 web'],
+    ['exec', "Ishlayotgan konteyner ichida buyruq bajaradi. -u — boshqa foydalanuvchi sifatida.", 'docker exec web cat /etc/passwd'],
+    ['top', 'Konteyner ichidagi jarayonlar.', 'docker top web'],
+    ['stats --no-stream', 'CPU va xotira sarfi (bir martalik).', 'docker stats --no-stream'],
+    ['port', "Qaysi portlar xostga ochilgan.", 'docker port web'],
+    ['diff', "Image'ga nisbatan konteynerda o'zgargan fayllar: A — qo'shilgan, C — o'zgargan, D — o'chirilgan.", 'docker diff web'],
+    ['history', "Image qatlamlari — har biri Dockerfile qatori. --no-trunc — to'liq.", 'docker history --no-trunc app:1.4'],
+    ['run', "Image'dan yangi konteyner. -d — fonda, --name — nom, -p XOST:KONTEYNER — port.", 'docker run -d --name web -p 127.0.0.1:8080:80 nginx:1.27'],
+    ['run --user', 'Konteyner ichida root emas, oddiy foydalanuvchi.', 'docker run -d --user 1000:1000 app:1.4'],
+    ['run --read-only', "Konteyner fayl tizimini faqat o'qiladigan qiladi.", 'docker run -d --read-only app:1.4'],
+    ['run --cap-drop', "Linux imkoniyatlarini (capabilities) olib tashlaydi: ALL — hammasi.", 'docker run -d --cap-drop ALL app:1.4'],
+    ['run --memory', "Xotira chegarasi (256m, 1g). --pids-limit — jarayonlar soni.", 'docker run -d --memory 256m --pids-limit 100 app:1.4'],
+    ['run --security-opt', 'no-new-privileges — jarayon huquqini oshira olmaydi.', 'docker run -d --security-opt no-new-privileges app:1.4'],
+    ['stop / start / restart', "To'xtatish, ishga tushirish, qayta ishga tushirish.", 'docker stop web'],
+    ['rm', "Konteynerni o'chirish (ishlayotgan bo'lsa -f).", 'docker rm -f web'],
+    ['rmi', "Image'ni o'chirish.", 'docker rmi app:old'],
+    ['network ls / volume ls', 'Tarmoqlar va volume\'lar.', 'docker network ls'],
+  ], [["docker ps --format '{{.Names}} {{.Image}}'", "Qaysi konteyner qaysi image'dan"], ["docker inspect -f '{{range .Mounts}}{{.Source}} -> {{.Destination}} {{end}}' web", 'Xostdan nimalar ulangan']], "Simulyatorda internetdan image yuklab olinmaydi va interaktiv qobiq (docker exec -it ... sh) yo'q: buyruqni to'g'ridan-to'g'ri bering."),
+  d('trivy', 'konteyner', "Image'dagi ma'lum zaifliklarni (CVE) va qatlamlarga tushib qolgan sirlarni topadi.", 'trivy image [--severity DARAJA] [--scanners vuln,secret] [--ignore-unfixed] IMAGE', [
+    ['image', "Image'ni tekshiradi.", 'trivy image nginx:1.21'],
+    ['--severity', "Faqat shu darajalar: CRITICAL, HIGH, MEDIUM, LOW (vergul bilan).", 'trivy image --severity HIGH,CRITICAL app:1.4'],
+    ['--scanners', "vuln — zaifliklar, secret — sirlar (kalit, parol).", 'trivy image --scanners secret app:1.4'],
+    ['--ignore-unfixed', "Tuzatishi hali chiqmaganlarni ko'rsatmaydi.", 'trivy image --ignore-unfixed app:1.4'],
+  ], [['trivy image --severity CRITICAL app:1.4 | grep Total', 'Nechta kritik zaiflik']], "Simulyatorda zaifliklar ro'yxati lab ichida berilgan (internet bazasiga ulanmaydi)."),
+  d('hadolint', 'konteyner', "Dockerfile'ni eng yaxshi amaliyotlar bo'yicha tekshiradi (DL qoidalari).", 'hadolint Dockerfile', [], [['hadolint Dockerfile', "DL3007 — :latest teg, DL3002 — oxirgi USER root, DL3020 — ADD o'rniga COPY"]]),
+  d('kubectl', 'konteyner', "Kubernetes klasterini boshqaradi: resurslarni ko'rish, tavsif, loglar, pod ichida buyruq, huquqlar, o'zgartirish.", 'kubectl BUYRUQ [TUR] [NOM] [-n NAMESPACE] [-o FORMAT]', [
+    ['get', "Resurslar ro'yxati: pods, deploy, svc, secrets, sa, ns, nodes, rolebindings...", 'kubectl get pods'],
+    ['-n NAMESPACE', "Qaysi namespace (standart: default).", 'kubectl get pods -n prod'],
+    ['-A', 'Barcha namespace\'lar.', 'kubectl get pods -A'],
+    ['-o wide', "Qo'shimcha ustunlar (IP, NODE).", 'kubectl get pods -o wide'],
+    ['-o yaml', "To'liq obyekt YAML ko'rinishida (-o json ham bor).", 'kubectl get pod web-0 -o yaml'],
+    ['-o jsonpath', "Obyektdan maydon(lar)ni ajratish: {.items[*].metadata.name}, {range}...{end}.", "kubectl get pods -o jsonpath='{.items[*].spec.containers[*].image}'"],
+    ['-l', "Label bo'yicha filtr: app=web.", 'kubectl get pods -l app=web'],
+    ['--show-labels', "Label'larni ustun qilib ko'rsatadi.", 'kubectl get pods --show-labels'],
+    ['describe', "Batafsil tavsif va oxirgi hodisalar (Events).", 'kubectl describe pod web-0'],
+    ['logs', "Pod loglari. --tail N, -c KONTEYNER.", 'kubectl logs web-0 --tail 20'],
+    ['exec', "Pod ichida buyruq: -- dan keyin.", 'kubectl exec web-0 -- env'],
+    ['top', 'CPU va xotira sarfi: top pods, top nodes. --sort-by=cpu.', 'kubectl top pods -A --sort-by=cpu'],
+    ['auth can-i', "Ruxsat bormi? --as bilan boshqa nomidan; --list — hammasi.", 'kubectl auth can-i create pods --as=system:serviceaccount:prod:ci-bot'],
+    ['get events', "Klasterdagi hodisalar: kim qachon nima yaratdi, xatolar.", 'kubectl get events -n prod'],
+    ['delete', "O'chirish: delete TUR NOM.", 'kubectl delete pod miner-5d8f -n prod'],
+    ['scale', "Replikalar soni: --replicas=0 — vaqtincha to'xtatish.", 'kubectl scale deployment/web --replicas=0'],
+    ['apply -f', "YAML fayldagi obyektni yaratadi yoki yangilaydi.", 'kubectl apply -f deny-all.yaml'],
+    ['cordon', "Node'ga yangi pod joylashtirishni to'xtatadi (uncordon — qaytaradi).", 'kubectl cordon worker-2'],
+    ['config current-context', 'Hozir qaysi klaster bilan ishlayapsiz.', 'kubectl config current-context'],
+  ], [["kubectl get secret db-cred -o jsonpath='{.data.password}' | base64 -d", "Secret qiymati — faqat Base64, shifrlanmagan"], ['kubectl get clusterrolebindings -o wide', 'Kimga klaster bo\'yicha qanday rol berilgan']], "Simulyatorda tarmoq yo'q (port-forward, proxy), interaktiv qobiq yo'q; apply qo'llab-quvvatlaydigan turlar: NetworkPolicy, Role, RoleBinding, ServiceAccount, Secret, Pod, Deployment, Namespace."),
   // ── traffic analysis
   d('capinfos', 'trafik', "Yozib olingan trafik fayli haqida qisqa ma'lumot: nechta paket, qancha vaqt, qachondan qachongacha.", 'capinfos FAYL.pcap', [], [['capinfos ofis.pcap', 'Tahlilni shundan boshlang: fayl qanchalik katta va qaysi vaqtni qamraydi']]),
   d('tcpdump', 'trafik', "Paketlarni bir qatordan ko'rsatadi va BPF filtri bilan saralaydi. Bu yerda tayyor faylni o'qiydi (-r).", "tcpdump -r FAYL [-n|-nn] [-c N] [-A] [-X] [-e] [-t] [-w YANGI.pcap] [FILTR]", [

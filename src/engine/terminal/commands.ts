@@ -54,6 +54,8 @@ import { getDoc, manText } from './docs';
 import { journalctl, kill, pgrep, ps, ss, systemctl } from './system';
 import { awk, jq, sed, sha256sum } from './text';
 import { capinfos, tcpdump, tshark } from './pcaptools';
+import { docker, hadolint, trivy } from './docker';
+import { kubectl } from './kube';
 import { PCAP_MAGIC } from './pcap';
 
 /*
@@ -566,6 +568,10 @@ export const COMMANDS: Record<string, Command> = {
   tcpdump,
   tshark,
   capinfos,
+  docker,
+  kubectl,
+  trivy,
+  hadolint,
   bash: () => fail('Ishlatilishi: bash SKRIPT.sh   (bu simulyator allaqachon bash ichida ishlaydi)'),
   sh: () => fail('Ishlatilishi: sh SKRIPT.sh'),
   exit: () => ok("Bu simulyator — yopish shart emas. Chiqish uchun sahifadan chiqing."),
