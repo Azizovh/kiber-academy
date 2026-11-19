@@ -20,8 +20,8 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 16 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows), 34 CTF
-challenges (Linux admin, Windows, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 19 terminal labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+analysis), 39 CTF challenges (Linux admin, Windows, traffic, SOC logs, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -200,6 +200,14 @@ values computed from the lab's own data, never hand-typed counts.
 registry map keyed by lower-cased `HKLM:\...` path, firewall, defender). Doc names must not clash with Linux docs —
 native tools are `whoami.exe`, `hostname.exe`, `ping.exe`. Shell heredocs mangle backslashes: write Windows content
 with the Write tool and `String.raw` (`W`) in lab files.
+
+**Traffic captures** (`pcap.ts`, `pcaptools.ts`, `pcapBuild.ts` in `src/engine/terminal/`): a capture file is the pcap
+magic bytes plus Base64 JSON of `Pkt` records (addresses, ports, TCP flags, text payload, DNS/ICMP/ARP/TLS details), so
+`file` recognises it and `cat` shows noise. `dissect()` turns packets into frames with Wireshark field names
+(`ip.addr`, `tcp.stream`, `http.request.uri`, `dns.qry.name`, `ftp.request.arg`, `tls.handshake.extensions_server_name`...).
+`tcpdump -r` (BPF subset, `-n/-nn`, `-A`, `-X`, `-e`, `-w`), `tshark -r` (display filters, `-T fields -e`, `-z conv|
+endpoints|io,phs|io,stat|follow`) and `capinfos` print like the real tools. Labs build captures with `Capture`
+(`dns`, `tcp` sessions with exchanges, `tls`, `probe`, `ping`, `arp`) and compute expected answers with `dissect`.
 
 ## Code conventions
 

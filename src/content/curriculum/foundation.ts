@@ -203,7 +203,7 @@ export const FOUNDATION: Stage[] = [
         ], [
           r.docs('Wireshark — User Guide', 'https://www.wireshark.org/docs/wsug_html_chunked/'),
           r.thm('Wireshark: The Basics'),
-        ]),
+        ], { labs: ['trafik-asoslari', 'trafik-ochiq-matn'], ctf: ['pcap-ftp', 'pcap-basic'] }),
         topic('tarmoq-himoyasi-asoslari', 'Firewall, VPN, proxy va Wi-Fi', 5, "Tarmoqni himoyalovchi asosiy vositalar.", [
           "Firewall qoidasi qanday ishlashini tushuntira olaman",
           "VPN va proxy farqini bilaman",

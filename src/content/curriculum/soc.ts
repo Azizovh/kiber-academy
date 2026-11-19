@@ -47,7 +47,7 @@ export const SOC: Stage[] = [
           "PCAP'dan yuklangan faylni ajratib ola olaman",
           "C2 trafigi belgilarini bilaman",
           "Kamida 5 ta PCAP topshirig'ini yechdim",
-        ], [r.lab('Malware-Traffic-Analysis.net', 'https://www.malware-traffic-analysis.net/'), r.thm('Wireshark: Traffic Analysis')]),
+        ], [r.lab('Malware-Traffic-Analysis.net', 'https://www.malware-traffic-analysis.net/'), r.thm('Wireshark: Traffic Analysis')], { labs: ['trafik-insident', 'trafik-ochiq-matn'], ctf: ['pcap-dns-exfil', 'pcap-scan', 'pcap-beacon'] }),
         topic('phishing-tahlili', 'Phishing xat tahlili', 12, "Sarlavhalar, SPF/DKIM/DMARC, havola va ilova tahlili.", [
           "Xat sarlavhasidan haqiqiy jo'natuvchini aniqlay olaman",
           "Ilova va havolani xavfsiz muhitda tekshira olaman",

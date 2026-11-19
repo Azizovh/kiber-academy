@@ -190,6 +190,11 @@ describe('CTF', () => {
     'win-encoded': 'flag{kodlangan_buyruq_ochildi}',
     'win-new-admin': 'flag{itsupport2}',
     'win-c2': 'flag{9e424bf3}',
+    'pcap-ftp': 'flag{tarmoq_eshitadi}',
+    'pcap-basic': 'flag{basic_bu_base64}',
+    'pcap-dns-exfil': 'flag{dns_tunnel_ushlandi}',
+    'pcap-scan': 'flag{22_3306_8080}',
+    'pcap-beacon': 'flag{cdn-sync.example_300}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -230,6 +235,22 @@ describe('CTF', () => {
     const top = execLine(s2, 'grep "Failed password" /var/log/auth.log | cut -d " " -f 11 | sort | uniq -c | sort -rn | head -n 1').output;
     expect(top.trim().split(/\s+/)[1]).toBe('203.0.113.45');
     expect(execLine(s2, 'grep Accepted /var/log/auth.log | grep 203.0.113.45').output).toContain('for deploy from');
+  });
+
+  it('the traffic challenges can be solved with tcpdump and tshark', () => {
+    const solve = (id: string, ...lines: string[]) => {
+      const s = createShell(CTF.find((c) => c.id === id)!.shell!());
+      return lines.map((l) => execLine(s, l).output).pop()!.trim();
+    };
+    expect(`flag{${solve('pcap-ftp', `tshark -r ftp.pcap -Y 'ftp.request.command == "PASS"' -T fields -e ftp.request.arg`)}}`).toBe(answers['pcap-ftp']);
+    expect(execLine(createShell({ fs: {} }), 'echo cm91dGVyOmZsYWd7YmFzaWNfYnVfYmFzZTY0fQ== | base64 -d').output).toBe('router:' + answers['pcap-basic']);
+    expect(solve('pcap-dns-exfil', `tshark -r dns.pcap -Y 'dns.qry.name contains "cdn-metrics" && dns.flags.response == 0' -T fields -e dns.qry.name | cut -d. -f1 | tr -d '\n' | xxd -r -p`)).toBe(answers['pcap-dns-exfil']);
+    const open = solve('pcap-scan', `tshark -r skan.pcap -Y 'tcp.flags.syn == 1 && tcp.flags.ack == 1 && ip.dst == 198.51.100.200' -T fields -e tcp.srcport | sort -n -u`);
+    expect(`flag{${open.split('\n').join('_')}}`).toBe(answers['pcap-scan']);
+    const top = solve('pcap-beacon', 'tshark -r ofis-http.pcap -Y http.request -T fields -e http.host | sort | uniq -c | sort -rn | head -n 1');
+    expect(top).toMatch(/^6 cdn-sync\.example$/);
+    const deltas = solve('pcap-beacon', `tshark -r ofis-http.pcap -Y 'http.host == "cdn-sync.example"' -T fields -e frame.time_delta_displayed`);
+    expect(deltas.split('\n').slice(1).every((d) => d === '300.000000')).toBe(true);
   });
 
   it('the Windows challenges can be solved in PowerShell', () => {
