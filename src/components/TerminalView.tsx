@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type MutableRefObject } from 'react';
 import { RotateCcw } from 'lucide-react';
 import {
   complete,
@@ -28,6 +28,10 @@ interface Props {
   autoFocus?: boolean;
   /** Stretch to the parent's height (workspace layouts) instead of a fixed height. */
   fill?: boolean;
+  /** Share the shell with another pane (the SIEM view of the same lab); created here when empty. */
+  shellRef?: MutableRefObject<ShellState | null>;
+  /** Share the list of executed lines with another pane, so lab checks see SIEM searches too. */
+  linesRef?: MutableRefObject<string[]>;
 }
 
 function Prompt({ user, host, path, ps }: { user: string; host: string; path: string; ps?: boolean }) {
@@ -48,14 +52,16 @@ function Prompt({ user, host, path, ps }: { user: string; host: string; path: st
   );
 }
 
-export function TerminalView({ init, commands, onCommand, onReset, banner, height, autoFocus = true, fill = false }: Props) {
-  const shell = useRef<ShellState | null>(null);
+export function TerminalView({ init, commands, onCommand, onReset, banner, height, autoFocus = true, fill = false, shellRef, linesRef }: Props) {
+  const ownShell = useRef<ShellState | null>(null);
+  const shell = shellRef ?? ownShell;
   if (!shell.current) shell.current = createShell(init());
   // A Windows lab gets PowerShell's own banner: its help command is Get-Help, not help.
   const bannerText = shell.current.win
     ? "PowerShell 7.4.6 · KiberAkademiya o'quv terminali. Yordam: Get-Help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"
     : banner;
-  const lines = useRef<string[]>([]);
+  const ownLines = useRef<string[]>([]);
+  const lines = linesRef ?? ownLines;
   const [entries, setEntries] = useState<Entry[]>(() => (bannerText ? [{ kind: 'note', text: bannerText }] : []));
   const [value, setValue] = useState('');
   const [cursor, setCursor] = useState<number | null>(null);

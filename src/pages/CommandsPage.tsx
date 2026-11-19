@@ -15,6 +15,7 @@ export function CommandsPage() {
         (d) =>
           !q ||
           d.name.toLowerCase().includes(q) ||
+          !!d.title?.toLowerCase().includes(q) ||
           // PowerShell entries list their aliases (ls, ps, ?...).
           !!d.aliases?.includes(q) ||
           d.summary.toLowerCase().includes(q) ||
@@ -40,7 +41,7 @@ export function CommandsPage() {
           <h1 className="page-title">Buyruqlar ma'lumotnomasi</h1>
           <p className="page-sub">
             Terminalda ishlatiladigan barcha buyruqlar: nima qiladi, qanday yoziladi, har bir flag misol bilan. Xuddi shu
-            matnni terminalda <code>man BUYRUQ</code> (PowerShell'da <code>Get-Help BUYRUQ</code>) ham ko'rsatadi.
+            matnni terminalda <code>man BUYRUQ</code> (PowerShell'da <code>Get-Help BUYRUQ</code>) ham ko'rsatadi. SIEM lablaridagi so'rov tillari (Splunk SPL va Sentinel KQL) — alohida bo'limda.
           </p>
         </div>
         <span className="small faint">{ALL_DOCS.length} ta buyruq</span>

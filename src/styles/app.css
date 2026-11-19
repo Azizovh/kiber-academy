@@ -2655,3 +2655,424 @@ main:focus {
 .lab-group-head .chip {
   flex-shrink: 0;
 }
+
+/* ── SIEM pane ─────────────────────────────────────────────────────────── */
+
+.pane-tabs {
+  flex: none;
+}
+
+.pane-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+}
+
+.pane-tabs svg {
+  width: 15px;
+  height: 15px;
+}
+
+.lab-terminal[hidden] {
+  display: none;
+}
+
+.siem-win {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.siem-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+
+.siem-bar > svg {
+  width: 15px;
+  height: 15px;
+  color: var(--t-soc);
+}
+
+.siem-app {
+  font-weight: 700;
+}
+
+.siem-langs button {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+.siem-sources-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  color: var(--text-2);
+  font-size: 0.78rem;
+}
+
+.siem-sources-btn:hover,
+.siem-sources-btn[aria-expanded='true'] {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.siem-sources-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.siem-sources {
+  display: grid;
+  gap: 4px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.siem-sources code {
+  font-family: var(--font-mono);
+  color: var(--accent-strong);
+}
+
+.siem-query {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  padding: 12px 12px 4px;
+}
+
+.siem-query textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-raised);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.siem-query textarea:focus {
+  outline: 2px solid var(--accent-line);
+  border-color: var(--accent);
+}
+
+.siem-run {
+  flex: none;
+  align-self: flex-start;
+}
+
+.siem-help {
+  margin: 0;
+  padding: 0 12px 8px;
+  font-size: 0.72rem;
+}
+
+.siem-ok {
+  margin: 0 12px 8px;
+  padding: 7px 11px;
+  border-radius: var(--radius-sm);
+  background: var(--ok-soft);
+  color: var(--ok);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.siem-results {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.siem-empty {
+  padding: 18px 2px;
+}
+
+.siem-error {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+}
+
+.siem-summary {
+  padding: 10px 2px 8px;
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.siem-summary b {
+  color: var(--text);
+}
+
+.siem-timeline svg {
+  display: block;
+  width: 100%;
+  height: 56px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+
+.siem-timeline rect {
+  fill: var(--t-soc);
+}
+
+.siem-timeline-axis,
+.siem-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0 10px;
+  font-size: 0.7rem;
+}
+
+.siem-events-layout {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.siem-fields {
+  position: sticky;
+  top: 0;
+  font-size: 0.78rem;
+}
+
+.siem-fields-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.siem-field > button,
+.siem-field-values button {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 3px 6px;
+  border-radius: 6px;
+  text-align: left;
+  color: var(--text);
+}
+
+.siem-field > button:hover,
+.siem-field-values button:hover {
+  background: var(--surface-3);
+}
+
+.siem-field .mono {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.siem-field-values {
+  list-style: none;
+  margin: 2px 0 6px;
+  padding: 4px 0 4px 8px;
+  border-left: 2px solid var(--accent-line);
+}
+
+.siem-field-values li > span {
+  display: block;
+  padding: 3px 6px;
+}
+
+.siem-events {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.siem-event {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-raised);
+}
+
+.siem-event.open {
+  border-color: var(--border-strong);
+}
+
+.siem-event-head {
+  display: grid;
+  grid-template-columns: 14px auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  width: 100%;
+  padding: 6px 8px;
+  text-align: left;
+  color: var(--text);
+}
+
+.siem-event-head svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  color: var(--text-3);
+}
+
+.siem-time {
+  color: var(--text-3);
+  font-size: 0.74rem;
+  white-space: nowrap;
+  padding-top: 1px;
+}
+
+.siem-raw {
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.siem-kv {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+  border-top: 1px solid var(--border);
+}
+
+.siem-kv th,
+.siem-kv td {
+  padding: 3px 10px;
+  text-align: left;
+  vertical-align: top;
+  word-break: break-all;
+}
+
+.siem-kv th {
+  width: 34%;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.siem-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.siem-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.siem-table th {
+  position: sticky;
+  top: 0;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+.siem-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.siem-table td.num {
+  text-align: right;
+}
+
+.siem-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.siem-chart {
+  margin: 0 0 12px;
+}
+
+.siem-chart svg {
+  display: block;
+  width: 100%;
+  height: 160px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+
+.siem-axis {
+  stroke: var(--border-strong);
+}
+
+.siem-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.siem-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+
+@media (max-width: 1000px) {
+  .lab-siem {
+    height: clamp(420px, 75vh, 720px);
+  }
+
+  .siem-events-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .siem-fields {
+    position: static;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+}
+
+.ctf-work {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ctf-pane {
+  flex: 1;
+  min-height: 0;
+}
+
+.ctf-pane[hidden] {
+  display: none;
+}

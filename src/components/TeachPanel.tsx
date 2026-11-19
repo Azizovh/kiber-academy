@@ -35,7 +35,7 @@ export function TeachPanel({ entries }: { entries: string[] }) {
   return (
     <div className="teach">
       <p className="teach-title">
-        <BookOpen aria-hidden /> {groups.length === 1 && !groups[0]!.flags.length ? 'Yangi buyruq' : 'Yangi buyruq va flaglar'}
+        <BookOpen aria-hidden /> {groups.every((g) => g.cmd.includes(':')) ? "Yangi so'rov qismi" : groups.length === 1 && !groups[0]!.flags.length ? 'Yangi buyruq' : 'Yangi buyruq va flaglar'}
       </p>
       {groups.map(({ cmd, flags }) => {
         const doc = getDoc(cmd);
@@ -45,7 +45,7 @@ export function TeachPanel({ entries }: { entries: string[] }) {
         return (
           <div key={cmd} className="teach-item">
             <code className="cmd-name" style={{ fontSize: '0.95rem' }}>
-              {cmd}
+              {doc.title ?? cmd}
             </code>
             {!flags.length && <p>{doc.summary}</p>}
             {rows.length > 0 && (
@@ -64,7 +64,7 @@ export function TeachPanel({ entries }: { entries: string[] }) {
               <p className="small" style={{ margin: '6px 0 0' }}>
                 Masalan: <code className="mono">{example}</code> ·{' '}
                 <button className="link-btn" onClick={() => setOpen(open === cmd ? null : cmd)} aria-expanded={open === cmd}>
-                  {open === cmd ? 'yopish' : 'barcha flaglar'}
+                  {open === cmd ? 'yopish' : cmd.includes(':') ? 'batafsil' : 'barcha flaglar'}
                 </button>
               </p>
             )}

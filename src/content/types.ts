@@ -1,4 +1,5 @@
 import type { ShellInit, CustomCommand, ShellState } from '../engine/terminal/shell';
+import type { SiemLang, SiemResult } from '../engine/siem/types';
 
 export type TrackId = 'foundation' | 'pentest' | 'soc' | 'appsec' | 'cloud' | 'career';
 
@@ -94,9 +95,14 @@ export interface LabCheckCtx {
   line: string;
   /** Its output. */
   output: string;
-  /** Every command line executed in this lab run, oldest first. */
+  /** Every command line executed in this lab run, oldest first. SIEM searches appear as "spl> query" / "kql> query". */
   lines: string[];
+  /** Set when the action was a search in the SIEM pane (then `line` is the query and `output` its resultText). */
+  siem?: { lang: SiemLang; query: string; result: SiemResult };
 }
+
+/** Panes a lab or CTF shows: the terminal, the SIEM search screen, or both as tabs. */
+export type Pane = 'terminal' | 'siem';
 
 export interface LabTask {
   id: string;
@@ -123,6 +129,8 @@ export interface Lab {
   intro: string;
   shell: () => ShellInit;
   commands?: Record<string, CustomCommand>;
+  /** Defaults to ['terminal']. A SIEM pane needs `shell().siem`. The first pane opens first. */
+  panes?: Pane[];
   tasks: LabTask[];
 }
 
@@ -141,6 +149,8 @@ export interface CtfChallenge {
   /** cyrb53 hash of the trimmed, lower-cased flag. */
   flagHash: string;
   shell?: () => ShellInit;
+  /** Defaults to ['terminal'] when there is a shell. */
+  panes?: Pane[];
 }
 
 export interface GlossaryTerm {

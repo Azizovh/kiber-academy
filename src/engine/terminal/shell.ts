@@ -9,6 +9,7 @@ import { createDocker, type DockerSpec, type DockerState } from './docker';
 import { createK8s, type K8sSpec, type K8sState } from './kube';
 import { createRepos, type GitRepoSpec, type GitState } from './git';
 import type { NpmSpec } from './codesec';
+import { createSiem, type SiemSpec, type SiemState } from '../siem/types';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -32,6 +33,8 @@ export interface ShellInit {
   git?: GitRepoSpec[];
   /** Advisories npm audit checks package-lock.json against. */
   npm?: NpmSpec;
+  /** A SIEM (Splunk indexes, Sentinel tables) the lab's SIEM pane searches. */
+  siem?: SiemSpec;
 }
 
 export interface ShellState {
@@ -54,6 +57,7 @@ export interface ShellState {
   k8s?: K8sState;
   git?: GitState;
   npm?: NpmSpec;
+  siem?: SiemState;
 }
 
 export interface CmdResult {
@@ -120,6 +124,7 @@ export function createShell(init: ShellInit): ShellState {
     ...(init.k8s ? { k8s: createK8s(init.k8s) } : {}),
     ...(init.git ? { git: createRepos(init.git, root) } : {}),
     ...(init.npm ? { npm: JSON.parse(JSON.stringify(init.npm)) as NpmSpec } : {}),
+    ...(init.siem ? { siem: createSiem(init.siem) } : {}),
   };
 }
 

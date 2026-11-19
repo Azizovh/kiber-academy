@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, Check, ChevronRight, Info, Lightbulb, PartyPopper } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, Info, Lightbulb, PartyPopper, Search, SquareTerminal } from 'lucide-react';
 import { CommandCard } from '../components/CommandCard';
 import { Markdown } from '../components/Markdown';
 import { TeachPanel, teachGroups } from '../components/TeachPanel';
 import { getDoc } from '../engine/terminal/docs';
 import { TerminalView } from '../components/TerminalView';
+import { SiemView } from '../components/SiemView';
+import { resultText, type SiemLang, type SiemResult } from '../engine/siem';
+import { createShell, type ShellState } from '../engine/terminal/shell';
 import { Bar, Level } from '../components/ui';
 import { LABS, getLab } from '../content/labs';
-import type { Lab, LabCheckCtx } from '../content/types';
+import type { Lab, LabCheckCtx, Pane } from '../content/types';
 import { useStudyTimer } from '../hooks/useStudyTimer';
 import { useActivity } from '../store/activity';
 import { useProgress } from '../store/progress';
@@ -17,11 +20,13 @@ import { useProgress } from '../store/progress';
 function Inline({ text }: { text: string }) {
   return (
     <>
-      {text.split(/(`[^`]+`)/g).map((part, i) =>
+      {text.split(/(`[^`]+`|\*\*[^*`]+\*\*)/g).map((part, i) =>
         part.startsWith('`') && part.length > 2 ? (
           <code key={i} className="mono" style={{ color: 'var(--accent-strong)' }}>
             {part.slice(1, -1)}
           </code>
+        ) : part.startsWith('**') && part.length > 4 ? (
+          <b key={i}>{part.slice(2, -2)}</b>
         ) : (
           part
         ),
@@ -51,6 +56,21 @@ function LabRun({ lab }: { lab: Lab }) {
   const finished = solved >= lab.tasks.length;
   const next = LABS[LABS.findIndex((l) => l.id === lab.id) + 1];
 
+  // The terminal and the SIEM pane share one machine and one list of executed lines.
+  const shellRef = useRef<ShellState | null>(null);
+  if (!shellRef.current) shellRef.current = createShell(lab.shell());
+  const linesRef = useRef<string[]>([]);
+  const panes: Pane[] = lab.panes ?? ['terminal'];
+  const [pane, setPane] = useState<Pane>(panes[0]!);
+  // Bumped when the terminal resets the machine, so the SIEM pane starts over on the new one.
+  const [runId, setRunId] = useState(0);
+  const desktop = window.matchMedia('(min-width: 1001px)').matches;
+
+  const onSearch = (lang: SiemLang, query: string, result: SiemResult): string | void => {
+    linesRef.current.push(`${lang}> ${query}`);
+    return onCommand({ state: shellRef.current!, line: query, output: resultText(result), lines: [...linesRef.current], siem: { lang, query, result } });
+  };
+
   const onCommand = (ctx: LabCheckCtx): string | void => {
     const start = solvedRef.current;
     let index = start;
@@ -79,6 +99,7 @@ function LabRun({ lab }: { lab: Lab }) {
   };
 
   const onReset = () => {
+    setRunId((n) => n + 1);
     solvedRef.current = 0;
     setSolved(0);
     setHint(false);
@@ -102,7 +123,7 @@ function LabRun({ lab }: { lab: Lab }) {
         <nav className="crumbs" aria-label="Yo'l">
           <Link to="/amaliyot">Amaliyot</Link>
           <ChevronRight aria-hidden />
-          <span>Terminal lablari</span>
+          <span>{lab.panes?.includes('siem') ? 'SIEM lablari' : 'Terminal lablari'}</span>
         </nav>
         <div className="row wrap" style={{ gap: 10 }}>
           <h1 className="page-title workspace-title">{lab.title}</h1>
@@ -166,18 +187,37 @@ function LabRun({ lab }: { lab: Lab }) {
             )}
           </div>
 
-          <div className="lab-terminal">
-            <TerminalView
-              init={lab.shell}
-              commands={lab.commands}
-              onCommand={onCommand}
-              onReset={onReset}
-              fill
-              // On phones focusing the input would open the keyboard over the task before it is read.
-              autoFocus={window.matchMedia('(min-width: 1001px)').matches}
-              banner={"KiberAkademiya o'quv terminali. Buyruqlar ro'yxati: help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"}
-            />
-          </div>
+          {panes.length > 1 && (
+            <div className="seg pane-tabs" role="tablist" aria-label="Ish oynasi">
+              {panes.map((p) => (
+                <button key={p} role="tab" aria-selected={pane === p} className={pane === p ? 'on' : ''} onClick={() => setPane(p)}>
+                  {p === 'terminal' ? <SquareTerminal aria-hidden /> : <Search aria-hidden />} {p === 'terminal' ? 'Terminal' : 'SIEM'}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {panes.includes('terminal') && (
+            <div className="lab-terminal" hidden={pane !== 'terminal'}>
+              <TerminalView
+                init={lab.shell}
+                commands={lab.commands}
+                onCommand={onCommand}
+                onReset={onReset}
+                shellRef={shellRef}
+                linesRef={linesRef}
+                fill
+                // On phones focusing the input would open the keyboard over the task before it is read.
+                autoFocus={desktop && panes[0] === 'terminal'}
+                banner={"KiberAkademiya o'quv terminali. Buyruqlar ro'yxati: help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"}
+              />
+            </div>
+          )}
+          {panes.includes('siem') && shellRef.current.siem && (
+            <div className="lab-terminal lab-siem" hidden={pane !== 'siem'}>
+              <SiemView key={runId} siem={shellRef.current.siem} onSearch={onSearch} autoFocus={desktop && panes[0] === 'siem'} />
+            </div>
+          )}
         </section>
 
         <aside className="lab-side" aria-label="Lab haqida va topshiriqlar">
@@ -196,7 +236,7 @@ function LabRun({ lab }: { lab: Lab }) {
               <div className="lab-cmds">
                 {labCommands.map((c) => (
                   <button key={c} className={refOpen === c ? 'on' : ''} onClick={() => setRefOpen(refOpen === c ? null : c)} aria-expanded={refOpen === c}>
-                    {c}
+                    {getDoc(c)?.title ?? c}
                   </button>
                 ))}
               </div>

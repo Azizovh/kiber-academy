@@ -5,10 +5,12 @@ export function CommandCard({ doc, only }: { doc: CommandDoc; only?: string[] })
   // A lab can ask to show just the flags its task uses; the full list stays in the reference.
   const flags = only?.length ? doc.flags.filter(([f]) => only.some((o) => f.split(/[\s/|,]+/).includes(o) || f === o)) : doc.flags;
   const ps = doc.category === 'powershell';
+  const siem = doc.category === 'siem';
+  const prompt = ps ? 'PS>' : siem ? (doc.name.startsWith('kql:') ? 'KQL>' : 'SPL>') : '$';
   return (
     <article className="card cmd-card" id={`cmd-${doc.name}`}>
       <header className="cmd-head">
-        <h2 className="cmd-name">{doc.name}</h2>
+        <h2 className="cmd-name">{doc.title ?? doc.name}</h2>
         <p>{doc.summary}</p>
         {doc.aliases?.length ? <p className="small faint">Qisqa nomlari: {doc.aliases.join(', ')}</p> : null}
       </header>
@@ -17,7 +19,7 @@ export function CommandCard({ doc, only }: { doc: CommandDoc; only?: string[] })
         <table className="cmd-flags">
           <thead>
             <tr>
-              <th>{ps ? 'Parametr' : 'Flag'}</th>
+              <th>{ps ? 'Parametr' : siem ? 'Qism' : 'Flag'}</th>
               <th>Nima qiladi</th>
               <th>Misol</th>
             </tr>
@@ -39,7 +41,7 @@ export function CommandCard({ doc, only }: { doc: CommandDoc; only?: string[] })
         <div className="cmd-examples">
           {doc.examples.map(([c, n]) => (
             <div key={c}>
-              <code>{ps ? 'PS>' : '$'} {c}</code>
+              <code>{prompt} {c}</code>
               {n && <span>{n}</span>}
             </div>
           ))}

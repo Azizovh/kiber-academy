@@ -5,11 +5,14 @@
  */
 
 import { PS_DOCS } from '../pwsh/docs';
+import { SIEM_DOCS } from '../siem/docs';
 
-export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'konteyner' | 'kod' | 'powershell';
+export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'konteyner' | 'kod' | 'powershell' | 'siem';
 
 export interface CommandDoc {
   name: string;
+  /** Shown instead of the name where it differs (SIEM entries: name spl:stats, title | stats). */
+  title?: string;
   category: DocCategory;
   /** One sentence: what it is for. */
   summary: string;
@@ -38,6 +41,7 @@ export const DOC_CATEGORIES: Record<DocCategory, string> = {
   konteyner: 'Konteynerlar va Kubernetes',
   kod: 'Git va kod xavfsizligi',
   powershell: 'PowerShell (Windows)',
+  siem: "SIEM so'rovlari (SPL va KQL)",
 };
 
 const d = (
@@ -588,7 +592,7 @@ export const DOCS: CommandDoc[] = [
 ];
 
 /** Linux and PowerShell together, for the reference page. */
-export const ALL_DOCS: CommandDoc[] = [...DOCS, ...PS_DOCS];
+export const ALL_DOCS: CommandDoc[] = [...DOCS, ...PS_DOCS, ...SIEM_DOCS];
 
 const index = new Map(ALL_DOCS.map((c) => [c.name, c]));
 

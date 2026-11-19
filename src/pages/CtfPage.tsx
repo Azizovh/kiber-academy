@@ -1,11 +1,13 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, ChevronRight, Flag, Lightbulb } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronRight, Flag, Lightbulb, Search, SquareTerminal } from 'lucide-react';
 import { CodeBlock, Markdown } from '../components/Markdown';
 import { TerminalView } from '../components/TerminalView';
+import { SiemView } from '../components/SiemView';
+import { createShell, type ShellState } from '../engine/terminal/shell';
 import { Level } from '../components/ui';
 import { CTF, CTF_CATEGORIES, getCtf } from '../content/ctf';
-import type { CtfChallenge } from '../content/types';
+import type { CtfChallenge, Pane } from '../content/types';
 import { checkFlag } from '../engine/hash';
 import { useStudyTimer } from '../hooks/useStudyTimer';
 import { useActivity } from '../store/activity';
@@ -161,9 +163,7 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
             {flagBlock}
             {hintsCard}
           </div>
-          <div className="ctf-terminal">
-            <TerminalView init={challenge.shell} fill autoFocus={false} banner="Topshiriq terminali. Buyruqlar ro'yxati: help" />
-          </div>
+          <CtfWork challenge={challenge} init={challenge.shell} />
         </div>
       </div>
     );
@@ -187,6 +187,38 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
         {hintsCard}
         {flagBlock}
       </div>
+    </div>
+  );
+}
+
+/** The terminal, the SIEM search screen, or both as tabs over one shared machine. */
+function CtfWork({ challenge, init }: { challenge: CtfChallenge; init: NonNullable<CtfChallenge['shell']> }) {
+  const panes: Pane[] = challenge.panes ?? ['terminal'];
+  const [pane, setPane] = useState<Pane>(panes[0]!);
+  const shellRef = useRef<ShellState | null>(null);
+  if (!shellRef.current) shellRef.current = createShell(init());
+  const [runId, setRunId] = useState(0);
+  return (
+    <div className="ctf-terminal ctf-work">
+      {panes.length > 1 && (
+        <div className="seg pane-tabs" role="tablist" aria-label="Ish oynasi">
+          {panes.map((p) => (
+            <button key={p} role="tab" aria-selected={pane === p} className={pane === p ? 'on' : ''} onClick={() => setPane(p)}>
+              {p === 'terminal' ? <SquareTerminal aria-hidden /> : <Search aria-hidden />} {p === 'terminal' ? 'Terminal' : 'SIEM'}
+            </button>
+          ))}
+        </div>
+      )}
+      {panes.includes('terminal') && (
+        <div className="ctf-pane" hidden={pane !== 'terminal'}>
+          <TerminalView init={init} shellRef={shellRef} onReset={() => setRunId((n) => n + 1)} fill autoFocus={false} banner="Topshiriq terminali. Buyruqlar ro'yxati: help" />
+        </div>
+      )}
+      {panes.includes('siem') && shellRef.current.siem && (
+        <div className="ctf-pane" hidden={pane !== 'siem'}>
+          <SiemView key={runId} siem={shellRef.current.siem} autoFocus={false} />
+        </div>
+      )}
     </div>
   );
 }
