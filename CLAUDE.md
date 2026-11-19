@@ -191,13 +191,13 @@ flag's row before the task (TeachPanel); a content test fails if the doc or flag
 values computed from the lab's own data, never hand-typed counts.
 
 **PowerShell** (`src/engine/pwsh/`): a lab whose `shell()` returns `windows: WinSpec` gets a PowerShell 7 terminal
-(`ShellState.win`; `execLine`, `promptPath` and `complete` dispatch on it). `fs` is the C: drive (`Users/talaba` =
-`C:Users	alaba`; names match case-insensitively). `parse.ts` (argument vs expression mode, script blocks, hashtables,
+(`ShellState.win`; `execLine`, `promptPath` and `complete` dispatch on it). `fs` is the C:\ drive (`Users/talaba` =
+`C:\Users\talaba`; names match case-insensitively). `parse.ts` (argument vs expression mode, script blocks, hashtables,
 `[Type]::Member`), `eval.ts` (object pipeline, parameter binding with prefixes, aliases, PS7 concise errors),
 `format.ts` (table for ≤4 properties or a `view`, list otherwise; `group`/`header` for directory and event listings),
 `cmdlets/` (files and registry, processes/services/tasks/users/CIM, network and firewall, Get-WinEvent and Defender),
 `docs.ts` (`PS_DOCS`, category `powershell`, merged into `ALL_DOCS`). Lab checks read `state.win` (services, tasks,
-registry map keyed by lower-cased `HKLM:...` path, firewall, defender). Doc names must not clash with Linux docs —
+registry map keyed by lower-cased `HKLM:\...` path, firewall, defender). Doc names must not clash with Linux docs —
 native tools are `whoami.exe`, `hostname.exe`, `ping.exe`. Shell heredocs mangle backslashes: write Windows content
 with the Write tool and `String.raw` (`W`) in lab files.
 
