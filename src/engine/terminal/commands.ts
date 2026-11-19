@@ -53,6 +53,8 @@ import {
 import { getDoc, manText } from './docs';
 import { journalctl, kill, pgrep, ps, ss, systemctl } from './system';
 import { awk, jq, sed, sha256sum } from './text';
+import { capinfos, tcpdump, tshark } from './pcaptools';
+import { PCAP_MAGIC } from './pcap';
 
 /*
  * Error texts are the real English ones on purpose: learners must recognise
@@ -341,6 +343,7 @@ const fileCmd: Command = (args, ctx) => {
     else if (node.content.startsWith('\x89PNG')) out.push(`${p}: PNG image data`);
     else if (node.content.startsWith('%PDF')) out.push(`${p}: PDF document`);
     else if (node.content.startsWith('PK')) out.push(`${p}: Zip archive data`);
+    else if (node.content.startsWith(PCAP_MAGIC)) out.push(`${p}: pcap capture file, microsecond ts (little-endian) - version 2.4 (Ethernet, capture length 262144)`);
     else out.push(`${p}: ASCII text`);
   }
   return ok(out.join('\n'));
@@ -558,6 +561,9 @@ export const COMMANDS: Record<string, Command> = {
   sed,
   jq,
   sha256sum,
+  tcpdump,
+  tshark,
+  capinfos,
   bash: () => fail('Ishlatilishi: bash SKRIPT.sh   (bu simulyator allaqachon bash ichida ishlaydi)'),
   sh: () => fail('Ishlatilishi: sh SKRIPT.sh'),
   exit: () => ok("Bu simulyator — yopish shart emas. Chiqish uchun sahifadan chiqing."),

@@ -6,7 +6,7 @@
 
 import { PS_DOCS } from '../pwsh/docs';
 
-export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'powershell';
+export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'powershell';
 
 export interface CommandDoc {
   name: string;
@@ -34,6 +34,7 @@ export const DOC_CATEGORIES: Record<DocCategory, string> = {
   tizim: 'Tizim haqida',
   xavfsizlik: 'Kodlash va yaxlitlik',
   skript: 'Skript va muhit',
+  trafik: 'Trafik tahlili',
   powershell: 'PowerShell (Windows)',
 };
 
@@ -363,6 +364,55 @@ export const DOCS: CommandDoc[] = [
     ['-p PORTLAR', "Faqat shu portlar: 22,80 yoki 1-1000.", 'nmap -p 22,80 srv.lab'],
     ['-A', "Kengaytirilgan: versiyalar va qo'shimcha ma'lumot.", 'nmap -A srv.lab'],
   ], [['nmap -sV -p 3306 portal.lab', "Ma'lumotlar bazasi porti va versiyasi"]], "Bu buyruq faqat Tarmoq razvedkasi labida bor (o'quv simulyatsiyasi). Haqiqiy hayotda faqat o'z tarmog'ingiz yoki yozma ruxsat bilan."),
+  // ── traffic analysis
+  d('capinfos', 'trafik', "Yozib olingan trafik fayli haqida qisqa ma'lumot: nechta paket, qancha vaqt, qachondan qachongacha.", 'capinfos FAYL.pcap', [], [['capinfos ofis.pcap', 'Tahlilni shundan boshlang: fayl qanchalik katta va qaysi vaqtni qamraydi']]),
+  d('tcpdump', 'trafik', "Paketlarni bir qatordan ko'rsatadi va BPF filtri bilan saralaydi. Bu yerda tayyor faylni o'qiydi (-r).", "tcpdump -r FAYL [-n|-nn] [-c N] [-A] [-X] [-e] [-t] [-w YANGI.pcap] [FILTR]", [
+    ['-r FAYL', "Tayyor .pcap faylni o'qiydi (jonli tarmoq o'rniga).", 'tcpdump -r ofis.pcap'],
+    ['-n', "IP manzillarni nomga aylantirmaydi (port nomlari qoladi: http, domain).", 'tcpdump -n -r ofis.pcap'],
+    ['-nn', 'Na manzil, na port nomga aylantiriladi — hammasi raqam.', 'tcpdump -nn -r ofis.pcap'],
+    ['-c N', 'Faqat birinchi N ta paket.', 'tcpdump -nn -c 5 -r ofis.pcap'],
+    ['-A', "Paket mazmunini matn (ASCII) sifatida ham chiqaradi — HTTP, FTP ko'rinadi.", 'tcpdump -nn -A -r ofis.pcap port 80'],
+    ['-X', "Mazmunni hex va ASCII ko'rinishida.", 'tcpdump -nn -X -r ofis.pcap port 21'],
+    ['-e', "MAC manzillarni ham ko'rsatadi (Ethernet sarlavhasi).", 'tcpdump -e -nn -r ofis.pcap arp'],
+    ['-t', "Vaqt ustunisiz.", 'tcpdump -t -nn -r ofis.pcap icmp'],
+    ['-w FAYL', "Filtrga mos paketlarni yangi faylga yozadi.", 'tcpdump -r ofis.pcap -w dns.pcap port 53'],
+    ['host IP', "Shu manzildan yoki shu manzilga.", 'tcpdump -nn -r ofis.pcap host 10.10.20.31'],
+    ['src host / dst host', "Faqat manba yoki faqat manzil bo'yicha (src IP / dst IP qisqasi).", 'tcpdump -nn -r ofis.pcap src host 10.10.20.31'],
+    ['port N', "Shu port (manba yoki manzil).", 'tcpdump -nn -r ofis.pcap port 53'],
+    ['src port / dst port', "Faqat manba yoki faqat manzil porti.", 'tcpdump -nn -r ofis.pcap dst port 443'],
+    ['net TARMOQ/N', "Butun tarmoq: 10.10.20.0/24.", 'tcpdump -nn -r ofis.pcap net 10.10.20.0/24'],
+    ['tcp / udp / icmp / arp', 'Protokol bo\'yicha.', 'tcpdump -nn -r ofis.pcap icmp'],
+    ['and / or / not', "Shartlarni birlashtirish; qavs uchun butun filtrni qo'shtirnoqqa oling.", "tcpdump -nn -r ofis.pcap 'tcp and not port 443'"],
+    ["tcp[tcpflags] & (tcp-syn|tcp-ack) == tcp-syn", "Faqat ulanish boshlovchi SYN paketlar (SYN bor, ACK yo'q) — skanerni topishda.", "tcpdump -nn -r hujum.pcap 'tcp[tcpflags] & (tcp-syn|tcp-ack) == tcp-syn'"],
+    ['greater N', "Uzunligi N baytdan katta paketlar (less N — kichik).", 'tcpdump -nn -r ofis.pcap greater 1000'],
+  ], [['tcpdump -nn -r ofis.pcap port 53 | wc -l', "DNS paketlari soni (birinchi qator — \"reading from file\" xabari)"]], "Simulyatorda jonli yozib olish yo'q (-i): faqat tayyor fayl o'qiladi. Ilova ma'lumoti matn ko'rinishida saqlangan."),
+  d('tshark', 'trafik', "Wireshark'ning terminal ko'rinishi: har paketning protokoli va mazmuni, display filtrlari, maydonlarni ajratish va statistika.", "tshark -r FAYL [-Y 'FILTR'] [-T fields -e MAYDON ...] [-c N] [-q -z STATISTIKA]", [
+    ['-r FAYL', "Faylni o'qiydi.", 'tshark -r ofis.pcap'],
+    ['-Y FILTR', "Display filtri (Wireshark'dagi filtr qatori bilan bir xil). Qo'shtirnoqqa oling.", "tshark -r ofis.pcap -Y 'dns'"],
+    ['-T fields', "Jadval o'rniga faqat tanlangan maydonlar (-e bilan).", "tshark -r ofis.pcap -Y 'http.request' -T fields -e http.host"],
+    ['-e MAYDON', "Chiqariladigan maydon; bir nechta -e bo'lishi mumkin (Tab bilan ajraladi).", "tshark -r ofis.pcap -T fields -e ip.src -e ip.dst"],
+    ['-E separator=,', "Maydonlar ajratgichi (masalan vergul — CSV uchun). header=y — sarlavha qatori.", "tshark -r ofis.pcap -T fields -E separator=, -e ip.src -e ip.dst"],
+    ['-c N', 'Birinchi N ta (filtrdan keyin).', "tshark -r ofis.pcap -c 10"],
+    ['-q', "Paketlar ro'yxatini chiqarmaydi (faqat -z statistikasi).", 'tshark -r ofis.pcap -q -z io,phs'],
+    ['-z conv,ip', "Kim kim bilan qancha gaplashgan (IP juftliklari, baytlar). conv,tcp — portlar bilan.", 'tshark -r ofis.pcap -q -z conv,ip'],
+    ['-z endpoints,ip', "Har bir manzil qancha yuborgan va qabul qilgan.", 'tshark -r ofis.pcap -q -z endpoints,ip'],
+    ['-z io,phs', "Protokollar ierarxiyasi: qaysi protokol qancha.", 'tshark -r ofis.pcap -q -z io,phs'],
+    ['-z io,stat,N', "Har N soniyada nechta paket — davriy (beacon) trafikni ko'rishda.", "tshark -r hujum.pcap -q -z io,stat,60"],
+    ['-z follow,tcp,ascii,N', "N-oqim (tcp.stream) suhbatini to'liq matn qilib tiklaydi.", 'tshark -r ofis.pcap -q -z follow,tcp,ascii,3'],
+    ['ip.addr == IP', "Manba yoki manzil shu IP (ip.addr == 10.10.20.0/24 — tarmoq).", "tshark -r ofis.pcap -Y 'ip.addr == 10.10.20.31'"],
+    ['ip.src / ip.dst', 'Faqat manba yoki faqat manzil.', "tshark -r ofis.pcap -Y 'ip.src == 10.10.20.31'"],
+    ['tcp.port == N', "TCP port (tcp.srcport, tcp.dstport; UDP uchun udp.port).", "tshark -r ofis.pcap -Y 'tcp.port == 21'"],
+    ['tcp.flags.syn == 1', "TCP bayroqlari: syn, ack, fin, reset, push (0 yoki 1).", "tshark -r hujum.pcap -Y 'tcp.flags.syn == 1 && tcp.flags.ack == 0'"],
+    ['tcp.stream', "Har TCP ulanishning raqami (follow uchun).", "tshark -r ofis.pcap -Y 'http.request' -T fields -e tcp.stream -e http.request.uri"],
+    ['dns.qry.name', "DNS so'rovidagi domen. dns.flags.response == 0 — faqat so'rovlar, dns.a — javobdagi IP, dns.flags.rcode == 3 — mavjud emas.", "tshark -r ofis.pcap -Y 'dns.flags.response == 0' -T fields -e dns.qry.name"],
+    ['http.request', "HTTP so'rovlari. Maydonlar: http.request.method, http.request.uri, http.host, http.user_agent, http.authorization.", "tshark -r ofis.pcap -Y 'http.request.method == \"POST\"'"],
+    ['http.response.code', "HTTP javob kodi (200, 404...). http.content_type, http.file_data — javob mazmuni.", "tshark -r ofis.pcap -Y 'http.response.code == 404'"],
+    ['ftp.request.command', "FTP buyrug'i (USER, PASS, RETR); ftp.request.arg — uning qiymati.", "tshark -r ofis.pcap -Y 'ftp.request.command == \"PASS\"' -T fields -e ftp.request.arg"],
+    ['tls.handshake.extensions_server_name', "HTTPS'da ham ochiq ko'rinadigan sayt nomi (SNI).", "tshark -r ofis.pcap -Y 'tls.handshake.type == 1' -T fields -e tls.handshake.extensions_server_name"],
+    ['contains', "Matn ichida bor: http contains \"parol\", frame contains \"admin\".", "tshark -r ofis.pcap -Y 'http contains \"password\"'"],
+    ['frame.time_delta_displayed', "Ko'rsatilgan oldingi paketdan beri o'tgan soniyalar (-T fields uchun).", "tshark -r hujum.pcap -Y 'http.request' -T fields -e frame.time_delta_displayed"],
+    ['and / or / not', "Shartlar: && || ! ham bo'ladi.", "tshark -r ofis.pcap -Y 'tcp && !tls'"],
+  ], [["tshark -r ofis.pcap -Y 'dns.flags.response == 0' -T fields -e dns.qry.name | sort | uniq -c | sort -rn", "Eng ko'p so'ralgan domenlar"]], "Display filtri (-Y) va tcpdump'ning BPF filtri — ikki xil til: ip.addr == X va host X."),
   d('curl', 'tarmoq', "URL bo'yicha so'rov yuboradi va javobni chiqaradi.", 'curl [-i] [-I] [-s] [-L] [-X METOD] [-H SARLAVHA] [-o FAYL] URL', [
     ['-i', 'Javob sarlavhalari bilan birga.', 'curl -i http://srv.lab/'],
     ['-I', 'Faqat sarlavhalar (HEAD).', 'curl -I http://srv.lab/'],
