@@ -58,6 +58,10 @@ import { docker, hadolint, trivy } from './docker';
 import { kubectl } from './kube';
 import { git } from './git';
 import { gitleaks, npm, semgrep } from './codesec';
+import { sigma } from './sigma';
+import { suricata } from './suricata';
+import { zeek, zeekCut } from './zeek';
+import { yara } from './yara';
 import { PCAP_MAGIC } from './pcap';
 
 /*
@@ -578,6 +582,11 @@ export const COMMANDS: Record<string, Command> = {
   gitleaks,
   npm,
   semgrep,
+  sigma,
+  suricata,
+  zeek,
+  'zeek-cut': zeekCut,
+  yara,
   bash: () => fail('Ishlatilishi: bash SKRIPT.sh   (bu simulyator allaqachon bash ichida ishlaydi)'),
   sh: () => fail('Ishlatilishi: sh SKRIPT.sh'),
   exit: () => ok("Bu simulyator — yopish shart emas. Chiqish uchun sahifadan chiqing."),
