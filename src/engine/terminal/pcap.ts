@@ -237,6 +237,7 @@ export function dissect(packets: Pkt[]): Frame[] {
               set('http.cookie', h.cookie);
               set('http.content_type', h['content-type']);
               set('http.referer', h.referer);
+              if (h['content-length']) set('http.content_length', Number(h['content-length']));
               if (http.body) set('http.file_data', http.body);
               info = `${http.method} ${http.uri} HTTP/1.1${http.method === 'POST' && h['content-type'] ? `  (${h['content-type']})` : ''}`;
             } else {

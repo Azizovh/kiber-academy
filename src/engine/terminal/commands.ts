@@ -185,7 +185,9 @@ function base64ToUtf8(b64: string): string {
 }
 
 function expandSet(set: string): string {
-  return set.replace(/(.)-(.)/g, (_, a: string, b: string) => {
+  // tr understands \n, \t and \\ escapes, as the real one does.
+  const unescaped = set.replace(/\\([nt\\])/g, (_m, c: string) => (c === 'n' ? '\n' : c === 't' ? '\t' : '\\'));
+  return unescaped.replace(/(.)-(.)/g, (_, a: string, b: string) => {
     let out = '';
     for (let c = a.charCodeAt(0); c <= b.charCodeAt(0); c++) out += String.fromCharCode(c);
     return out;

@@ -6,6 +6,7 @@ import { cloudTrailInvestigation } from './cloud';
 import { webLogInvestigation, windowsEvents } from './soc';
 import { bashScripts, processesAndServices, serverAudit } from './sysadmin';
 import { winAudit, winBasics, winIncident } from './windows';
+import { trafficBasics, trafficCleartext, trafficIncident } from './traffic';
 
 /** Terminal labs in the recommended order. */
 export const LABS: Lab[] = [
@@ -17,6 +18,9 @@ export const LABS: Lab[] = [
   processesAndServices,
   bashScripts,
   networkRecon,
+  trafficBasics,
+  trafficCleartext,
+  trafficIncident,
   serverAudit,
   webLogInvestigation,
   windowsEvents,
