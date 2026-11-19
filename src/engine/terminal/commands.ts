@@ -56,6 +56,8 @@ import { awk, jq, sed, sha256sum } from './text';
 import { capinfos, tcpdump, tshark } from './pcaptools';
 import { docker, hadolint, trivy } from './docker';
 import { kubectl } from './kube';
+import { git } from './git';
+import { gitleaks, npm, semgrep } from './codesec';
 import { PCAP_MAGIC } from './pcap';
 
 /*
@@ -572,6 +574,10 @@ export const COMMANDS: Record<string, Command> = {
   kubectl,
   trivy,
   hadolint,
+  git,
+  gitleaks,
+  npm,
+  semgrep,
   bash: () => fail('Ishlatilishi: bash SKRIPT.sh   (bu simulyator allaqachon bash ichida ishlaydi)'),
   sh: () => fail('Ishlatilishi: sh SKRIPT.sh'),
   exit: () => ok("Bu simulyator — yopish shart emas. Chiqish uchun sahifadan chiqing."),

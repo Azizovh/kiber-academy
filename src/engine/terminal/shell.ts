@@ -7,6 +7,8 @@ import { createWin, type WinSpec, type WinState } from '../pwsh/state';
 import { completePs, runPsLine } from '../pwsh';
 import { createDocker, type DockerSpec, type DockerState } from './docker';
 import { createK8s, type K8sSpec, type K8sState } from './kube';
+import { createRepos, type GitRepoSpec, type GitState } from './git';
+import type { NpmSpec } from './codesec';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -26,6 +28,10 @@ export interface ShellInit {
   docker?: DockerSpec;
   /** A Kubernetes cluster kubectl talks to. */
   k8s?: K8sSpec;
+  /** Git repositories (their working trees are written into `fs`). */
+  git?: GitRepoSpec[];
+  /** Advisories npm audit checks package-lock.json against. */
+  npm?: NpmSpec;
 }
 
 export interface ShellState {
@@ -46,6 +52,8 @@ export interface ShellState {
   win?: WinState;
   docker?: DockerState;
   k8s?: K8sState;
+  git?: GitState;
+  npm?: NpmSpec;
 }
 
 export interface CmdResult {
@@ -110,6 +118,8 @@ export function createShell(init: ShellInit): ShellState {
     ...(init.windows ? { win: createWin(init.windows, user) } : {}),
     ...(init.docker ? { docker: createDocker(init.docker) } : {}),
     ...(init.k8s ? { k8s: createK8s(init.k8s) } : {}),
+    ...(init.git ? { git: createRepos(init.git, root) } : {}),
+    ...(init.npm ? { npm: JSON.parse(JSON.stringify(init.npm)) as NpmSpec } : {}),
   };
 }
 

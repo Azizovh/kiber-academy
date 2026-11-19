@@ -6,7 +6,7 @@
 
 import { PS_DOCS } from '../pwsh/docs';
 
-export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'konteyner' | 'powershell';
+export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'konteyner' | 'kod' | 'powershell';
 
 export interface CommandDoc {
   name: string;
@@ -36,6 +36,7 @@ export const DOC_CATEGORIES: Record<DocCategory, string> = {
   skript: 'Skript va muhit',
   trafik: 'Trafik tahlili',
   konteyner: 'Konteynerlar va Kubernetes',
+  kod: 'Git va kod xavfsizligi',
   powershell: 'PowerShell (Windows)',
 };
 
@@ -365,6 +366,56 @@ export const DOCS: CommandDoc[] = [
     ['-p PORTLAR', "Faqat shu portlar: 22,80 yoki 1-1000.", 'nmap -p 22,80 srv.lab'],
     ['-A', "Kengaytirilgan: versiyalar va qo'shimcha ma'lumot.", 'nmap -A srv.lab'],
   ], [['nmap -sV -p 3306 portal.lab', "Ma'lumotlar bazasi porti va versiyasi"]], "Bu buyruq faqat Tarmoq razvedkasi labida bor (o'quv simulyatsiyasi). Haqiqiy hayotda faqat o'z tarmog'ingiz yoki yozma ruxsat bilan."),
+  // ── git and code security
+  d('git', 'kod', "Versiyalar tarixi: holat, tarix, o'zgarishlar, kim yozgan, tarmoqlar va tarixni tozalash.", 'git BUYRUQ [FLAGLAR]', [
+    ['status', "Ishchi papka holati: o'zgargan, indeksga qo'shilgan, kuzatilmayotgan fayllar. -s — qisqa.", 'git status'],
+    ['log', 'Commitlar tarixi (eng yangisi tepada).', 'git log'],
+    ['log --oneline', "Har commit bitta qatorda: qisqa ID va sarlavha.", 'git log --oneline'],
+    ['log -n N', 'Faqat oxirgi N ta commit (-3 ham bo\'ladi).', 'git log -n 3'],
+    ['log --all', "Barcha tarmoqlar (branch), teglar va stash.", 'git log --oneline --all'],
+    ['log --author', "Muallif bo'yicha.", 'git log --author=ali'],
+    ['log --grep', "Commit xabarida qidirish (-i — katta-kichik harfsiz).", 'git log --grep=parol -i'],
+    ['log -S', "Shu matn qo'shilgan yoki o'chirilgan commitlar (pickaxe) — sirlarni ovlashda eng foydali.", 'git log -S AKIA --oneline'],
+    ['log -p', "Har commitning o'zgarishlari (diff) bilan.", 'git log -p -n 1'],
+    ['log --stat', "Qaysi fayllar qancha o'zgargan.", 'git log --stat -n 2'],
+    ['log --format', "O'z formatingiz: %h %an %ad %s (--date=short bilan).", "git log --format='%h %an %ad %s' --date=short"],
+    ['log --diff-filter', "Faqat qo'shilgan (A), o'zgargan (M) yoki o'chirilgan (D) fayllar bor commitlar.", 'git log --diff-filter=D --name-only --oneline'],
+    ['log -- YO\'L', "Faqat shu faylga tegishli commitlar.", 'git log --oneline -- config/.env'],
+    ['show', "Bitta commit: muallif, xabar va o'zgarishlar. --stat, --name-only.", 'git show a1b2c3d'],
+    ['show REV:YO\'L', "Fayl o'sha commitdagi ko'rinishda (o'chirilgan fayl ham).", 'git show a1b2c3d:config/.env'],
+    ['diff', "O'zgarishlar: diff — ishchi papka va indeks, --cached — indeks va oxirgi commit, A B — ikki commit orasida.", 'git diff main feature/export'],
+    ['blame', "Har qatorni kim va qaysi commitda yozgan. -L 10,20 — qator oralig'i.", 'git blame src/db.js'],
+    ['grep', "Kuzatilayotgan fayllarda qidirish (-n qator raqami, -i). REV bersangiz — o'sha commitda.", 'git grep -n password'],
+    ['branch', "Tarmoqlar; -a — masofadagilari bilan, -v — oxirgi commit bilan.", 'git branch -a'],
+    ['checkout / switch', "Boshqa tarmoqqa o'tish (-b yangi tarmoq). checkout REV -- YO'L — faylni tiklash.", 'git switch feature/export'],
+    ['add', "Faylni keyingi commitga qo'shish (indeksga).", 'git add .gitignore'],
+    ['rm --cached', "Faylni gitdan chiqarish, lekin diskda qoldirish (masalan .env).", 'git rm --cached config/.env'],
+    ['commit -m', 'Indeksdagini yangi commit qilib saqlash.', 'git commit -m "Remove .env from repo"'],
+    ['restore', "Ishchi papkadagi faylni qaytarish; --staged — indeksdan chiqarish.", 'git restore --staged config/.env'],
+    ['reflog', "HEAD qayerlarda bo'lgani: reset qilingan, \"yo'qolgan\" commitlar ham shu yerda.", 'git reflog'],
+    ['stash list / show -p', "Vaqtincha saqlangan o'zgarishlar va ularning mazmuni.", 'git stash show -p stash@{0}'],
+    ['check-ignore -v', "Fayl .gitignore'dagi qaysi qoida bilan e'tiborsiz qolayotganini ko'rsatadi.", 'git check-ignore -v config/.env'],
+    ['tag / remote -v', 'Teglar va masofadagi repozitoriylar.', 'git remote -v'],
+    ['filter-repo', "Tarixni qayta yozish: --path FAYL --invert-paths — faylni barcha commitlardan olib tashlash; --replace-text — matnni almashtirish. --force kerak.", 'git filter-repo --path config/.env --invert-paths --force'],
+  ], [['git log -S "sk_live_" --all --oneline', "Stripe kaliti qaysi commitda paydo bo'lgan"], ['git show HEAD~3:config/.env', "3 commit oldingi .env mazmuni"]], "Simulyatorda tarmoq yo'q (clone, push, pull, fetch); muharrir ochilmaydi — commit xabari -m bilan. Tarixni qayta yozgandan keyin sirni baribir almashtirish kerak: u allaqachon ko'chirilgan bo'lishi mumkin."),
+  d('gitleaks', 'kod', "Git tarixi va fayllardagi sirlarni (kalit, token, parol, shaxsiy kalit) topadi.", 'gitleaks git [-v] [--redact] [PAPKA]  |  gitleaks dir [-v] [PAPKA]', [
+    ['git', 'Butun git tarixini tekshiradi (barcha tarmoqlar).', 'gitleaks git -v'],
+    ['dir', "Faqat hozirgi fayllarni (gitsiz).", 'gitleaks dir -v .'],
+    ['-v', "Har bir topilmani batafsil ko'rsatadi: fayl, qator, commit, muallif.", 'gitleaks git -v'],
+    ['--redact', "Hisobotda sir qiymatini yashiradi (REDACTED).", 'gitleaks git -v --redact'],
+    ['--report-path', 'Topilmalarni JSON faylga yozadi.', 'gitleaks git --redact --report-path leaks.json'],
+  ], [['gitleaks git -v --redact', "Natija: RuleID (aws-access-token, github-pat, private-key...), Commit, File, Line"]], ".gitleaksignore faylidagi Fingerprint'lar e'tiborsiz qoldiriladi. Eski usul: gitleaks detect [--no-git] ham ishlaydi."),
+  d('npm', 'kod', "Node.js bog'liqliklari: npm audit — package-lock.json dagi versiyalarni ma'lum zaifliklar bilan solishtiradi.", 'npm audit [--omit=dev] [--audit-level=DARAJA]  |  npm audit fix  |  npm ls PAKET', [
+    ['audit', "Zaif paketlar: nomi, zaif versiyalar oralig'i, darajasi, advisory havolasi.", 'npm audit'],
+    ['audit --omit=dev', "Faqat production bog'liqliklari (devDependencies'siz).", 'npm audit --omit=dev'],
+    ['audit --audit-level', "Shu darajadan pastlari uchun xato kodi qaytarmaydi (CI uchun): low, moderate, high, critical.", 'npm audit --audit-level=high'],
+    ['audit fix', "Tuzatilgan versiyalarga yangilaydi (package-lock.json o'zgaradi).", 'npm audit fix'],
+    ['ls PAKET', "Bu paket qaysi bog'liqlik orqali kelganini ko'rsatadi.", 'npm ls minimist'],
+  ], [['npm audit --omit=dev --audit-level=high', 'CI quvurida: high va critical bo\'lsa to\'xtatish']], "Simulyatorda internet yo'q: advisory'lar ro'yxati lab ichida berilgan, npm install ishlamaydi."),
+  d('semgrep', 'kod', "Kodni qoidalar bo'yicha statik tahlil qiladi (SAST): xavfli andozalarni topadi.", 'semgrep [scan] --config QOIDALAR.yml [--severity ERROR] [PAPKA]', [
+    ['--config', "Qoidalar fayli (rules: id, pattern-regex, message, severity, languages).", 'semgrep --config qoidalar.yml src/'],
+    ['--severity', 'Faqat shu darajadagi qoidalar: ERROR, WARNING, INFO.', 'semgrep --config qoidalar.yml --severity ERROR .'],
+  ], [['semgrep --config qoidalar.yml src/', "Har topilma: fayl, qoida, xabar va qator"]], "Simulyatorda faqat lokal qoidalar fayli va pattern-regex qoidalari ishlaydi (registry'dagi qoidalar internet talab qiladi)."),
   // ── containers and Kubernetes
   d('docker', 'konteyner', "Konteynerlar va image'lar bilan ishlaydi: ro'yxat, sozlama, loglar, ichida buyruq, tarix, xavfsiz ishga tushirish.", 'docker BUYRUQ [FLAGLAR] [NOM]', [
     ['ps', "Ishlayotgan konteynerlar. -a — to'xtaganlari ham, -q — faqat ID.", 'docker ps -a'],
