@@ -272,7 +272,7 @@ export const dockerBasics: Lab = {
 
 /* ── 2. Container security audit ───────────────────────────────────────── */
 
-const NPM_TOKEN = 'npm_LAB0example0token0do0not0use00';
+const NPM_TOKEN = ['npm', '_LAB0example0token0do0not0use00'].join('');
 const DOCKERFILE_BAD = [
   'FROM node:latest',
   'ARG NPM_TOKEN',

@@ -505,10 +505,20 @@ function gitLog(repo: Repo, ctx: CmdCtx, args: string[]): CmdResult {
     else if (a.startsWith('-')) return fail(`fatal: unrecognized argument: ${a}\n(simulyatorda: --oneline -n --all -p --stat --name-only --name-status --graph --author= --grep= -S --format= --date= --diff-filter= -- YO'L)`);
     else revs.push(a);
   }
+  // A..B: commits reachable from B but not from A.
+  let exclude = new Set<string>();
+  const range = revs.find((r) => r.includes('..') && !r.includes('...'));
+  if (range) {
+    const [from, to] = range.split('..');
+    const fromId = resolveRev(repo, from!);
+    if (!fromId || !resolveRev(repo, to!)) return fail(`fatal: ambiguous argument '${range}': unknown revision or path not in the working tree.`);
+    exclude = new Set(reachable(repo, [fromId]).map((c) => c.id));
+    revs.splice(revs.indexOf(range), 1, to!);
+  }
   const tips = all ? [...repo.branches.values(), ...repo.tags.values(), ...repo.remoteBranches.values(), ...repo.stash.map((s) => s.base)] : revs.length ? revs.map((r) => resolveRev(repo, r)) : [headId(repo)];
   if (tips.some((t) => !t)) return fail(`fatal: ambiguous argument '${revs.find((r) => !resolveRev(repo, r))}': unknown revision or path not in the working tree.`);
   if (!headId(repo) && !all && !revs.length) return fail(`fatal: your current branch '${repo.head}' does not have any commits yet`);
-  let list = reachable(repo, tips as string[]);
+  let list = reachable(repo, tips as string[]).filter((c) => !exclude.has(c.id));
   if (author) list = list.filter((c) => c.author.toLowerCase().includes(author!.toLowerCase()));
   if (grep) list = list.filter((c) => (icase ? c.message.toLowerCase().includes(grep!.toLowerCase()) : c.message.includes(grep!)));
   if (pickaxe) {
@@ -580,11 +590,14 @@ function worktreeOf(repo: Repo, ctx: CmdCtx): Record<string, string> {
 
 function gitDiff(repo: Repo, ctx: CmdCtx, args: string[]): CmdResult {
   const dash = args.indexOf('--');
-  const paths = dash >= 0 ? args.slice(dash + 1).map((p) => relPath(repo, ctx, p)) : [];
+  const paths: string[] = dash >= 0 ? args.slice(dash + 1).map((p) => relPath(repo, ctx, p)) : [];
   const opts = dash >= 0 ? args.slice(0, dash) : args;
   const flags = new Set(opts.filter((a) => a.startsWith('-')));
-  const revs = opts.filter((a) => !a.startsWith('-'));
   const wt = worktreeOf(repo, ctx);
+  // Like git: a word that is not a revision but names a file is a path.
+  const words = opts.filter((a) => !a.startsWith('-'));
+  const revs = words.filter((w) => w.includes('..') || resolveRev(repo, w) || !(relPath(repo, ctx, w) in wt || relPath(repo, ctx, w) in repo.index));
+  for (const w of words) if (!revs.includes(w)) paths.push(relPath(repo, ctx, w));
   const tracked = (snap: Record<string, string>) => Object.fromEntries(Object.entries(wt).filter(([p]) => p in snap || p in repo.index));
   let a: Record<string, string>;
   let b: Record<string, string>;

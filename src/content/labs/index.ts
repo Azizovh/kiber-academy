@@ -8,6 +8,7 @@ import { bashScripts, processesAndServices, serverAudit } from './sysadmin';
 import { winAudit, winBasics, winIncident } from './windows';
 import { trafficBasics, trafficCleartext, trafficIncident } from './traffic';
 import { containerAudit, dockerBasics, k8sIncident } from './containers';
+import { codeSecurity, gitBasics, gitSecrets } from './code';
 
 /** Terminal labs in the recommended order. */
 export const LABS: Lab[] = [
@@ -29,6 +30,9 @@ export const LABS: Lab[] = [
   winAudit,
   winIncident,
   httpAudit,
+  gitBasics,
+  gitSecrets,
+  codeSecurity,
   dockerBasics,
   containerAudit,
   k8sIncident,

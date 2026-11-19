@@ -138,19 +138,35 @@ export const awk: Command = (args, ctx) => {
 
 type SedOp = { kind: 's'; re: RegExp; rep: string } | { kind: 'd' | 'p'; re: RegExp | null; line: number | null };
 
-function parseSed(script: string): SedOp | string {
+/** GNU sed's default (basic) regex: ( ) { } + ? | are literal unless escaped; -E makes them special. */
+function breToJs(p: string, extended: boolean): string {
+  if (extended) return p;
+  const special = '(){}+?|';
+  let out = '';
+  for (let i = 0; i < p.length; i++) {
+    const ch = p[i]!;
+    if (ch === '\\' && i + 1 < p.length) {
+      const n = p[i + 1]!;
+      out += special.includes(n) ? n : ch + n;
+      i++;
+    } else out += special.includes(ch) ? '\\' + ch : ch;
+  }
+  return out;
+}
+
+function parseSed(script: string, extended = false): SedOp | string {
   const s = /^s(.)(.*?)\1(.*?)\1([gI]*)$/.exec(script);
   if (s) {
     const flags = (s[4]!.includes('g') ? 'g' : '') + (s[4]!.includes('I') ? 'i' : '');
     try {
-      return { kind: 's', re: new RegExp(s[2]!, flags), rep: s[3]!.replace(/\\(\d)/g, '$$$1').replace(/&/g, '$$&') };
+      return { kind: 's', re: new RegExp(breToJs(s[2]!, extended), flags), rep: s[3]!.replace(/\\(\d)/g, '$$$1').replace(/&/g, '$$&') };
     } catch {
       return `sed: -e expression #1: invalid regex: ${s[2]}`;
     }
   }
   const addr = /^(?:\/(.*)\/|(\d+))([dp])$/.exec(script);
   if (addr) {
-    return { kind: addr[3] as 'd' | 'p', re: addr[1] !== undefined ? new RegExp(addr[1]) : null, line: addr[2] ? Number(addr[2]) : null };
+    return { kind: addr[3] as 'd' | 'p', re: addr[1] !== undefined ? new RegExp(breToJs(addr[1], extended)) : null, line: addr[2] ? Number(addr[2]) : null };
   }
   return "sed: bu simulyatorda faqat 's/eski/yangi/g', '/namuna/d', '/namuna/p' (-n bilan) va 'Nd' buyruqlari bor";
 }
@@ -159,7 +175,7 @@ export const sed: Command = (args, ctx) => {
   const { flags, values, rest } = parseFlags(args, 'e');
   const script = values.e ?? rest.shift();
   if (!script) return fail("Ishlatilishi: sed [-i] [-n] 's/eski/yangi/g' [FAYL]");
-  const op = parseSed(script);
+  const op = parseSed(script, flags.has('E') || flags.has('r'));
   if (typeof op === 'string') return fail(op);
   const quiet = flags.has('n');
   const transform = (text: string): string => {
