@@ -227,6 +227,12 @@ Yaxshi qoida faqat "nimadir bo'ldi" demaydi. Triage darsidagi analitikni eslang 
 
 Analitik ogohlantirishni ochganda kontekst yig'ishga 10 daqiqa sarflamasligi kerak — eng muhimi allaqachon oldida bo'lishi kerak.
 
+## Amaliyot: qoidani sinash va sozlash
+
+Yuqoridagi hayot siklini o'zingiz bosib o'ting: quyidagi labda uchta Sigma qoidasini `sigma check` bilan tekshirasiz, `sigma convert` bilan SPL va KQL'ga o'girasiz, SIEM'da sinaysiz, false positive'larni filtr bilan olib tashlaysiz va oxirida o'z qoidangizni yozasiz.
+
+:::lab aniqlash-sigma
+
 ## Aniqlash qoidalari nimani qilmaydi
 
 - **Ko'rinmas ma'lumotni ko'rmaydi** — log manbasi bo'lmasa, qoida ham yo'q.

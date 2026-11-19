@@ -83,7 +83,7 @@ export const SOC: Stage[] = [
         topic('detection-engineering', 'Aniqlash qoidalari va Sigma', 14, "Qoida yozish, sinash, sozlash; Sigma formati.", [
           "Sigma qoidasi yozib, SIEM so'roviga aylantira olaman",
           "Qoidani false positive'ga qarshi sozlay olaman",
-        ], [r.docs('Sigma', 'https://sigmahq.io/'), r.article('SigmaHQ qoidalar ombori', 'https://github.com/SigmaHQ/sigma')]),
+        ], [r.docs('Sigma', 'https://sigmahq.io/'), r.article('SigmaHQ qoidalar ombori', 'https://github.com/SigmaHQ/sigma')], { labs: ['aniqlash-sigma'], ctf: ['det-sigma'] }),
         topic('attack-mapping', 'ATT&CK bilan ishlash', 8, "Qamrovni o'lchash, Navigator, hujumchi guruhlari.", [
           "Aniqlash qoidalarimni ATT&CK texnikalariga bog'lay olaman",
           "Navigator'da qamrov xaritasini tuza olaman",
@@ -91,7 +91,7 @@ export const SOC: Stage[] = [
         topic('ids-ips', 'IDS/IPS: Suricata va Snort', 12, "Tarmoq darajasida aniqlash va qoida yozish.", [
           "Suricata o'rnatib, ishga tushira olaman",
           "Oddiy qoida yozib, PCAP ustida sinay olaman",
-        ], [r.docs('Suricata hujjatlari', 'https://docs.suricata.io/'), r.thm('Snort')]),
+        ], [r.docs('Suricata hujjatlari', 'https://docs.suricata.io/'), r.thm('Snort')], { labs: ['aniqlash-suricata-zeek'], ctf: ['det-webshell'] }),
         topic('edr', 'EDR va endpoint himoyasi', 10, "Endpoint'da nima ko'rinadi: jarayon daraxti, telemetriya, javob choralari.", [
           "Jarayon daraxtidan shubhali zanjirni topa olaman",
           "LOLBins nima ekanini bilaman",
@@ -104,7 +104,7 @@ export const SOC: Stage[] = [
         topic('yara', 'YARA qoidalari', 10, "Fayl va xotiradan zararli dasturni namuna bo'yicha topish.", [
           "Oddiy YARA qoidasi yoza olaman",
           "Qoidani fayllar to'plamida sinay olaman",
-        ], [r.docs('YARA hujjatlari', 'https://yara.readthedocs.io/'), r.thm('Yara')]),
+        ], [r.docs('YARA hujjatlari', 'https://yara.readthedocs.io/'), r.thm('Yara')], { labs: ['aniqlash-yara'], ctf: ['det-yara-hex'] }),
       ]),
     ],
   },

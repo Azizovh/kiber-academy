@@ -13,6 +13,21 @@ const d = (name: string, summary: string, usage: string, flags: [string, string,
 });
 
 export const DETECT_DOCS: CommandDoc[] = [
+  {
+    name: 'strings',
+    category: 'xavfsizlik',
+    summary: "Fayl ichidagi o'qiladigan matn bo'laklarini chiqaradi — noma'lum dasturni ochmasdan nima ichida borligini ko'rish.",
+    usage: 'strings [-n MIN] [-e s|l] [-t x|d] FAYL...',
+    flags: [
+      ['-n', "Eng kamida nechta belgili bo'laklar (sukut: 4).", 'strings -n 8 sample.exe'],
+      ['-e', "Kodlash: s — oddiy (1 bayt), l — UTF-16LE (Windows \"wide\" satrlari, har belgidan keyin 00).", 'strings -e l sample.exe'],
+      ['-t', "Har bo'lak oldida joyi: x — hex, d — o'nlik.", 'strings -t x sample.exe'],
+    ],
+    examples: [
+      ['strings -n 6 svchost.exe | grep -i http', 'Dastur ichidagi manzillar'],
+      ['strings -e l svchost.exe', "Wide satrlar — oddiy strings ularni ko'rmaydi"],
+    ],
+  },
   d('sigma', "Sigma qoidalarini tekshiradi va SIEM so'roviga o'giradi (sigma-cli). Bitta qoida — ko'p SIEM.", 'sigma check|convert|list [FLAGLAR] QOIDA|KATALOG', [
     ['check', "Qoidalarni tekshiradi: YAML, modifikatorlar, condition'dagi nomlar (xato), id, description, level, date (ogohlantirish).", 'sigma check rules/'],
     ['convert', "Qoidani so'rovga o'giradi.", 'sigma convert -t splunk -p sysmon rules/word.yml'],

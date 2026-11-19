@@ -11,6 +11,9 @@ import { containerAudit, dockerBasics, k8sIncident } from './containers';
 import { codeSecurity, gitBasics, gitSecrets } from './code';
 import { splBasics } from './siem';
 import { siemIncident } from './siemIncident';
+import { sigmaLab } from './detection';
+import { networkDetection } from './network';
+import { yaraHunt } from './yaraLab';
 
 export interface LabGroup {
   id: string;
@@ -43,8 +46,8 @@ export const LAB_GROUPS: LabGroup[] = [
   {
     id: 'siem',
     title: 'SIEM va aniqlash',
-    text: "Splunk SPL va Sentinel KQL bilan loglarni qidirish, hujumni SIEM'da tiklash.",
-    labs: [splBasics, siemIncident],
+    text: "Splunk SPL va Sentinel KQL bilan qidiruv, hujumni SIEM'da tiklash, Sigma, Suricata, Zeek va YARA bilan aniqlash.",
+    labs: [splBasics, siemIncident, sigmaLab, networkDetection, yaraHunt],
   },
   {
     id: 'windows',

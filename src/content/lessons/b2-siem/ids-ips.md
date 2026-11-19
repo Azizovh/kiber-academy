@@ -204,6 +204,12 @@ IDS ogohlantirishi ham boshqa ogohlantirishlar kabi triage qilinadi (alert triag
 
 Uchinchi qator eng muhimi: **IDS "kimdir urindi" deydi, "kimdir muvaffaqiyatga erishdi" demaydi.** Internetga ochiq veb-server kuniga yuzlab hujum urinishi ogohlantirishini oladi — ularning deyarli hammasi befoyda. Javob (server nima qaytardi) va keyingi hodisalar haqiqiy savolga javob beradi.
 
+## Amaliyot: Zeek va Suricata
+
+Quyidagi labda sensor yozib olgan trafikni avval Zeek loglariga aylantirasiz (nima bo'ldi?), keyin Suricata qoidalarini tuzatib va yozib sinaysiz (qoidaga mos narsa bo'ldimi?): skaner, parol hujumi, C2 domeni, TLS SNI va port skanerlash. Hamma narsa yozib olingan faylda — jonli tarmoqqa hech narsa yuborilmaydi.
+
+:::lab aniqlash-suricata-zeek
+
 ## IDS/IPS nimani qilmaydi
 
 - **Shifrlangan mazmunni ko'rmaydi** — faqat metama'lumot: IP, port, SNI, sertifikat, TLS barmoq izi. TLS inspection'siz HTTPS ichidagi hujum ko'rinmaydi.

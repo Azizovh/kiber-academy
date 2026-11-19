@@ -21,19 +21,19 @@ export const VICTIM_USER = 'd.karimova';
 export const PAYLOAD_SHA256 = 'bea66f0dc7f16535a692625802c5b9e55006572921298c727475c57684b4ba1a';
 /** SHA-256 of "KiberAkademiya lab sample: inventory.ps1" (the IT inventory script). */
 const INVENTORY_SHA256 = 'eb0541f96f613d95aa893c384a84fbd94f4c44c69111cadc825cb326b87f0bf6';
-const PAYLOAD_PATH = `C:\\Users\\${VICTIM_USER}\\AppData\\Roaming\\svchost.exe`;
+export const PAYLOAD_PATH = `C:\\Users\\${VICTIM_USER}\\AppData\\Roaming\\svchost.exe`;
 const RUN_KEY = 'HKU\\S-1-5-21-3311-1104\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater';
 const PHISH_SENDER = 'billing@invoice-pay.example';
 const PHISH_SUBJECT = "Hisob-faktura №1147: to'lov muddati bugun";
 const PHISH_FILE = 'Hisob-faktura_1147.docm';
 export const EXFIL_BYTES = 14 * 1024 * 1024;
 
-const OFFICE16 = 'C:\\Program Files\\Microsoft Office\\root\\Office16';
-const PS = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+export const OFFICE16 = 'C:\\Program Files\\Microsoft Office\\root\\Office16';
+export const PS = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 const SYS32 = 'C:\\Windows\\System32';
 
 /** PowerShell -EncodedCommand takes Base64 of UTF-16LE text. */
-function encodePs(text: string): string {
+export function encodePs(text: string): string {
   let bin = '';
   for (const ch of text) {
     const c = ch.charCodeAt(0);
@@ -80,7 +80,13 @@ export interface IncidentData {
   tables: Record<string, Row[]>;
 }
 
-function build(): IncidentData {
+/** Hooks for labs that extend the incident data: extra process starts and registry writes before tables are derived. */
+export interface IncidentExtras {
+  proc: (t: number, host: string, image: string, cmd: string, parent: string) => void;
+  registry: (t: number, host: string, image: string, key: string, details: string) => void;
+}
+
+function build(extend?: (x: IncidentExtras) => void): IncidentData {
   const rnd = prng(20261116);
   const pick = <T,>(xs: T[]) => xs[Math.floor(rnd() * xs.length)]!;
   const email: SiemEvent[] = [];
@@ -214,10 +220,17 @@ function build(): IncidentData {
     web(at('04:41:05') + i * 37, h, C2_HOST, '/invoice/1147', 200, 1_210, 'Newly Registered Websites');
   }
 
+  if (extend) {
+    const host = (name: string) => HOSTS.find((h) => h.name === name) ?? { name, ip: '10.10.99.99', user: 'svc' };
+    extend({
+      proc: (t, h, image, cmd, parent) => void proc(t, host(h), image, cmd, parent),
+      registry: (t, h, image, key, details) => sys(t, host(h), 13, image, { EventType: 'SetValue', TargetObject: key, Details: details }),
+    });
+  }
+
   // Sentinel / Defender tables derived from the same events.
   const dev = (h: string) => h.toLowerCase() + '.corp.local';
   const leaf = (p: string) => p.split('\\').pop()!;
-  const folder = (p: string) => p.split('\\').slice(0, -1).join('\\');
   const DeviceProcessEvents: Row[] = sysmon
     .filter((e) => e.EventCode === 1)
     .map((e) => ({
@@ -228,16 +241,16 @@ function build(): IncidentData {
       FolderPath: String(e.Image),
       ProcessCommandLine: String(e.CommandLine),
       InitiatingProcessFileName: leaf(String(e.ParentImage)),
-      InitiatingProcessFolderPath: folder(String(e.ParentImage)),
+      InitiatingProcessFolderPath: String(e.ParentImage),
       ...(e.SHA256 ? { SHA256: String(e.SHA256) } : {}),
     }));
   const DeviceNetworkEvents: Row[] = sysmon
     .filter((e) => e.EventCode === 3)
-    .map((e) => ({ Timestamp: e._time, DeviceName: dev(e.host), ActionType: 'ConnectionSuccess', RemoteIP: String(e.DestinationIp), RemotePort: Number(e.DestinationPort), RemoteUrl: String(e.DestinationHostname), InitiatingProcessFileName: leaf(String(e.Image)), InitiatingProcessFolderPath: folder(String(e.Image)) }));
+    .map((e) => ({ Timestamp: e._time, DeviceName: dev(e.host), ActionType: 'ConnectionSuccess', RemoteIP: String(e.DestinationIp), RemotePort: Number(e.DestinationPort), RemoteUrl: String(e.DestinationHostname), InitiatingProcessFileName: leaf(String(e.Image)), InitiatingProcessFolderPath: String(e.Image) }));
   // Ordinary connections of every host, so the C2 is not the only thing in the table.
   for (const e of fw.filter((x) => x.dest_ip !== C2_IP)) {
     const h = HOSTS.find((x) => x.ip === e.src_ip)!;
-    DeviceNetworkEvents.push({ Timestamp: e._time, DeviceName: dev(h.name), ActionType: 'ConnectionSuccess', RemoteIP: String(e.dest_ip), RemotePort: 443, RemoteUrl: '', InitiatingProcessFileName: 'chrome.exe', InitiatingProcessFolderPath: 'C:\\Program Files\\Google\\Chrome\\Application' });
+    DeviceNetworkEvents.push({ Timestamp: e._time, DeviceName: dev(h.name), ActionType: 'ConnectionSuccess', RemoteIP: String(e.dest_ip), RemotePort: 443, RemoteUrl: '', InitiatingProcessFileName: 'chrome.exe', InitiatingProcessFolderPath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' });
   }
   const DeviceRegistryEvents: Row[] = sysmon
     .filter((e) => e.EventCode === 13)
@@ -258,6 +271,9 @@ function build(): IncidentData {
 }
 
 export const INCIDENT = build();
+
+/** The incident data with lab-specific additions (each call builds a fresh copy). */
+export const buildIncident = (extend: (x: IncidentExtras) => void) => build(extend);
 
 export const THREAT_INTEL: Row[] = [
   { indicator: C2_IP, type: 'ip', threat: 'C2 (update-check kampaniyasi)', first_seen: '2026-11-13' },

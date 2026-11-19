@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.15.0)
+## State (v1.16.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -20,8 +20,8 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 27 labs (20–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
-analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs in the SIEM pane), 53 CTF challenges (Linux admin, Windows, traffic,
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 30 labs (16–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs, three detection labs: Sigma with terminal + SIEM tabs, Zeek/Suricata, YARA), 56 CTF challenges (Linux admin, Windows, traffic,
 containers, git, SOC logs, SIEM, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
@@ -246,7 +246,20 @@ products' wording. Lab solutions write SIEM searches as `spl('...')` / `kql('...
 "spl> q"); a check gets `ctx.siem = { lang, query, result }`, and helpers `colIs`, `oneNumber`, `rowWhere` in
 `labs/siem.ts`. Lab data is generated with the seeded `prng`, and expected answers are computed from it. The
 reference docs are `siem/docs.ts` (names `spl:stats`, `kql:summarize`, shown by `title`); teach entries use those
-names. The SOC incident data (`labs/siemIncident.ts`) follows the timeline in `b3-ir-forensics/ir-hisobot.md`.
+names. The SOC incident data (`labs/siemIncident.ts`) follows the timeline in `b3-ir-forensics/ir-hisobot.md`;
+`buildIncident(extend)` adds lab-specific events before the Defender tables are derived.
+
+**Detection tools** (`sigma.ts`, `suricata.ts`, `zeek.ts`, `yara.ts`, shared file helpers in `toolio.ts`, docs in
+`detectDocs.ts`, category `aniqlash`): `sigma check|convert -t splunk -p sysmon|-t kusto -p microsoft_xdr` (modifiers
+contains/startswith/endswith/all; no re/cidr; adds EventID per logsource category — SIEM data for Sigma labs carries
+`EventID` as well as `EventCode`); `suricata -r pcap -S rules -l dir [-T]` writes fast.log and eve.json (sticky
+buffers http.*/dns.query/tls.sni, flow, flags, threshold, detection_filter; HOME_NET from
+/etc/suricata/suricata.yaml; per-packet matching); `zeek -r pcap` writes conn/dns/http/ssl.log in the cwd and
+`zeek-cut` reads stdin (`cat conn.log | zeek-cut ...`, the shell has no `<`); `yara` (text/wide/nocase/fullword, hex
+with wildcards and jumps, regex, uint16(0), filesize, N of them; unreferenced strings are errors, no modules); `strings
+-n/-e l/-t`. Lab files hold binary samples as one character per byte (`pe()`, `wide()` in `labs/yaraLab.ts`). Checks
+that need to run a tool use a `quiet` helper that removes the call from the learner's history. `sed` replacement
+follows GNU sed (`\` is one backslash, `&` the match, `$` literal).
 
 ## Code conventions
 

@@ -154,12 +154,30 @@ function breToJs(p: string, extended: boolean): string {
   return out;
 }
 
+/** GNU sed replacement text as a JS replacement string: \1 group, & whole match, \& and \\ literal, \n newline. */
+function sedReplacement(rep: string): string {
+  let out = '';
+  for (let i = 0; i < rep.length; i++) {
+    const ch = rep[i]!;
+    if (ch === '\\' && i + 1 < rep.length) {
+      const n = rep[++i]!;
+      if (/\d/.test(n)) out += `$${n}`;
+      else if (n === 'n') out += '\n';
+      else if (n === 't') out += '\t';
+      else out += n === '$' ? '$$' : n;
+    } else if (ch === '&') out += '$&';
+    else if (ch === '$') out += '$$';
+    else out += ch;
+  }
+  return out;
+}
+
 function parseSed(script: string, extended = false): SedOp | string {
   const s = /^s(.)(.*?)\1(.*?)\1([gI]*)$/.exec(script);
   if (s) {
     const flags = (s[4]!.includes('g') ? 'g' : '') + (s[4]!.includes('I') ? 'i' : '');
     try {
-      return { kind: 's', re: new RegExp(breToJs(s[2]!, extended), flags), rep: s[3]!.replace(/\\(\d)/g, '$$$1').replace(/&/g, '$$&') };
+      return { kind: 's', re: new RegExp(breToJs(s[2]!, extended), flags), rep: sedReplacement(s[3]!) };
     } catch {
       return `sed: -e expression #1: invalid regex: ${s[2]}`;
     }

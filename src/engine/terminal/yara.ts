@@ -654,3 +654,40 @@ export const yara: Command = (args, ctx) => {
   if (flag('-c', '--count')) return ok(String(count));
   return ok(out.join('\n'));
 };
+
+/** strings: printable character runs in a file (-n MIN, -e l for UTF-16LE "wide" strings, -t x/d for offsets). */
+export const stringsCmd: Command = (args, ctx) => {
+  const { opts, rest } = parseArgs(args, ['-n', '-e', '-t']);
+  const min = Number(opts['-n'] ?? 4) || 4;
+  const enc = (opts['-e'] as string | undefined) ?? 's';
+  const radix = opts['-t'] as string | undefined;
+  if (!rest.length && ctx.stdin === null) return fail('Usage: strings [-n MIN] [-e s|l] [-t x|d] FILE...');
+  const inputs: { name: string; text: string }[] = [];
+  for (const f of rest) {
+    const r = readText(ctx, f, 'strings');
+    if (!r.ok) return fail(r.error);
+    inputs.push({ name: f, text: r.text });
+  }
+  if (!rest.length) inputs.push({ name: '', text: ctx.stdin! });
+  const out: string[] = [];
+  for (const { text } of inputs) {
+    const step = enc === 'l' ? 2 : 1;
+    let run = '';
+    let start = 0;
+    const flush = () => {
+      if (run.length >= min) out.push(radix ? `${(radix === 'x' ? start.toString(16) : String(start)).padStart(7)} ${run}` : run);
+      run = '';
+    };
+    for (let i = 0; i + step - 1 < text.length; i += step) {
+      const c = text.charCodeAt(i) & 0xff;
+      const printable = (c >= 0x20 && c < 0x7f) || c === 9;
+      const ok16 = step === 1 || (text.charCodeAt(i + 1) & 0xff) === 0;
+      if (printable && ok16) {
+        if (!run) start = i;
+        run += text[i];
+      } else flush();
+    }
+    flush();
+  }
+  return ok(out.join('\n'));
+};

@@ -230,6 +230,12 @@ Sigma darsidagi kabi: tayyor qoidalarni o'rganing — tajribali tahlilchilar qan
 
 **Loki** (bepul) va **THOR** (tijoriy) — YARA va boshqa IOC'lar bilan butun tizimni tekshiradigan IR skanerlari. Velociraptor (EDR darsi) ham YARA bilan ko'p qurilmani bir vaqtda skanerlay oladi.
 
+## Amaliyot: fayl serverida ovlash
+
+Quyidagi labda WS-BUX-014 dan olingan namunalarni `strings` bilan o'rganasiz, wide satrlar, hex naqsh, `uint16(0) == 0x5A4D` sharti va `filesize` bilan qoidalar yozasiz, fayl serverida nusxalar va eski variantlarni topib, false positive'larni yo'qotasiz.
+
+:::lab aniqlash-yara
+
 ## YARA nimani qilmaydi
 
 - **Xatti-harakatni ko'rmaydi** — u statik naqshlarni qidiradi; fayl nima **qilishini** bilmaydi.

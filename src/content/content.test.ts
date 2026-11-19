@@ -211,6 +211,9 @@ describe('CTF', () => {
     'siem-beacon': 'flag{198.51.100.77_300}',
     'siem-spray': 'flag{t.jurayeva}',
     'siem-travel': 'flag{b.ergashev}',
+    'det-sigma': 'flag{ws-hr-005}',
+    'det-webshell': 'flag{/uploads/avatar_5512.php}',
+    'det-yara-hex': 'flag{report_q3.bin}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -245,6 +248,32 @@ describe('CTF', () => {
     const tr = search('siem-travel', 'kql', 'SigninLogs | where ResultType == "0" and Location != "UZ" | project UserPrincipalName, Chet = TimeGenerated, Location | join kind=inner (SigninLogs | where ResultType == "0" and Location == "UZ" | project UserPrincipalName, Uy = TimeGenerated) on UserPrincipalName | extend Farq = abs(Chet - Uy) | where Farq < 1h | distinct UserPrincipalName');
     expect(tr.rows).toHaveLength(1);
     expect(`flag{${String(tr.rows[0]!.UserPrincipalName).split('@')[0]}}`).toBe(answers['siem-travel']);
+  });
+
+  it('the detection challenges are solved with the tools their hints name', () => {
+    const shellOf = (id: string) => createShell(CTF.find((c) => c.id === id)!.shell!());
+    const sg = shellOf('det-sigma');
+    execLine(sg, "sed -i 's/CommandLine|contains:/CommandLine|contains|all:/' rules/certutil_download.yml");
+    const q = execLine(sg, 'sigma convert -t splunk -p sysmon rules/certutil_download.yml').output;
+    const loose = runSiem(sg.siem!, 'spl', execLine(createShell(CTF.find((c) => c.id === 'det-sigma')!.shell!()), 'sigma convert -t splunk -p sysmon rules/certutil_download.yml').output);
+    expect(new Set(loose.rows.map((r) => r.host)).size).toBeGreaterThan(1);
+    const hits = runSiem(sg.siem!, 'spl', q);
+    expect(new Set(hits.rows.map((r) => String(r.host).toLowerCase()))).toEqual(new Set(['ws-hr-005']));
+    expect(`flag{${String(hits.rows[0]!.host).toLowerCase()}}`).toBe(answers['det-sigma']);
+
+    const ws = shellOf('det-webshell');
+    execLine(ws, 'zeek -r dmz.pcap');
+    const php = execLine(ws, 'cat http.log | zeek-cut uri | grep php | cut -d? -f1 | sort -u').output.trim();
+    expect(`flag{${php}}`).toBe(answers['det-webshell']);
+    execLine(ws, `echo 'alert http any any -> any any (msg:"web shell"; http.uri; content:"/uploads/"; content:".php"; sid:1000100;)' >> rules/local.rules`);
+    execLine(ws, 'suricata -r dmz.pcap -S rules/local.rules -l out');
+    expect(execLine(ws, 'cat out/fast.log').output).toContain('198.51.100.140');
+
+    const yr = shellOf('det-yara-hex');
+    execLine(yr, "echo 'rule Cfg37 { strings: $c = { 43 46 47 21 07 03 00 00 } condition: uint16(0) == 0x5A4D and $c }' > v.yar");
+    const found = execLine(yr, 'yara v.yar /srv/samples').output.trim();
+    expect(found.split('\n')).toHaveLength(1);
+    expect(`flag{${found.split('/').pop()}}`).toBe(answers['det-yara-hex']);
   });
 
   it('the data of the encoding challenges really decodes to the flag', () => {

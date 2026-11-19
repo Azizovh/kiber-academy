@@ -61,7 +61,7 @@ import { gitleaks, npm, semgrep } from './codesec';
 import { sigma } from './sigma';
 import { suricata } from './suricata';
 import { zeek, zeekCut } from './zeek';
-import { yara } from './yara';
+import { stringsCmd, yara } from './yara';
 import { PCAP_MAGIC } from './pcap';
 
 /*
@@ -353,6 +353,7 @@ const fileCmd: Command = (args, ctx) => {
     else if (node.content.startsWith('\x89PNG')) out.push(`${p}: PNG image data`);
     else if (node.content.startsWith('%PDF')) out.push(`${p}: PDF document`);
     else if (node.content.startsWith('PK')) out.push(`${p}: Zip archive data`);
+    else if (node.content.startsWith('MZ')) out.push(`${p}: PE32+ executable (GUI) x86-64, for MS Windows`);
     else if (node.content.startsWith(PCAP_MAGIC)) out.push(`${p}: pcap capture file, microsecond ts (little-endian) - version 2.4 (Ethernet, capture length 262144)`);
     else out.push(`${p}: ASCII text`);
   }
@@ -587,6 +588,7 @@ export const COMMANDS: Record<string, Command> = {
   zeek,
   'zeek-cut': zeekCut,
   yara,
+  strings: stringsCmd,
   bash: () => fail('Ishlatilishi: bash SKRIPT.sh   (bu simulyator allaqachon bash ichida ishlaydi)'),
   sh: () => fail('Ishlatilishi: sh SKRIPT.sh'),
   exit: () => ok("Bu simulyator — yopish shart emas. Chiqish uchun sahifadan chiqing."),
