@@ -185,6 +185,11 @@ describe('CTF', () => {
     'cloud-iam': 'flag{getobject_putobject}',
     'cloud-trail-user': 'flag{ops-temp}',
     'cry-hash-id': 'flag{sha256}',
+    'win-hidden': 'flag{hidden_atributi}',
+    'win-runkey': 'flag{edgeupd.exe}',
+    'win-encoded': 'flag{kodlangan_buyruq_ochildi}',
+    'win-new-admin': 'flag{itsupport2}',
+    'win-c2': 'flag{9e424bf3}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -225,6 +230,24 @@ describe('CTF', () => {
     const top = execLine(s2, 'grep "Failed password" /var/log/auth.log | cut -d " " -f 11 | sort | uniq -c | sort -rn | head -n 1').output;
     expect(top.trim().split(/\s+/)[1]).toBe('203.0.113.45');
     expect(execLine(s2, 'grep Accepted /var/log/auth.log | grep 203.0.113.45').output).toContain('for deploy from');
+  });
+
+  it('the Windows challenges can be solved in PowerShell', () => {
+    const solve = (id: string, ...lines: string[]) => {
+      const s = createShell(CTF.find((c) => c.id === id)!.shell!());
+      return lines.map((l) => execLine(s, l).output).pop()!.trim();
+    };
+    const found = solve('win-hidden', 'Get-ChildItem -Recurse -Hidden -File | Select-Object -ExpandProperty FullName');
+    expect(found).toBe(String.raw`C:\Users\talaba\AppData\Roaming\Kesh\eslatma.txt`);
+    expect(solve('win-hidden', `Get-Content ${found}`)).toBe(answers['win-hidden']);
+    expect(solve('win-runkey', String.raw`Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Run`)).toContain(String.raw`Temp\edgeupd.exe`);
+    expect(
+      solve('win-encoded', "$a = (Get-ScheduledTask -TaskName WindowsTelemetry).Actions.Arguments", "[System.Text.Encoding]::Unicode.GetString([Convert]::FromBase64String(($a -split ' ')[-1]))"),
+    ).toBe("Write-Output '" + answers['win-encoded'] + "'");
+    const pid = solve('win-c2', "Get-NetTCPConnection -State Established | Where-Object { $_.RemoteAddress -notlike '10.*' } | Select-Object -ExpandProperty OwningProcess");
+    const path = solve('win-c2', `Get-Process -Id ${pid} | Select-Object -ExpandProperty Path`);
+    const hash = solve('win-c2', `Get-FileHash ${path} | Select-Object -ExpandProperty Hash`);
+    expect(`flag{${hash.slice(0, 8).toLowerCase()}}`).toBe(answers['win-c2']);
   });
 
   it('the second set can be solved with the tools the course teaches', () => {

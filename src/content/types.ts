@@ -126,7 +126,7 @@ export interface Lab {
   tasks: LabTask[];
 }
 
-export type CtfCategory = 'kodlash' | 'kripto' | 'linux' | 'tarmoq' | 'web' | 'forensics' | 'loglar' | 'cloud';
+export type CtfCategory = 'kodlash' | 'kripto' | 'linux' | 'windows' | 'tarmoq' | 'web' | 'forensics' | 'loglar' | 'cloud';
 
 export interface CtfChallenge {
   id: string;

@@ -121,7 +121,7 @@ export const FOUNDATION: Stage[] = [
         ], [
           r.thm('Windows Fundamentals 1, 2, 3'),
           r.docs('Microsoft Learn — PowerShell 101', 'https://learn.microsoft.com/en-us/powershell/scripting/learn/ps101/00-introduction'),
-        ], { labs: ['powershell-asoslari', 'windows-server-auditi'] }),
+        ], { labs: ['powershell-asoslari', 'windows-server-auditi'], ctf: ['win-hidden', 'win-runkey'] }),
         topic('virtualizatsiya', 'Virtualizatsiya va konteynerlar', 5, "Bitta kompyuterda ko'p kompyuter: VM, gipervizor, konteyner.", [
           "Virtual mashina va gipervizor nima ekanini tushuntira olaman",
           "VM va konteyner farqini bilaman",

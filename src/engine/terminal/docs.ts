@@ -20,6 +20,8 @@ export interface CommandDoc {
   examples: [string, string][];
   /** Where the simulator does less than the real tool. */
   note?: string;
+  /** Other names the shell accepts (PowerShell: ls, ps, ?...). */
+  aliases?: string[];
 }
 
 export const DOC_CATEGORIES: Record<DocCategory, string> = {

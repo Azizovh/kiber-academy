@@ -30,7 +30,7 @@ export const SOC: Stage[] = [
           "4624, 4625, 4688, 4720, 7045 kabi ID'larni yoddan bilaman",
           "Event Viewer va PowerShell bilan log qidira olaman",
           "Logon turlarini (Type 2, 3, 10) farqlayman",
-        ], [r.thm('Windows Event Logs'), sansPosters], { labs: ['windows-hodisalari', 'windows-insident'] }),
+        ], [r.thm('Windows Event Logs'), sansPosters], { labs: ['windows-hodisalari', 'windows-insident'], ctf: ['win-new-admin'] }),
         topic('sysmon', 'Sysmon', 10, "Jarayon, tarmoq ulanishi va fayl hodisalarini batafsil yozish.", [
           "Sysmon o'rnatib, konfiguratsiya qo'llay olaman",
           "Event ID 1, 3, 11, 13 ni tahlil qila olaman",
@@ -131,7 +131,7 @@ export const SOC: Stage[] = [
           "Dastur ishga tushirilganini artefaktlardan isbotlay olaman",
           "USB ulanish tarixini tiklay olaman",
           "Eric Zimmerman vositalarini ishlataman",
-        ], [r.video('13Cubed', 'https://www.youtube.com/@13Cubed'), r.thm('Windows Forensics 1 & 2')], { labs: ['windows-insident'] }),
+        ], [r.video('13Cubed', 'https://www.youtube.com/@13Cubed'), r.thm('Windows Forensics 1 & 2')], { labs: ['windows-insident'], ctf: ['win-encoded', 'win-c2'] }),
         topic('disk-forensics', 'Disk tahlili: Autopsy', 12, "Disk tasviri, o'chirilgan fayllar, vaqt chizig'i.", [
           "Autopsy'da keys ochib, tahlil qila olaman",
           "O'chirilgan faylni tiklay olaman",

@@ -14,11 +14,13 @@ export function CommandsPage() {
       .filter(
         (d) =>
           !q ||
-          d.name.includes(q) ||
+          d.name.toLowerCase().includes(q) ||
+          // PowerShell entries list their aliases (ls, ps, ?...).
+          !!d.aliases?.includes(q) ||
           d.summary.toLowerCase().includes(q) ||
           d.flags.some(([f, t]) => f.toLowerCase().includes(q) || t.toLowerCase().includes(q)),
       )
-      .sort((a, b) => (q && a.name === q ? -1 : q && b.name === q ? 1 : 0));
+      .sort((a, b) => (q && a.name.toLowerCase() === q ? -1 : q && b.name.toLowerCase() === q ? 1 : 0));
   }, [query, cat]);
 
   // Labs link here as #/buyruqlar?c=NAME: open on that command.
@@ -38,7 +40,7 @@ export function CommandsPage() {
           <h1 className="page-title">Buyruqlar ma'lumotnomasi</h1>
           <p className="page-sub">
             Terminalda ishlatiladigan barcha buyruqlar: nima qiladi, qanday yoziladi, har bir flag misol bilan. Xuddi shu
-            matnni terminalda <code>man BUYRUQ</code> ham ko'rsatadi.
+            matnni terminalda <code>man BUYRUQ</code> (PowerShell'da <code>Get-Help BUYRUQ</code>) ham ko'rsatadi.
           </p>
         </div>
         <span className="small faint">{ALL_DOCS.length} ta buyruq</span>
