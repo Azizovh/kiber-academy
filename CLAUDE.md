@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.18.0)
+## State (v1.19.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -22,7 +22,8 @@ IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, sec
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
 decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 36 labs (10–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
 analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs, three detection labs: Sigma with terminal + SIEM tabs, Zeek/Suricata, YARA, two SQL labs and four Python labs with terminal + code editor), 61 CTF challenges (Linux admin, Windows, traffic,
-containers, git, SOC logs, SIEM, SQL, Python, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+containers, git, SOC logs, SIEM, SQL, Python, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12). Final exams (v1.19):
+Foundation and SOC (see "Exams"); AppSec, Cloud and Pentest exams are next.
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -287,6 +288,23 @@ spreads `check` + `feedback` into a task — it imports the learner's file (main
 (expected values are Python literals computed from lab data in TS; `'raises ValueError'` expects an exception) and the
 lab page prints the first failing case in amber (`LabTask.feedback`, `CommandMessage { warn }`). Sample solutions write
 files the way the editor would: `edit(path, content)` and `editFn(path, func, body)` lines in `labs/run.ts`.
+
+## Exams (v1.19)
+
+- One exam per track (`src/content/exams/`): `<track>Bank.ts` holds the question bank as text (`## topic`, then quiz-style
+  `? - + !` lines; written with `§` for the backtick because the bank is a `String.raw` template), `<track>.ts` the
+  topics (each maps to roadmap stages, for readiness and recommendations) and the practicals, `index.ts` the list and
+  `trackReadiness`. `index.ts` imports the terminal shell first: entering the engine through `text.ts` breaks a cycle.
+- Rules live in `EXAM_RULES` (`engine/exam.ts`): 30 questions drawn evenly per topic with a seed, 45 + 45 minutes, pass 70%,
+  theory 60% / practice 40%, retake after 24 h. Readiness = exam 0.5, lessons 0.2, labs 0.15, CTF 0.15.
+- **Wrong options must look as plausible and as long as the right one.** The first Foundation bank let "pick the longest
+  option" pass (48 of 56); a content test now fails when a right option is >1.25× the longest wrong one or is the longest
+  in more than 40% of single-answer questions. Keep right answers short and put the reasons in the `!` explanation.
+- Practicals are new scenarios (not the lesson incidents), solved in any order, without hints. A task's check must
+  demand the answer itself ("print only the IP", a SIEM column), not output that dumping a file would also give.
+  The exam page ignores lines that only print text (`echo`, `printf`, `seq`), so typing a guessed answer does not count.
+- `store/exams.ts`: finished attempts (synced, union by id) and the active attempt (this device only; timers are
+  deadlines, so a reload does not stop the clock; terminal state is not kept, accepted answers are).
 
 ## Code conventions
 

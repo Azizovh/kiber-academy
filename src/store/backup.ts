@@ -1,6 +1,8 @@
 import { useActivity, type ActivityData } from './activity';
 import { useCards, type CardsData } from './cards';
 import { useNotes, type NotesData } from './notes';
+import { useExams } from './exams';
+import type { ExamAttempt } from './exams';
 import { PROGRESS_DEFAULTS, useProgress, type ProgressData } from './progress';
 import { SETTINGS_DEFAULTS, useSettings, type Settings } from './settings';
 
@@ -13,6 +15,8 @@ export interface Backup {
   activity: ActivityData;
   cards: CardsData;
   notes: NotesData;
+  /** Finished exam attempts (added in v1.19; older backups have none). */
+  exams?: Record<string, ExamAttempt[] | undefined>;
 }
 
 export function createBackup(): Backup {
@@ -27,6 +31,7 @@ export function createBackup(): Backup {
     activity: { days: useActivity.getState().days },
     cards: { cards: useCards.getState().cards },
     notes: { notes: useNotes.getState().notes },
+    exams: useExams.getState().attempts,
   };
 }
 
@@ -46,6 +51,7 @@ export function restoreBackup(raw: string): void {
   useActivity.setState({ days: data.activity?.days ?? {} });
   useCards.setState({ cards: data.cards?.cards ?? {} });
   useNotes.setState({ notes: data.notes?.notes ?? {} });
+  useExams.setState({ attempts: data.exams ?? {}, active: null });
 }
 
 export function downloadBackup(): void {
@@ -64,4 +70,5 @@ export function resetLearningData(): void {
   useActivity.getState().reset();
   useCards.getState().reset();
   useNotes.getState().reset();
+  useExams.getState().reset();
 }

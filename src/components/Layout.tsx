@@ -6,6 +6,7 @@ import {
   CloudOff,
   FlaskConical,
   Flame,
+  GraduationCap,
   Home,
   Layers,
   LogIn,
@@ -39,6 +40,7 @@ const LEARN: Item[] = [
 const PRACTICE: Item[] = [
   { to: '/amaliyot', label: 'Amaliyot', icon: FlaskConical, also: ['/lab', '/ctf'] },
   { to: '/takrorlash', label: 'Takrorlash', icon: Layers },
+  { to: '/imtihonlar', label: 'Imtihonlar', icon: GraduationCap, also: ['/imtihon'] },
 ];
 const REFERENCE: Item[] = [
   { to: '/lugat', label: "Lug'at", icon: BookA },

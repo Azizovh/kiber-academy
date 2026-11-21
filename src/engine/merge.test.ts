@@ -20,6 +20,7 @@ const empty = (patch: Partial<SyncData> = {}): SyncData => ({
   days: {},
   cards: {},
   notes: {},
+  exams: {},
   ...patch,
 });
 
@@ -101,5 +102,17 @@ describe('isEmptyData', () => {
     expect(isEmptyData(empty())).toBe(true);
     expect(isEmptyData(empty({ topics: { a: { lessonDone: true } } }))).toBe(false);
     expect(isEmptyData(empty({ settings: settings({ onboarded: true }) }))).toBe(false);
+  });
+});
+
+describe('exam attempts', () => {
+  it('keeps every attempt from both copies once, oldest first', () => {
+    const attempt = (id: string, startedAt: number) => ({ id, exam: 'soc' as const, startedAt, finishedAt: startedAt + 1, questions: [], answers: {}, practicals: [], score: { theory: 0, practical: 0, total: 0, passed: false, topics: {}, correct: 0, asked: 0 } });
+    const cloud = empty({ exams: { soc: [attempt('a', 1), attempt('b', 3)] } });
+    const local = empty({ exams: { soc: [attempt('b', 3), attempt('c', 2)] } });
+    const merged = mergeData(cloud, local);
+    expect(merged.exams.soc!.map((a) => a.id)).toEqual(['a', 'c', 'b']);
+    expect(mergeData(merged, local)).toEqual(merged);
+    expect(isEmptyData(empty({ exams: { soc: [attempt('a', 1)] } }))).toBe(false);
   });
 });

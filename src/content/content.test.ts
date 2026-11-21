@@ -14,6 +14,8 @@ import { LESSON_SOURCES, getLesson, lessonIds } from './lessonsEager';
 import META from 'virtual:lesson-meta';
 import { loadSql } from '../engine/runtime/sql';
 import { loadPython } from '../engine/runtime/python';
+import { EXAMS } from './exams';
+import { drawAttempt, EXAM_RULES } from '../engine/exam';
 
 // Labs with SQLite databases or Python need their WebAssembly runtimes before their shells are created.
 await Promise.all([loadSql(), loadPython()]);
@@ -149,6 +151,62 @@ describe('terminal labs', () => {
       }
       expect(task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
     });
+  });
+});
+
+describe('exams', () => {
+  it('have valid topics and enough well-formed questions', () => {
+    const ids: string[] = [];
+    for (const exam of EXAMS) {
+      expect(TRACKS.some((t) => t.id === exam.id), exam.id).toBe(true);
+      for (const t of exam.topics) {
+        for (const s of t.stages) expect(ALL_STAGES.some((x) => x.id === s), `${exam.id}/${t.id}: stage ${s}`).toBe(true);
+        expect(exam.questions.filter((q) => q.topic === t.id).length, `${exam.id}/${t.id}: questions`).toBeGreaterThanOrEqual(8);
+      }
+      for (const q of exam.questions) {
+        ids.push(q.id);
+        expect(exam.topics.some((t) => t.id === q.topic), `${q.id}: topic`).toBe(true);
+        expect(q.options.length, `${q.id}: options`).toBeGreaterThanOrEqual(3);
+        expect(q.options.some((o) => o.correct), `${q.id}: right option`).toBe(true);
+        expect(q.options.some((o) => !o.correct), `${q.id}: wrong option`).toBe(true);
+        expect(duplicates(q.options.map((o) => o.text)), `${q.id}: duplicate options`).toEqual([]);
+        expect(q.explanation.length, `${q.id}: explanation`).toBeGreaterThan(10);
+        expect(q.text, `${q.id}: placeholder left`).not.toContain('§');
+      }
+      expect(exam.questions.length).toBeGreaterThanOrEqual(EXAM_RULES.theoryCount);
+      expect(new Set(exam.practicals.map((p) => p.topic)).size, `${exam.id}: practical topics`).toBeGreaterThanOrEqual(2);
+      const draw = drawAttempt(exam, 7);
+      expect(draw.questions).toHaveLength(EXAM_RULES.theoryCount);
+      expect(draw.practicals).toHaveLength(EXAM_RULES.practicalCount);
+    }
+    expect(duplicates(ids)).toEqual([]);
+  });
+
+  // "Pick the longest option" must not pass an exam: right answers stay short, explanations carry the reasons.
+  it.each(EXAMS.map((e) => [e.id, e] as const))('%s does not give answers away by their length', (_n, exam) => {
+    const single = exam.questions.filter((q) => q.options.filter((o) => o.correct).length === 1);
+    let longest = 0;
+    for (const q of single) {
+      const right = q.options.find((o) => o.correct)!.text.length;
+      const max = Math.max(...q.options.filter((o) => !o.correct).map((o) => o.text.length));
+      if (right > max) longest++;
+      expect.soft(right, `${q.id}: right option much longer than the others`).toBeLessThanOrEqual(Math.ceil(max * 1.25));
+    }
+    expect(longest / single.length, 'share of questions where the right option is the longest').toBeLessThanOrEqual(0.4);
+  });
+
+  it.each(EXAMS.flatMap((e) => e.practicals.map((p) => [`${e.id}/${p.id}`, e, p] as const)))('%s is solvable', (_n, exam, p) => {
+    expect(exam.topics.some((t) => t.id === p.topic)).toBe(true);
+    expect(p.tasks.length).toBeGreaterThanOrEqual(3);
+    const state = createShell(p.shell());
+    const lines: string[] = [];
+    // Exam tasks may be solved in any order: none is solved before its own commands.
+    for (const task of p.tasks) expect(safe(() => task.check({ state, line: '', output: '', lines })), `${task.id}: solved too early`).toBe(false);
+    for (const task of p.tasks) {
+      let ctx: LabCheckCtx = { state, line: '', output: '', lines };
+      for (const line of task.solution) ctx = runLabLine(state, line, lines, p.commands);
+      expect(task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
+    }
   });
 });
 

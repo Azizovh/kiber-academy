@@ -1,6 +1,7 @@
 import type { CardState } from './srs';
 import type { DayActivity } from './dates';
 import type { ProgressMap, TopicProgress } from './progress';
+import type { ExamAttempt } from '../store/exams';
 
 /**
  * Merging two copies of the learner's data (this device and the cloud).
@@ -30,6 +31,15 @@ export interface SyncData {
   days: Record<string, DayActivity>;
   cards: Record<string, CardState | undefined>;
   notes: Record<string, { text: string; updatedAt: string } | undefined>;
+  /** Finished exam attempts per exam. */
+  exams: Record<string, ExamAttempt[] | undefined>;
+}
+
+/** Attempts never change once finished, so both copies' attempts are kept, each once. */
+export function mergeAttempts(a: ExamAttempt[], b: ExamAttempt[]): ExamAttempt[] {
+  const byId = new Map<string, ExamAttempt>();
+  for (const x of [...a, ...b]) byId.set(x.id, x);
+  return [...byId.values()].sort((x, y) => x.startedAt - y.startedAt);
 }
 
 function mergeRecords<T>(a: Record<string, T | undefined>, b: Record<string, T | undefined>, pick: (x: T, y: T) => T) {
@@ -90,6 +100,7 @@ export function mergeData(cloud: SyncData, local: SyncData): SyncData {
     })) as Record<string, DayActivity>,
     cards: mergeRecords(cloud.cards, local.cards, mergeCard),
     notes: mergeRecords(cloud.notes, local.notes, (a, b) => (a.updatedAt >= b.updatedAt ? a : b)),
+    exams: mergeRecords(cloud.exams ?? {}, local.exams ?? {}, mergeAttempts),
   };
 }
 
@@ -97,6 +108,6 @@ export function mergeData(cloud: SyncData, local: SyncData): SyncData {
 export function isEmptyData(d: SyncData): boolean {
   return (
     !d.settings.onboarded &&
-    [d.topics, d.labs, d.ctf, d.days, d.cards, d.notes].every((r) => Object.keys(r).length === 0)
+    [d.topics, d.labs, d.ctf, d.days, d.cards, d.notes, d.exams ?? {}].every((r) => Object.keys(r).length === 0)
   );
 }

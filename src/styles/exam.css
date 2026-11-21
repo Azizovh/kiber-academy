@@ -1,0 +1,520 @@
+/* ── Exams ─────────────────────────────────────────────────────────────── */
+
+.inline-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.12em;
+}
+
+.exam-rule-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exam-rule-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.exam-rule-list li > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.exam-step {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.exam-card {
+  border-top: 3px solid var(--tone);
+}
+
+.exam-card-title {
+  font-size: 1.12rem;
+  margin: 0;
+}
+
+.exam-card.soon {
+  opacity: 0.6;
+}
+
+.exam-soon-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--tone);
+}
+
+.exam-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.exam-start {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.exam-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.exam-parts .bar {
+  margin-top: 4px;
+}
+
+.exam-parts .weak .bar i {
+  background: var(--warn);
+}
+
+.exam-recs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.exam-recs li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.exam-recs svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  color: var(--warn);
+}
+
+.exam-attempt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+}
+
+.exam-attempt + .exam-attempt {
+  border-top: 1px solid var(--border);
+}
+
+.exam-attempt:hover {
+  background: var(--surface-2);
+}
+
+.exam-attempt svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The bar that stays on top of a running attempt. */
+.exam-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-bottom: 14px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--tone);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+
+.exam-bar-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.exam-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.exam-timer svg {
+  width: 17px;
+  height: 17px;
+}
+
+.exam-timer.low {
+  color: var(--danger);
+}
+
+.exam-theory {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+
+.exam-q-text {
+  font-size: 1.04rem;
+}
+
+.exam-q-text pre {
+  font-size: 0.82rem;
+}
+
+.btn.flagged {
+  color: var(--warn);
+}
+
+.exam-nav {
+  position: sticky;
+  top: 70px;
+}
+
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.exam-grid button {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.exam-grid button.has {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--text);
+}
+
+.exam-grid button.here {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.exam-grid button.flag::after,
+.exam-legend i.flag {
+  background: var(--warn);
+}
+
+.exam-grid button.flag::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.exam-legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.exam-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.exam-legend i.has {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+}
+
+.exam-confirm {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+}
+
+.exam-practical {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.exam-practical[hidden] {
+  display: none;
+}
+
+.exam-task-text p {
+  margin: 0;
+}
+
+@media (min-width: 1001px) {
+  .page.workspace > .exam-practical {
+    flex: 1;
+  }
+
+  .exam-practical > .lab-layout {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
+
+.exam-result {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  border-top: 4px solid var(--warn);
+}
+
+.exam-result.passed {
+  border-top-color: var(--ok);
+}
+
+.exam-review .opt + .opt {
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .exam-intro,
+  .exam-theory {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .exam-nav {
+    position: static;
+  }
+
+  .exam-grid {
+    grid-template-columns: repeat(10, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .exam-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* The result sheet: a paper page on screen, the only thing on paper. */
+.exam-sheet {
+  padding: 40px 44px;
+  border-radius: var(--radius);
+  background: #fff;
+  color: #1a1d24;
+  box-shadow: var(--shadow);
+  line-height: 1.55;
+}
+
+.exam-sheet .eyebrow {
+  color: #5b6270;
+}
+
+.exam-sheet h1 {
+  margin: 6px 0 0;
+  font-size: 1.7rem;
+  color: #1a1d24;
+}
+
+.exam-sheet h2 {
+  margin: 26px 0 10px;
+  font-size: 1rem;
+  color: #1a1d24;
+}
+
+.exam-sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #1a1d24;
+}
+
+.exam-sheet-badge {
+  padding: 8px 14px;
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.exam-sheet-badge.passed {
+  color: #13804b;
+}
+
+.exam-sheet-badge.failed {
+  color: #b4521a;
+}
+
+.exam-sheet-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 24px;
+  margin: 18px 0 0;
+}
+
+.exam-sheet-facts dt {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #5b6270;
+}
+
+.exam-sheet-facts dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.exam-sheet-scores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.exam-sheet-scores div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid #d6d9df;
+  border-radius: 8px;
+}
+
+.exam-sheet-scores span {
+  font-size: 0.76rem;
+  color: #5b6270;
+}
+
+.exam-sheet-scores b {
+  font-size: 1.4rem;
+}
+
+.exam-sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.exam-sheet-table td {
+  padding: 7px 4px;
+  border-bottom: 1px solid #e3e5ea;
+}
+
+.exam-sheet-table .num {
+  width: 70px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.exam-sheet-table .bar-cell {
+  width: 40%;
+}
+
+.exam-sheet .bar {
+  background: #e3e5ea;
+}
+
+.exam-sheet .bar i {
+  background: #2f6fde;
+}
+
+.exam-sheet-foot {
+  margin-top: 30px;
+  padding-top: 14px;
+  border-top: 1px solid #d6d9df;
+  font-size: 0.78rem;
+  color: #5b6270;
+}
+
+@media (max-width: 600px) {
+  .exam-sheet {
+    padding: 24px 18px;
+  }
+
+  .exam-sheet-scores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  .sidebar,
+  .mobile-bar,
+  .scrim,
+  .skip-link,
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body,
+  .shell,
+  .main {
+    background: #fff !important;
+  }
+
+  .shell {
+    display: block !important;
+  }
+
+  .main {
+    margin: 0 !important;
+  }
+
+  .page {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .exam-sheet {
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .exam-sheet .bar,
+  .exam-sheet .bar i {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

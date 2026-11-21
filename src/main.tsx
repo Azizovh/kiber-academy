@@ -8,6 +8,7 @@ import '@fontsource/jetbrains-mono/700.css';
 import './styles/tokens.css';
 import './styles/app.css';
 import './styles/lesson.css';
+import './styles/exam.css';
 import { App } from './App';
 import { initSync } from './services/sync';
 

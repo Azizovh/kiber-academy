@@ -9,6 +9,7 @@ import { useAuth } from '../store/auth';
 import { resetLearningData } from '../store/backup';
 import { useCards } from '../store/cards';
 import { useNotes } from '../store/notes';
+import { useExams } from '../store/exams';
 import { PROGRESS_DEFAULTS, useProgress } from '../store/progress';
 import { SETTINGS_DEFAULTS, useSettings, type Settings } from '../store/settings';
 import { siteUrl, supabase } from './supabase';
@@ -52,6 +53,7 @@ export function readLocal(): SyncData {
     days: useActivity.getState().days,
     cards: useCards.getState().cards,
     notes: useNotes.getState().notes,
+    exams: useExams.getState().attempts,
   };
 }
 
@@ -66,6 +68,8 @@ function applyLocal(d: SyncData): void {
     useActivity.setState({ days: d.days });
     useCards.setState({ cards: d.cards });
     useNotes.setState({ notes: d.notes });
+    // The attempt in progress stays on this device; only finished attempts travel.
+    useExams.setState({ attempts: d.exams });
   } finally {
     applying = false;
   }
@@ -83,6 +87,7 @@ function normalize(raw: unknown): SyncData | null {
     days: d.days ?? {},
     cards: d.cards ?? {},
     notes: d.notes ?? {},
+    exams: d.exams ?? {},
   };
 }
 
@@ -251,7 +256,7 @@ export function initSync(): void {
     setTimeout(() => void onUser(user), 0);
   });
 
-  for (const store of [useSettings, useProgress, useActivity, useCards, useNotes] as const) {
+  for (const store of [useSettings, useProgress, useActivity, useCards, useNotes, useExams] as const) {
     (store as { subscribe: (fn: () => void) => () => void }).subscribe(scheduleSave);
   }
 

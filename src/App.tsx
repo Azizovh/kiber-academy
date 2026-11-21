@@ -38,6 +38,10 @@ const AccountPage = page(() => import('./pages/AccountPage'), 'AccountPage');
 const AdminPage = page(() => import('./pages/AdminPage'), 'AdminPage');
 const CommandsPage = page(() => import('./pages/CommandsPage'), 'CommandsPage');
 const CtfPage = page(() => import('./pages/CtfPage'), 'CtfPage');
+const ExamsPage = page(() => import('./pages/ExamsPage'), 'ExamsPage');
+const ExamPage = page(() => import('./pages/ExamPage'), 'ExamPage');
+const ExamResultPage = page(() => import('./pages/ExamPage'), 'ExamResultPage');
+const ExamSheetPage = page(() => import('./pages/ExamPage'), 'ExamSheetPage');
 const GlossaryPage = page(() => import('./pages/GlossaryPage'), 'GlossaryPage');
 const InterviewPage = page(() => import('./pages/InterviewPage'), 'InterviewPage');
 const LabPage = page(() => import('./pages/LabPage'), 'LabPage');
@@ -77,6 +81,10 @@ export function App() {
         <Route path="amaliyot" element={<PracticePage />} />
         <Route path="lab/:labId" element={<LabPage />} />
         <Route path="ctf/:ctfId" element={<CtfPage />} />
+        <Route path="imtihonlar" element={<ExamsPage />} />
+        <Route path="imtihon/:examId" element={<ExamPage />} />
+        <Route path="imtihon/:examId/natija/:attemptId" element={<ExamResultPage />} />
+        <Route path="imtihon/:examId/varaq/:attemptId" element={<ExamSheetPage />} />
         <Route path="takrorlash" element={<ReviewPage />} />
         <Route path="lugat" element={<GlossaryPage />} />
         <Route path="buyruqlar" element={<CommandsPage />} />
