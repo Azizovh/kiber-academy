@@ -7,8 +7,9 @@
 import { PS_DOCS } from '../pwsh/docs';
 import { SIEM_DOCS } from '../siem/docs';
 import { DETECT_DOCS } from './detectDocs';
+import { SQL_DOCS } from './sqlDocs';
 
-export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'konteyner' | 'kod' | 'aniqlash' | 'powershell' | 'siem';
+export type DocCategory = 'fayl' | 'matn' | 'ruxsat' | 'jarayon' | 'foydalanuvchi' | 'tarmoq' | 'tizim' | 'xavfsizlik' | 'skript' | 'trafik' | 'konteyner' | 'kod' | 'aniqlash' | 'sql' | 'powershell' | 'siem';
 
 export interface CommandDoc {
   name: string;
@@ -42,6 +43,7 @@ export const DOC_CATEGORIES: Record<DocCategory, string> = {
   konteyner: 'Konteynerlar va Kubernetes',
   kod: 'Git va kod xavfsizligi',
   aniqlash: 'Aniqlash vositalari (Sigma, Suricata, Zeek, YARA)',
+  sql: "SQL va SQLite",
   powershell: 'PowerShell (Windows)',
   siem: "SIEM so'rovlari (SPL va KQL)",
 };
@@ -594,7 +596,7 @@ export const DOCS: CommandDoc[] = [
 ];
 
 /** Linux and PowerShell together, for the reference page. */
-export const ALL_DOCS: CommandDoc[] = [...DOCS, ...DETECT_DOCS, ...PS_DOCS, ...SIEM_DOCS];
+export const ALL_DOCS: CommandDoc[] = [...DOCS, ...DETECT_DOCS, ...SQL_DOCS, ...PS_DOCS, ...SIEM_DOCS];
 
 const index = new Map(ALL_DOCS.map((c) => [c.name, c]));
 

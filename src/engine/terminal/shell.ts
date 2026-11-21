@@ -10,6 +10,7 @@ import { createK8s, type K8sSpec, type K8sState } from './kube';
 import { createRepos, type GitRepoSpec, type GitState } from './git';
 import type { NpmSpec } from './codesec';
 import { createSiem, type SiemSpec, type SiemState } from '../siem/types';
+import { buildDatabase } from '../runtime/sql';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -35,6 +36,8 @@ export interface ShellInit {
   npm?: NpmSpec;
   /** A SIEM (Splunk indexes, Sentinel tables) the lab's SIEM pane searches. */
   siem?: SiemSpec;
+  /** SQLite database files to create: absolute path -> SQL script (needs loadSql() first; see runtime/sql.ts). */
+  sqlite?: Record<string, string>;
 }
 
 export interface ShellState {
@@ -58,6 +61,13 @@ export interface ShellState {
   git?: GitState;
   npm?: NpmSpec;
   siem?: SiemState;
+  /** Result sets of the last sqlite3 run (lab checks compare rows, whatever the output mode was). */
+  sqliteLast?: { file: string; sql: string; results: SqlResultSet[] };
+}
+
+export interface SqlResultSet {
+  columns: string[];
+  rows: (string | number | null | Uint8Array)[][];
 }
 
 export interface CmdResult {
@@ -103,6 +113,11 @@ export function createShell(init: ShellInit): ShellState {
   const root = buildFs(init.fs);
   const homeNode = getNode(root, home);
   if (homeNode) chownTree(homeNode, user);
+  for (const [path, script] of Object.entries(init.sqlite ?? {})) {
+    const parent = getNode(root, dirname(path));
+    if (!parent || parent.type !== 'dir') throw new Error(`sqlite: no directory for ${path}`);
+    parent.children[path.slice(path.lastIndexOf('/') + 1)] = { type: 'file', content: buildDatabase(script), mode: 0o644, owner: user };
+  }
   const tmp = getNode(root, '/tmp');
   // /tmp: everyone may write, only the owner may delete (sticky bit), as on a real system.
   if (tmp) tmp.mode = 0o1777;

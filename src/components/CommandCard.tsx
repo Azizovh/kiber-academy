@@ -6,7 +6,8 @@ export function CommandCard({ doc, only }: { doc: CommandDoc; only?: string[] })
   const flags = only?.length ? doc.flags.filter(([f]) => only.some((o) => f.split(/[\s/|,]+/).includes(o) || f === o)) : doc.flags;
   const ps = doc.category === 'powershell';
   const siem = doc.category === 'siem';
-  const prompt = ps ? 'PS>' : siem ? (doc.name.startsWith('kql:') ? 'KQL>' : 'SPL>') : '$';
+  const sqlKw = doc.name.startsWith('sql:');
+  const prompt = ps ? 'PS>' : siem ? (doc.name.startsWith('kql:') ? 'KQL>' : 'SPL>') : sqlKw ? 'sqlite>' : '$';
   return (
     <article className="card cmd-card" id={`cmd-${doc.name}`}>
       <header className="cmd-head">
@@ -19,7 +20,7 @@ export function CommandCard({ doc, only }: { doc: CommandDoc; only?: string[] })
         <table className="cmd-flags">
           <thead>
             <tr>
-              <th>{ps ? 'Parametr' : siem ? 'Qism' : 'Flag'}</th>
+              <th>{ps ? 'Parametr' : siem || sqlKw ? 'Qism' : 'Flag'}</th>
               <th>Nima qiladi</th>
               <th>Misol</th>
             </tr>

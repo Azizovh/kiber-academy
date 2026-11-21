@@ -61,7 +61,7 @@ export const APPSEC: Stage[] = [
         topic('as-access-control', 'Kirish nazorati dizayni', 14, "RBAC, ABAC, server tomonda tekshirish, IDOR'ning oldini olish.", [
           "Markazlashgan avtorizatsiya qatlamini loyihalay olaman",
           "Har bir endpointda ruxsat tekshirilishini test bilan isbotlayman",
-        ], [r.ps('Access control', 'access-control'), cheat], { labs: ['http-tekshiruvi'], ctf: ['web-authz'] }),
+        ], [r.ps('Access control', 'access-control'), cheat], { labs: ['http-tekshiruvi'], ctf: ['web-authz', 'sql-foreign-notes'] }),
         topic('as-kripto-xatolar', 'Kriptografik xatolar', 10, "Zaif algoritm, qattiq kodlangan kalit, noto'g'ri tasodifiylik.", [
           "Kodda kriptografik xatolarni taniy olaman",
           "Kalit va sirlarni qayerda saqlashni bilaman",

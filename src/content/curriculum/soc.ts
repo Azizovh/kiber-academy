@@ -38,7 +38,7 @@ export const SOC: Stage[] = [
         topic('linux-loglari', 'Linux loglari va auditd', 10, "auth.log, syslog, journald, auditd.", [
           "SSH brute force izini logdan topa olaman",
           "auditd qoidasi yoza olaman",
-        ], [r.thm('Linux Logs Investigations'), cyberdefenders], { labs: ['grep-va-pipe'], ctf: ['log-bruteforce', 'log-useradd'] }),
+        ], [r.thm('Linux Logs Investigations'), cyberdefenders], { labs: ['grep-va-pipe', 'sql-soc'], ctf: ['log-bruteforce', 'log-useradd'] }),
         topic('tarmoq-loglari', 'Tarmoq loglari: firewall, proxy, DNS', 10, "Tarmoq qurilmalari nimani yozadi va undan nimani bilish mumkin.", [
           "Firewall va proxy logini o'qiy olaman",
           "DNS logidan shubhali domenni ajrata olaman",

@@ -39,7 +39,15 @@ Hech narsa o'rnatish shart emas — Python bilan birga **SQLite** keladi:
 sqlite3 mashq.db
 ```
 
-Yoki brauzerda: mavzu manbalaridagi **SQLBolt** — interaktiv darslar, har qadamda so'rovni o'zingiz yozasiz. Bu darsni u bilan birga o'tish — eng yaxshi usul.
+Eng oson yo'l — shu dasturning o'zida. Quyidagi labda haqiqiy SQLite bazasi va kod muharriri bor: qisqa so'rovni terminalda `sqlite3 qaydnoma.db "SELECT ...;"` bilan, uzunini muharrirda yozib `.read` bilan bajarasiz. Darsdagi har bir yangi so'rovni o'qigach, labdagi mos topshiriqni bajarib ko'ring.
+
+:::lab sql-asoslari
+
+Keyingi qadam — SOC tergovi SQL'da: log jadvallaridan hujumni tiklash, JOIN, oyna funksiyalari va yagona vaqt chizig'i.
+
+:::lab sql-soc
+
+Brauzerda yana bir yaxshi manba: mavzu manbalaridagi **SQLBolt** — interaktiv darslar, har qadamda so'rovni o'zingiz yozasiz.
 
 ## SELECT — ma'lumotni o'qish
 

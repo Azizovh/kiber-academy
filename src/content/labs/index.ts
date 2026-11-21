@@ -14,6 +14,8 @@ import { siemIncident } from './siemIncident';
 import { sigmaLab } from './detection';
 import { networkDetection } from './network';
 import { yaraHunt } from './yaraLab';
+import { sqlBasics } from './sqlLabs';
+import { socSql } from './sqlSoc';
 
 export interface LabGroup {
   id: string;
@@ -36,6 +38,12 @@ export const LAB_GROUPS: LabGroup[] = [
     title: 'Matn, kodlash va loglar',
     text: "grep va quvurlar, Base64 va xeshlar, veb-server va Windows hodisalari loglarini tahlil qilish.",
     labs: [grepAndPipes, encodings, webLogInvestigation, windowsEvents],
+  },
+  {
+    id: 'dasturlash',
+    title: 'Dasturlash: SQL va Python',
+    text: "Haqiqiy SQLite bazasida so'rovlar va kod muharririda yozilgan skriptlar: ma'lumotdan javob topish.",
+    labs: [sqlBasics, socSql],
   },
   {
     id: 'tarmoq',

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, Check, ChevronRight, Info, Lightbulb, PartyPopper, Search, SquareTerminal } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, FileCode2, Info, Lightbulb, Loader2, PartyPopper, Search, SquareTerminal } from 'lucide-react';
 import { CommandCard } from '../components/CommandCard';
 import { Markdown } from '../components/Markdown';
 import { TeachPanel, teachGroups } from '../components/TeachPanel';
@@ -15,6 +15,35 @@ import type { Lab, LabCheckCtx, Pane } from '../content/types';
 import { useStudyTimer } from '../hooks/useStudyTimer';
 import { useActivity } from '../store/activity';
 import { useProgress } from '../store/progress';
+import { useRuntimes } from '../hooks/useRuntimes';
+import { RUNTIME_NAMES } from '../engine/runtime';
+
+// CodeMirror is only downloaded for labs that have an editor.
+const CodeEditor = lazy(() => import('../components/CodeEditor'));
+
+export const PANE_LABEL: Record<Pane, string> = { terminal: 'Terminal', siem: 'SIEM', editor: 'Kod' };
+export function PaneIcon({ pane }: { pane: Pane }) {
+  return pane === 'terminal' ? <SquareTerminal aria-hidden /> : pane === 'siem' ? <Search aria-hidden /> : <FileCode2 aria-hidden />;
+}
+
+/** Shown while a lab's WebAssembly runtime downloads (once; the browser caches it). */
+export function RuntimeLoading({ names, error }: { names: string; error: string | null }) {
+  return (
+    <div className="page narrow">
+      <div className="card pad row" style={{ gap: 12 }} role="status">
+        {error ? (
+          <span>
+            <b>{names} yuklanmadi.</b> Sahifani yangilab ko'ring. ({error})
+          </span>
+        ) : (
+          <>
+            <Loader2 aria-hidden className="spin" /> <span>{names} yuklanmoqda… (faqat birinchi marta biroz vaqt oladi)</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 /** Backticks in task texts become inline code. */
 function Inline({ text }: { text: string }) {
@@ -39,7 +68,13 @@ export function LabPage() {
   const { labId = '' } = useParams();
   const lab = getLab(labId);
   if (!lab) return <Navigate to="/amaliyot" replace />;
-  return <LabRun key={lab.id} lab={lab} />;
+  return <LabGate key={lab.id} lab={lab} />;
+}
+
+function LabGate({ lab }: { lab: Lab }) {
+  const { ready, error } = useRuntimes(lab.runtimes);
+  if (!ready) return <RuntimeLoading names={(lab.runtimes ?? []).map((r) => RUNTIME_NAMES[r]).join(', ')} error={error} />;
+  return <LabRun lab={lab} />;
 }
 
 function LabRun({ lab }: { lab: Lab }) {
@@ -123,7 +158,7 @@ function LabRun({ lab }: { lab: Lab }) {
         <nav className="crumbs" aria-label="Yo'l">
           <Link to="/amaliyot">Amaliyot</Link>
           <ChevronRight aria-hidden />
-          <span>{lab.panes?.includes('siem') ? 'SIEM lablari' : 'Terminal lablari'}</span>
+          <span>{lab.panes?.includes('siem') ? 'SIEM lablari' : lab.panes?.includes('editor') ? 'Kod lablari' : 'Terminal lablari'}</span>
         </nav>
         <div className="row wrap" style={{ gap: 10 }}>
           <h1 className="page-title workspace-title">{lab.title}</h1>
@@ -191,7 +226,7 @@ function LabRun({ lab }: { lab: Lab }) {
             <div className="seg pane-tabs" role="tablist" aria-label="Ish oynasi">
               {panes.map((p) => (
                 <button key={p} role="tab" aria-selected={pane === p} className={pane === p ? 'on' : ''} onClick={() => setPane(p)}>
-                  {p === 'terminal' ? <SquareTerminal aria-hidden /> : <Search aria-hidden />} {p === 'terminal' ? 'Terminal' : 'SIEM'}
+                  <PaneIcon pane={p} /> {PANE_LABEL[p]}
                 </button>
               ))}
             </div>
@@ -211,6 +246,13 @@ function LabRun({ lab }: { lab: Lab }) {
                 autoFocus={desktop && panes[0] === 'terminal'}
                 banner={"KiberAkademiya o'quv terminali. Buyruqlar ro'yxati: help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"}
               />
+            </div>
+          )}
+          {panes.includes('editor') && lab.editor && (
+            <div className="lab-terminal lab-editor" hidden={pane !== 'editor'}>
+              <Suspense fallback={<div className="card pad">Muharrir yuklanmoqda…</div>}>
+                <CodeEditor key={runId} getState={() => shellRef.current!} root={lab.editor.root} open={lab.editor.open} active={pane === 'editor'} />
+              </Suspense>
             </div>
           )}
           {panes.includes('siem') && shellRef.current.siem && (

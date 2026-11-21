@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.16.0)
+## State (v1.17.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -20,9 +20,9 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 30 labs (16–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
-analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs, three detection labs: Sigma with terminal + SIEM tabs, Zeek/Suricata, YARA), 56 CTF challenges (Linux admin, Windows, traffic,
-containers, git, SOC logs, SIEM, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 32 labs (16–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs, three detection labs: Sigma with terminal + SIEM tabs, Zeek/Suricata, YARA, two SQL labs with terminal + code editor), 58 CTF challenges (Linux admin, Windows, traffic,
+containers, git, SOC logs, SIEM, SQL, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -260,6 +260,20 @@ with wildcards and jumps, regex, uint16(0), filesize, N of them; unreferenced st
 -n/-e l/-t`. Lab files hold binary samples as one character per byte (`pe()`, `wide()` in `labs/yaraLab.ts`). Checks
 that need to run a tool use a `quiet` helper that removes the call from the learner's history. `sed` replacement
 follows GNU sed (`\` is one backslash, `&` the match, `$` literal).
+
+**SQL and the code editor** (v1.17): `engine/runtime/` holds WebAssembly runtimes loaded on demand — `sql.ts`
+(sql.js; `loadSql()` is async, everything after it is sync). A lab or CTF lists them in `runtimes: ['sql']`; the lab
+page shows a loading card until they are ready (`useRuntimes`), and `content.test.ts` awaits `loadSql()` at the top.
+`ShellInit.sqlite` maps absolute paths to SQL scripts that become real database files (bytes stored one character per
+byte; `file` says "SQLite 3.x database"). `sqlite3` (`terminal/sqlite.ts`) is one-shot only: `sqlite3 [-box|-column|
+-csv|-json|-line|-header] DB "SQL"` or `".tables" ".schema" ".indexes" ".read file.sql"`; it writes changes back and
+records `state.sqliteLast` (result sets), which checks read through `labs/sqlHelpers.ts` (`lastResult`, `column`,
+`sameSet`, `hasRows`, `expectRows`/`queryDb` against the lab's own database — expected answers are always computed).
+The `editor` pane (`components/CodeEditor.tsx`, CodeMirror, lazily loaded) lists text files under `Lab.editor.root`,
+autosaves into the shared shell's fs and re-reads files when its tab is shown. Docs: `terminal/sqlDocs.ts`
+(`sqlite3` plus `sql:select`, `sql:join` ... shown by title, category `sql`). Electron loads WASM from `file://`
+without problems (fetch works there; checked). **Bash heredocs in this environment can halve backslashes** — write
+scripts that contain regexes or `\n` with the Write tool, not `cat <<EOF`.
 
 ## Code conventions
 

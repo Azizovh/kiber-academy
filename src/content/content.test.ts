@@ -12,6 +12,10 @@ import { LABS, getLab } from './labs';
 import { glossaryRefs } from './lessonParser';
 import { LESSON_SOURCES, getLesson, lessonIds } from './lessonsEager';
 import META from 'virtual:lesson-meta';
+import { loadSql } from '../engine/runtime/sql';
+
+// Labs with SQLite databases need the WebAssembly runtime before their shells are created.
+await loadSql();
 
 function duplicates(ids: string[]): string[] {
   return ids.filter((id, i) => ids.indexOf(id) !== i);
@@ -214,6 +218,8 @@ describe('CTF', () => {
     'det-sigma': 'flag{ws-hr-005}',
     'det-webshell': 'flag{/uploads/avatar_5512.php}',
     'det-yara-hex': 'flag{report_q3.bin}',
+    'sql-hidden-admin': 'flag{helpdesk2}',
+    'sql-foreign-notes': 'flag{sardor_37}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -248,6 +254,19 @@ describe('CTF', () => {
     const tr = search('siem-travel', 'kql', 'SigninLogs | where ResultType == "0" and Location != "UZ" | project UserPrincipalName, Chet = TimeGenerated, Location | join kind=inner (SigninLogs | where ResultType == "0" and Location == "UZ" | project UserPrincipalName, Uy = TimeGenerated) on UserPrincipalName | extend Farq = abs(Chet - Uy) | where Farq < 1h | distinct UserPrincipalName');
     expect(tr.rows).toHaveLength(1);
     expect(`flag{${String(tr.rows[0]!.UserPrincipalName).split('@')[0]}}`).toBe(answers['siem-travel']);
+  });
+
+  it('the SQL challenges are solved by the queries their hints describe', () => {
+    const sql = (id: string, db: string, q: string) => execLine(createShell(CTF.find((c) => c.id === id)!.shell!()), `sqlite3 ${db} "${q}"`).output;
+    const admins = sql('sql-hidden-admin', 'dokon.db', "SELECT username FROM users WHERE role = 'admin' AND email NOT LIKE '%@dokon.example.com' AND strftime('%H', created) < '06';");
+    expect(`flag{${admins}}`).toBe(answers['sql-hidden-admin']);
+    const q = 'SELECT a.user, COUNT(DISTINCT a.note_id) AS n FROM access_log a JOIN notes n ON n.id = a.note_id LEFT JOIN shares s ON s.note_id = a.note_id AND s.shared_with = a.user WHERE a.user != n.owner AND s.note_id IS NULL GROUP BY a.user ORDER BY n DESC;';
+    const rows = sql('sql-foreign-notes', 'qaydlar.db', q).split('\n');
+    expect(rows).toHaveLength(1);
+    expect(`flag{${rows[0]!.replace('|', '_')}}`).toBe(answers['sql-foreign-notes']);
+    // Without the shares check, the team lead who reads notes shared with her would look worse.
+    const naive = sql('sql-foreign-notes', 'qaydlar.db', 'SELECT a.user FROM access_log a JOIN notes n ON n.id = a.note_id WHERE a.user != n.owner GROUP BY a.user ORDER BY COUNT(DISTINCT a.note_id) DESC LIMIT 1;');
+    expect(naive).toBe('malika');
   });
 
   it('the detection challenges are solved with the tools their hints name', () => {

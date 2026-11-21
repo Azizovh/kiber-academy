@@ -1,6 +1,11 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { lazy, Suspense, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, ChevronRight, Flag, Lightbulb, Search, SquareTerminal } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronRight, Flag, Lightbulb } from 'lucide-react';
+import { PANE_LABEL, PaneIcon, RuntimeLoading } from './LabPage';
+import { useRuntimes } from '../hooks/useRuntimes';
+import { RUNTIME_NAMES } from '../engine/runtime';
+
+const CodeEditor = lazy(() => import('../components/CodeEditor'));
 import { CodeBlock, Markdown } from '../components/Markdown';
 import { TerminalView } from '../components/TerminalView';
 import { SiemView } from '../components/SiemView';
@@ -192,7 +197,13 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
 }
 
 /** The terminal, the SIEM search screen, or both as tabs over one shared machine. */
-function CtfWork({ challenge, init }: { challenge: CtfChallenge; init: NonNullable<CtfChallenge['shell']> }) {
+function CtfWork(props: { challenge: CtfChallenge; init: NonNullable<CtfChallenge['shell']> }) {
+  const { ready, error } = useRuntimes(props.challenge.runtimes);
+  if (!ready) return <RuntimeLoading names={(props.challenge.runtimes ?? []).map((r) => RUNTIME_NAMES[r]).join(', ')} error={error} />;
+  return <CtfPanes {...props} />;
+}
+
+function CtfPanes({ challenge, init }: { challenge: CtfChallenge; init: NonNullable<CtfChallenge['shell']> }) {
   const panes: Pane[] = challenge.panes ?? ['terminal'];
   const [pane, setPane] = useState<Pane>(panes[0]!);
   const shellRef = useRef<ShellState | null>(null);
@@ -204,7 +215,7 @@ function CtfWork({ challenge, init }: { challenge: CtfChallenge; init: NonNullab
         <div className="seg pane-tabs" role="tablist" aria-label="Ish oynasi">
           {panes.map((p) => (
             <button key={p} role="tab" aria-selected={pane === p} className={pane === p ? 'on' : ''} onClick={() => setPane(p)}>
-              {p === 'terminal' ? <SquareTerminal aria-hidden /> : <Search aria-hidden />} {p === 'terminal' ? 'Terminal' : 'SIEM'}
+              <PaneIcon pane={p} /> {PANE_LABEL[p]}
             </button>
           ))}
         </div>
@@ -212,6 +223,13 @@ function CtfWork({ challenge, init }: { challenge: CtfChallenge; init: NonNullab
       {panes.includes('terminal') && (
         <div className="ctf-pane" hidden={pane !== 'terminal'}>
           <TerminalView init={init} shellRef={shellRef} onReset={() => setRunId((n) => n + 1)} fill autoFocus={false} banner="Topshiriq terminali. Buyruqlar ro'yxati: help" />
+        </div>
+      )}
+      {panes.includes('editor') && challenge.editor && (
+        <div className="ctf-pane" hidden={pane !== 'editor'}>
+          <Suspense fallback={<div className="card pad">Muharrir yuklanmoqda…</div>}>
+            <CodeEditor key={runId} getState={() => shellRef.current!} root={challenge.editor.root} open={challenge.editor.open} active={pane === 'editor'} />
+          </Suspense>
         </div>
       )}
       {panes.includes('siem') && shellRef.current.siem && (

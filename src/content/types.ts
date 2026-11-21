@@ -1,5 +1,6 @@
 import type { ShellInit, CustomCommand, ShellState } from '../engine/terminal/shell';
 import type { SiemLang, SiemResult } from '../engine/siem/types';
+import type { Runtime } from '../engine/runtime';
 
 export type TrackId = 'foundation' | 'pentest' | 'soc' | 'appsec' | 'cloud' | 'career';
 
@@ -102,7 +103,13 @@ export interface LabCheckCtx {
 }
 
 /** Panes a lab or CTF shows: the terminal, the SIEM search screen, or both as tabs. */
-export type Pane = 'terminal' | 'siem';
+export type Pane = 'terminal' | 'siem' | 'editor';
+
+/** The code editor pane: which directory it lists and which file it opens first. */
+export interface EditorSpec {
+  root: string;
+  open?: string;
+}
 
 export interface LabTask {
   id: string;
@@ -131,6 +138,10 @@ export interface Lab {
   commands?: Record<string, CustomCommand>;
   /** Defaults to ['terminal']. A SIEM pane needs `shell().siem`. The first pane opens first. */
   panes?: Pane[];
+  /** Needed by the 'editor' pane. */
+  editor?: EditorSpec;
+  /** WebAssembly runtimes loaded before the shell is created (sqlite3 needs 'sql'). */
+  runtimes?: Runtime[];
   tasks: LabTask[];
 }
 
@@ -151,6 +162,8 @@ export interface CtfChallenge {
   shell?: () => ShellInit;
   /** Defaults to ['terminal'] when there is a shell. */
   panes?: Pane[];
+  editor?: EditorSpec;
+  runtimes?: Runtime[];
 }
 
 export interface GlossaryTerm {

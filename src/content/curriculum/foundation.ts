@@ -322,7 +322,7 @@ export const FOUNDATION: Stage[] = [
           "Jadval, qator, ustun, kalit nima ekanini bilaman",
           "SELECT, WHERE, ORDER BY, JOIN so'rovlarini yoza olaman",
           "INSERT, UPDATE, DELETE ishlataman",
-        ], [r.lab('SQLBolt — interaktiv SQL darslari', 'https://sqlbolt.com/'), r.thm('SQL Fundamentals')]),
+        ], [r.lab('SQLBolt — interaktiv SQL darslari', 'https://sqlbolt.com/'), r.thm('SQL Fundamentals')], { labs: ['sql-asoslari', 'sql-soc'], ctf: ['sql-hidden-admin'] }),
       ]),
     ],
   },
