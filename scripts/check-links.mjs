@@ -1,25 +1,46 @@
-// Checks that every external link in the content answers.
+// Checks that every external link in the content answers: curriculum resources, pages and lesson Markdown.
+// Lab and CTF data are skipped (their addresses are simulated), and so are the documentation ranges and
+// fictional names lessons use in examples (example.com, *.example, *.lab, mybank.uz, 203.0.113.x, ...).
 // Run with:  node scripts/check-links.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 
 const ROOTS = ['src/content', 'src/pages'];
-const URL_RE = /https?:\/\/[^\s'"`)<>\\]+/g;
+const URL_RE = /https?:\/\/[^\s'"`)<>\\\]|*]+/g;
 
 function files(dir) {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    if (statSync(path).isDirectory()) return files(path);
-    return /\.(ts|tsx)$/.test(name) && !name.endsWith('.test.ts') ? [path] : [];
+    if (statSync(path).isDirectory()) return path.split(sep).includes('labs') ? [] : files(path);
+    if (name.endsWith('.test.ts') || /^ctf.+\.ts$/.test(name)) return [];
+    return /\.(ts|tsx|md)$/.test(name) ? [path] : [];
   });
+}
+
+/** Example and simulated addresses: not links anybody is meant to open. */
+function isExample(url) {
+  let host;
+  try {
+    host = new URL(url.replace(/[.,;:]+$/, '')).hostname;
+  } catch {
+    return true;
+  }
+  return (
+    /(^|\.)example(\.(com|org|net|uz))?$/.test(host) ||
+    /(^|[.-])example[.-]/.test(host) ||
+    /\.(lab|test|local|localhost|internal|corp)$/.test(host) ||
+    /^(localhost|\d+\.\d+\.\d+\.\d+)$/.test(host) ||
+    /(^|\.)(mybank\.uz|qaydnoma\.\w+)$/.test(host) ||
+    !host.includes('.')
+  );
 }
 
 const found = new Map();
 for (const root of ROOTS) {
   for (const file of files(root)) {
-    for (const url of readFileSync(file, 'utf8').match(URL_RE) ?? []) {
-      // Example addresses inside lab texts are not real links.
-      if (/10\.10\.10\.|example\.com|nmap\.org \)|\$\{/.test(url) || url.includes('${')) continue;
+    for (const raw of readFileSync(file, 'utf8').match(URL_RE) ?? []) {
+      const url = raw.replace(/[.,;:]+$/, '');
+      if (url.includes('${') || isExample(url)) continue;
       if (!found.has(url)) found.set(url, file);
     }
   }
@@ -60,3 +81,4 @@ await Promise.all(
 const bad = results.filter((r) => !(r.status >= 200 && r.status < 400)).sort((a, b) => a.status - b.status);
 for (const r of bad) console.log(`${String(r.status).padStart(3)}  ${r.url}  ${r.error ?? ''}   [${found.get(r.url)}]`);
 console.log(`\nYaxshi: ${results.length - bad.length}   Muammoli: ${bad.length}`);
+console.log('403 — odatda bot himoyasi: sahifani brauzerda oching, u odamga ochilsa, havola joyida.');

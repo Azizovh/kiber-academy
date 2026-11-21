@@ -242,7 +242,7 @@ OSHKOR_QILUVCHI = ["Server", "X-Powered-By"]
 
 def main():
     if len(sys.argv) != 2:
-        print(f"Ishlatilishi: {sys.argv[0]} https://mening-saytim.uz")
+        print(f"Ishlatilishi: {sys.argv[0]} https://mening-saytim.example.com")
         sys.exit(1)
 
     try:
@@ -273,7 +273,7 @@ if __name__ == "__main__":
 ```
 
 ```bash
-python3 sarlavhalar.py https://mening-saytim.uz
+python3 sarlavhalar.py https://mening-saytim.example.com
 ```
 
 Bu vosita HTTP darsidagi uch g'oyani tekshiradi: sayt HTTPS ishlatadimi, brauzerga himoya ko'rsatmalarini beradimi va o'z versiyasini e'lon qilib yuboradimi. AppSec yo'nalishida har bir sarlavhani chuqur o'rganasiz.
@@ -313,7 +313,7 @@ def main():
         "vaqt": datetime.now().isoformat(),
         "xizmatlar": xizmatlarni_tekshir(KUTILGAN),
         "fayllar": yaxlitlikni_tekshir("/etc/ssh"),
-        "sayt": sarlavhalarni_tekshir("https://mening-saytim.uz"),
+        "sayt": sarlavhalarni_tekshir("https://mening-saytim.example.com"),
     }
     with open("hisobot.json", "w") as f:
         json.dump(hisobot, f, indent=2, ensure_ascii=False)

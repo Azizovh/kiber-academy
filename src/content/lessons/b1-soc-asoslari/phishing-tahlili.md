@@ -61,10 +61,10 @@ Ko'rsatiladigan nom — **har qanday matn** bo'lishi mumkin; uni hech kim tekshi
 Har bir pochta serveri xatni qabul qilganda tepasiga bitta `Received:` qatorini qo'shadi. Natijada xatning to'liq yo'li yozilgan bo'ladi — **pastdan tepaga** o'qiladi:
 
 ```
-Received: from mx.kompaniya.uz (10.10.10.5) by mail.kompaniya.uz ...    ← 3. oxirgi qadam
+Received: from mx.kompaniya.example (10.10.10.5) by mail.kompaniya.example ...    ← 3. oxirgi qadam
           Sun, 16 Nov 2026 09:14:22 +0500
 Received: from mail.mybank-uz-support.example (203.0.113.45)
-          by mx.kompaniya.uz ...                                         ← 2. kompaniyamiz qabul qildi
+          by mx.kompaniya.example ...                                         ← 2. kompaniyamiz qabul qildi
           Sun, 16 Nov 2026 09:14:21 +0500
 Received: from [198.51.100.77] by mail.mybank-uz-support.example ...    ← 1. xat shu yerdan boshlangan
           Sun, 16 Nov 2026 04:14:19 +0000
@@ -125,7 +125,7 @@ _dmarc.mybank.uz.   TXT   "v=DMARC1; p=reject; rua=mailto:dmarc@mybank.uz"
 Qabul qiluvchi server tekshiruv natijalarini sarlavhaga yozadi:
 
 ```
-Authentication-Results: mx.kompaniya.uz;
+Authentication-Results: mx.kompaniya.example;
     spf=pass smtp.mailfrom=mybank-uz-support.example;
     dkim=pass header.d=mybank-uz-support.example;
     dmarc=pass header.from=mybank-uz-support.example

@@ -195,18 +195,18 @@ Asosiy sababi doim bir xil: sayt foydalanuvchi kiritgan matnni **tekshirmasdan v
 
 ### Same-Origin Policy
 
-Tabiiy savol: unda `yomon-sayt.com` dagi skript mening bankim sahifasini o'qiy olmaydimi?
+Tabiiy savol: unda `yomon-sayt.example` dagi skript mening bankim sahifasini o'qiy olmaydimi?
 
 Yo'q — brauzerning asosiy himoya qoidasi tufayli: **Same-Origin Policy** (bir xil manba siyosati). Sahifadagi skript faqat **o'z manbasi**dagi ma'lumotni o'qiy oladi.
 
 **Manba** (origin) = sxema + host + port:
 
-| URL | `https://bank.uz` bilan bir manbami? |
+| URL | `https://mybank.uz` bilan bir manbami? |
 |---|---|
-| `https://bank.uz/hisob` | Ha — faqat yo'l farq qiladi |
-| `http://bank.uz` | Yo'q — sxema boshqa |
-| `https://api.bank.uz` | Yo'q — host boshqa |
-| `https://bank.uz:8443` | Yo'q — port boshqa |
+| `https://mybank.uz/hisob` | Ha — faqat yo'l farq qiladi |
+| `http://mybank.uz` | Yo'q — sxema boshqa |
+| `https://api.mybank.uz` | Yo'q — host boshqa |
+| `https://mybank.uz:8443` | Yo'q — port boshqa |
 
 Bu qoida — veb xavfsizligining poydevori. XSS aynan shuning uchun xavfli: hujumchi kodi bank sahifasining **o'zida** ishlaydi, demak qoida uni to'xtatmaydi.
 
@@ -335,7 +335,7 @@ Amaliyot bo'limidagi **"Manba kodida nima bor?"** CTF topshirig'i aynan shu ko'n
 - JavaScript'ni taqiqlaydi
 ! Bu qoida tufayli bir saytdagi skript boshqa sayt ma'lumotini o'qiy olmaydi — veb xavfsizligining poydevori.
 
-? `https://shop.uz` va `https://api.shop.uz` bir manbami (same origin)?
+? `https://shop.example.com` va `https://api.shop.example.com` bir manbami (same origin)?
 - Ha, domen bir xil
 + Yo'q — host boshqa
 - Ha, ikkalasi HTTPS

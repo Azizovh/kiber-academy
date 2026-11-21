@@ -129,7 +129,7 @@ DNS logidagi asosiy maydonlar:
 | Haqiqiy | O'xshatma | Hiyla |
 |---|---|---|
 | `mybank.uz` | `rnybank.uz` | `rn` ↔ `m` |
-| `mybank.uz` | `mybank-uz.com` | Chiziqcha va boshqa zona |
+| `mybank.uz` | `mybank-uz.example` | Chiziqcha va boshqa zona |
 | `mybank.uz` | `mybank.uz.secure-login.example` | Haqiqiy nom — subdomen sifatida |
 | `mybank.uz` | `mybamk.uz` | Bitta harf almashtirilgan |
 
@@ -374,7 +374,7 @@ Proxy firewall'dan nimasi bilan ko'proq ko'radi? :: To'liq URL (HTTP'da), foydal
 Proxy'dagi shubhali belgilar? :: Skript user-agent'i (PowerShell, curl), yangi yoki toifasiz domen, IP orqali URL, bajariladigan fayl yuklash, katta POST hajmi.
 DGA belgilari? :: Tasodifiy, talaffuz qilib bo'lmaydigan domenlar; bitta qurilmadan ko'p NXDOMAIN; oxirida bittasi topiladi.
 DNS tunnellash belgilari? :: Juda uzun subdomenlar, bitta domen ostida ko'p noyob subdomen, ko'p TXT so'rovlari, Base64'ga o'xshash matn.
-Typosquatting nima? :: Haqiqiy domenga o'xshatib yaratilgan nom: rnybank.uz, mybamk.uz, mybank-uz.com.
+Typosquatting nima? :: Haqiqiy domenga o'xshatib yaratilgan nom: rnybank.uz, mybamk.uz, mybank-uz.example.
 Domenni qanday o'qish kerak? :: O'ngdan chapga: egasi oxirgi qism. mybank.uz.secure-login.example — secure-login.example ga tegishli.
 Nega IP manzil hali qurilma emas? :: DHCP, NAT va VPN tufayli bir xil IP turli vaqtda turli qurilmaga tegishli bo'ladi — DHCP logi bilan aniqlanadi.
 Zeek nima? :: Trafikni tinglab tuzilgan loglar (conn, dns, http, ssl, files) yaratadigan tarmoq monitoringi vositasi; trafikni to'xtatmaydi.

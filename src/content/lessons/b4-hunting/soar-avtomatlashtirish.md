@@ -61,7 +61,7 @@ VT_PAUZA = 16  # bepul VirusTotal API: daqiqasiga 4 ta so'rov
 
 
 def refang(ioc: str) -> str:
-    """hxxp://domen[.]net → http://domen.net (hisobotlardagi defang qilingan IOC'lar)."""
+    """hxxp://example[.]net → http://example.net (hisobotlardagi defang qilingan IOC'lar)."""
     return ioc.strip().replace("[.]", ".").replace("hxxp", "http")
 
 

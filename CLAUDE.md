@@ -286,8 +286,13 @@ follows GNU sed (`\` is one backslash, `&` the match, `$` literal).
 - Script support is linear on purpose: no if/for/while/functions/$(...); the shell says so when it meets them.
 - The OWASP lesson follows the 2021 list and only summarises the newer edition — verify against owasp.org.
 - No subject-matter expert has reviewed the lessons; the tests check structure, not facts.
-- Links were last checked at v1.0: 11 answered 403 (bot protection) and were not opened in a browser, and
-  `git-scm.com` did not resolve from this network. Links added since then have not been checked.
+- Links were last checked at v1.16 (`node scripts/check-links.mjs`, which now also reads lesson Markdown and skips
+  example/simulated addresses): every real link answers or is behind a bot check (Cloudflare "Just a moment" on
+  rhinosecuritylabs.com and abuseipdb.com; cloudflare.com/learning and securityheaders.com open in a browser).
+  `git-scm.com`, `catb.org` and `neverssl.com` cannot be reached from this network at all and were not verified.
+- Lessons must not use real domains as examples: the v1.16 check found `bank.uz`, `shop.uz`, `tolov.com`,
+  `gooogle.com`/`paypa1.com` and others; they now use `mybank.uz`, `rnybank.uz`/`mybamk.uz` for look-alikes, and
+  `*.example` / `*.example.com` for attacker and placeholder sites.
 - Main JS is ~630 kB (~190 kB gzip): lessons and secondary pages are separate chunks. The remaining weight is the
   glossary, curriculum, terminal engine and Supabase client.
 - v2 (see TZ): AI tutor, Russian/English interface, code signing for a real `.exe`.

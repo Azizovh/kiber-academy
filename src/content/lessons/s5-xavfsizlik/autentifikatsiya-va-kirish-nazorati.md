@@ -58,7 +58,7 @@ Hammasi bir xil kuchli emas:
 
 **Push charchatish** (MFA fatigue): hujumchi parolni biladi va qayta-qayta kirishga urinadi; qurbonning telefoni to'xtovsiz "tasdiqlaysizmi?" deb so'raydi; oxiri u zerikib yoki adashib "ha" ni bosadi. Himoya: so'rovda ekrandagi raqamni kiritish talabi — va oddiy qoida: **o'zingiz boshlamagan kirishni hech qachon tasdiqlamang**.
 
-**Passkey va apparat kalitlar** — eng kuchli usul va uning sababi kriptografiya darsidan tanish: bu asimmetrik juftlik. Yopiq kalit qurilmangizda qoladi; sayt faqat ochiq kalitni biladi. Eng muhimi — kalit **aniq domenga bog'langan**: soxta `mybank-kirish.com` saytida u shunchaki ishlamaydi. Foydalanuvchi aldanib qolsa ham, beradigan narsasi yo'q. Shuning uchun bu usul **phishing'ga chidamli** deyiladi.
+**Passkey va apparat kalitlar** — eng kuchli usul va uning sababi kriptografiya darsidan tanish: bu asimmetrik juftlik. Yopiq kalit qurilmangizda qoladi; sayt faqat ochiq kalitni biladi. Eng muhimi — kalit **aniq domenga bog'langan**: soxta `mybank-kirish.example` saytida u shunchaki ishlamaydi. Foydalanuvchi aldanib qolsa ham, beradigan narsasi yo'q. Shuning uchun bu usul **phishing'ga chidamli** deyiladi.
 
 :::info
 Har qanday MFA — MFA yo'qligidan ancha yaxshi. SMS kod zaif, lekin u ham ommaviy hujumlarning katta qismini to'xtatadi. Tartib: iloji bo'lsa — passkey yoki apparat kalit; bo'lmasa — TOTP ilovasi; hech bo'lmasa — SMS.

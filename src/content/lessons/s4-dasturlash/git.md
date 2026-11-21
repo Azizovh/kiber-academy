@@ -235,7 +235,7 @@ gitleaks detect
 
 "Parolni olib tashlash" degan commit izohi — o'sha parol oldingi commit'da turganining aniq belgisi.
 
-Yana bir keng tarqalgan xato: veb-serverga loyiha `.git` katalogi bilan birga joylanadi. `https://sayt.uz/.git/` ochiq bo'lsa, butun manba kodi va tarixini tiklash mumkin. O'z saytingizda buni tekshiring.
+Yana bir keng tarqalgan xato: veb-serverga loyiha `.git` katalogi bilan birga joylanadi. `https://sayt.example.com/.git/` ochiq bo'lsa, butun manba kodi va tarixini tiklash mumkin. O'z saytingizda buni tekshiring.
 
 ## Git — sizning portfolio
 

@@ -60,25 +60,25 @@ Shubhali xatni ko'rganda tekshiriladigan narsalar:
 
 ```
 Ko'rinadigan ism:   MyBank Xavfsizlik Xizmati
-Haqiqiy manzil:     security@mybank-support.com
+Haqiqiy manzil:     security@mybank-support.example
 ```
 
 Ko'rinadigan ismga istalgan narsani yozish mumkin. Manzilga qarang: domen to'g'rimi? Harflar almashtirilmaganmi (`l` o'rniga `1`, `o` o'rniga `0`)? DNS darsidagi typosquatting — shu.
 
 **2. Havola qayerga olib boradi.**
 
-Sichqonchani havola ustiga olib boring (bosmasdan) — pastda haqiqiy manzil ko'rinadi. Matnda `bank.uz` yozilgan bo'lishi, havolaning o'zi esa boshqa joyga olib borishi mumkin.
+Sichqonchani havola ustiga olib boring (bosmasdan) — pastda haqiqiy manzil ko'rinadi. Matnda `mybank.uz` yozilgan bo'lishi, havolaning o'zi esa boshqa joyga olib borishi mumkin.
 
 Manzilni **o'ngdan chapga** o'qing — haqiqiy domen oxirgi sleshdan oldingi qism:
 
 | Manzil | Haqiqiy domen |
 |---|---|
-| `https://bank.uz/kirish` | `bank.uz` ✓ |
-| `https://bank.uz.xavfsiz-kirish.com/` | `xavfsiz-kirish.com` ✗ |
-| `https://xavfsiz-kirish.com/bank.uz/` | `xavfsiz-kirish.com` ✗ |
-| `https://bank-uz.com/` | `bank-uz.com` ✗ |
+| `https://mybank.uz/kirish` | `mybank.uz` ✓ |
+| `https://mybank.uz.xavfsiz-kirish.example/` | `xavfsiz-kirish.example` ✗ |
+| `https://xavfsiz-kirish.example/mybank.uz/` | `xavfsiz-kirish.example` ✗ |
+| `https://mybank-uz.example/` | `mybank-uz.example` ✗ |
 
-Ikkinchi qator eng ko'p aldaydi: `bank.uz` boshida turibdi, lekin u faqat subdomen. DNS darsida domen nomi o'ngdan chapga o'qilishini o'rgangansiz — mana uning amaliy foydasi.
+Ikkinchi qator eng ko'p aldaydi: `mybank.uz` boshida turibdi, lekin u faqat subdomen. DNS darsida domen nomi o'ngdan chapga o'qilishini o'rgangansiz — mana uning amaliy foydasi.
 
 **3. Ohang va mazmun.** Shoshilinchlik, tahdid, kutilmagan yutuq, g'ayrioddiy so'rov. Bank hech qachon xat orqali parol yoki SMS kodini so'ramaydi.
 
@@ -178,7 +178,7 @@ Ruxsatsiz birovni aldash — bu sinov emas, firibgarlik.
 **2. Mashq.** Mavzu manbalaridagi **Google Phishing Quiz** ni o'ting — u haqiqiy va soxta xatlarni farqlashni sinaydi.
 
 **3. Domenni o'qish.** Quyidagilardan qaysi biri haqiqatan `mybank.uz` ga tegishli?
-`https://mybank.uz.tolov-tasdiq.com/`, `https://kabinet.mybank.uz/kirish`, `https://mybank-uz.com/`, `https://tolov.com/mybank.uz`
+`https://mybank.uz.tolov-tasdiq.example/`, `https://kabinet.mybank.uz/kirish`, `https://mybank-uz.example/`, `https://tolov.example/mybank.uz`
 
 **4. Oilangiz.** Ota-onangiz yoki yaqinlaringizga "SMS kodini hech kimga aytmang" qoidasini tushuntiring.
 
@@ -211,12 +211,12 @@ Ruxsatsiz birovni aldash — bu sinov emas, firibgarlik.
 - Tanishlik
 ! Vaqt bosimi odamni tekshirmasdan harakat qilishga undaydi. Shoshiltirilganda — aynan shu paytda sekinlashing.
 
-? `https://mybank.uz.kirish-tasdiq.com/login` manzilining haqiqiy domeni qaysi?
+? `https://mybank.uz.kirish-tasdiq.example/login` manzilining haqiqiy domeni qaysi?
 - mybank.uz
-+ kirish-tasdiq.com
++ kirish-tasdiq.example
 - login
 - uz.kirish
-! Domen o'ngdan chapga o'qiladi: birinchi sleshdan oldingi oxirgi qism — kirish-tasdiq.com. mybank.uz bu yerda faqat subdomen.
+! Domen o'ngdan chapga o'qiladi: birinchi sleshdan oldingi oxirgi qism — kirish-tasdiq.example. mybank.uz bu yerda faqat subdomen.
 
 ? Spear phishing ommaviy phishing'dan nimasi bilan farq qiladi?
 - U faqat SMS orqali keladi
@@ -281,7 +281,7 @@ Asosiy psixologik dastaklar? :: Shoshilinchlik, obro', qo'rquv, ochko'zlik/qiziq
 Phishing, spear phishing, whaling? :: Phishing — ommaviy soxta xabar; spear phishing — aniq shaxsga moslangan; whaling — rahbariyatga qaratilgan.
 BEC nima? :: Business Email Compromise — rahbar yoki hamkor nomidan pul o'tkazish yoki ma'lumot so'rash; ko'pincha havola ham, ilova ham yo'q.
 Vishing va smishing? :: Vishing — telefon orqali; smishing — SMS yoki messenjer orqali phishing.
-Havoladagi haqiqiy domenni qanday aniqlanadi? :: Manzilni o'ngdan chapga o'qib: birinchi sleshdan oldingi oxirgi qism (masalan bank.uz.soxta.com → soxta.com).
+Havoladagi haqiqiy domenni qanday aniqlanadi? :: Manzilni o'ngdan chapga o'qib: birinchi sleshdan oldingi oxirgi qism (masalan mybank.uz.soxta.example → soxta.example).
 Shubhali xabarda nima qilinadi? :: Bosmaslik, boshqa (mustaqil) kanal orqali tekshirish, xabar berish.
 Pretexting va baiting? :: Pretexting — o'ylab topilgan bahona va rol bilan ishonchga kirish; baiting — o'lja tashlash (masalan fleshka).
 Tailgating nima? :: Ruxsati bor odam ortidan binoga yoki xonaga kirib olish.

@@ -121,7 +121,7 @@ Uning mazmuni oddiy: `IP manzil  nom`.
 Ikki narsani eslab qoling:
 
 - **O'zingiz uchun:** laboratoriyada va TryHackMe/HTB mashinalarida nishon nomini IP ga bog'lash uchun bu faylni doim tahrirlaysiz.
-- **Hujumchi uchun:** zararli dastur shu faylga `bank.uz → hujumchi IP si` deb yozib qo'ysa, foydalanuvchi to'g'ri manzilni terib ham soxta saytga tushadi. Tergovda bu fayl albatta tekshiriladi.
+- **Hujumchi uchun:** zararli dastur shu faylga `mybank.uz → hujumchi IP si` deb yozib qo'ysa, foydalanuvchi to'g'ri manzilni terib ham soxta saytga tushadi. Tergovda bu fayl albatta tekshiriladi.
 
 ## DNS va xavfsizlik
 
@@ -133,14 +133,14 @@ DNS 1980-yillarda yaratilgan va boshidan **shifrlanmagan, tekshirilmaydigan** pr
 |---|---|
 | **DNS spoofing / cache poisoning** | Resolver keshiga soxta javob joylash — foydalanuvchilar soxta saytga boradi |
 | **DNS hijacking** | Router yoki domen sozlamalarini o'zgartirib, so'rovlarni hujumchi serveriga yo'naltirish |
-| **Typosquatting** | O'xshash nomli domen ro'yxatdan o'tkazish: `gooogle.com`, `paypa1.com` |
+| **Typosquatting** | O'xshash nomli domen ro'yxatdan o'tkazish: `mybank.uz` o'rniga `rnybank.uz` (m → rn), `mybamk.uz` |
 | **DNS tunneling** | Ma'lumotni DNS so'rovlari ichiga yashirib olib chiqish |
 | **Subdomain takeover** | Unutilgan CNAME yozuvi ko'rsatgan tashlab ketilgan xizmatni egallab olish |
 
 **DNS tunneling**ni alohida tushuntiramiz, chunki u juda ayyor. Ko'p tarmoqlarda firewall deyarli hamma narsani to'sadi, lekin DNS ni o'tkazadi — usiz hech narsa ishlamaydi. Hujumchi o'g'irlangan ma'lumotni subdomen nomiga kodlaydi:
 
 ```
-cGFyb2w6IGFkbWluMTIz.hujumchi-domeni.com
+cGFyb2w6IGFkbWluMTIz.hujumchi-domeni.example
 ```
 
 Bu so'rov qonuniy DNS serverlar orqali hujumchining serveriga yetib boradi. Base64'ni tanidingizmi? Kodlash darsi shu yerda ish berdi.
@@ -228,7 +228,7 @@ Windows'da DNS keshini ko'rish: `ipconfig /displaydns`. Yaqinda kirgan saytlarin
 - Domenni boshqa provayderga ko'chirish
 ! Ko'p tarmoqlar DNS ni to'smaydi. Hujumchi ma'lumotni subdomen nomlariga kodlab, o'z DNS serveriga olib chiqadi.
 
-? `paypa1.com` domeni qaysi hujum turiga misol?
+? `mybank.uz` bankining mijozlariga `rnybank.uz` domenidan xat keldi. Bu qaysi hujum turiga misol?
 - DNS cache poisoning
 - DNS tunneling
 + Typosquatting

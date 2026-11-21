@@ -81,7 +81,7 @@ Amalda zanjir uch bo'g'inli:
 └────────────┬─────────────┘
              │ imzolaydi
 ┌────────────▼─────────────┐
-│  Sayt sertifikati        │  ← bank.uz
+│  Sayt sertifikati        │  ← mybank.uz
 │  (Leaf)                  │
 └──────────────────────────┘
 ```
