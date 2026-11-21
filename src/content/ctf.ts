@@ -8,6 +8,7 @@ import { CTF_CODE } from './ctfCode';
 import { CTF_SIEM } from './ctfSiem';
 import { CTF_DETECT } from './ctfDetect';
 import { CTF_SQL } from './ctfSql';
+import { CTF_PYTHON } from './ctfPython';
 import type { CtfCategory, CtfChallenge } from './types';
 
 export const CTF_CATEGORIES: Record<CtfCategory, string> = {
@@ -225,7 +226,7 @@ const FIRST_SET: CtfChallenge[] = [
 ];
 
 /** All challenges: the first set above, then Linux administration, logs, AppSec and cloud (ctfMore.ts). */
-export const CTF: CtfChallenge[] = [...FIRST_SET, ...CTF_MORE, ...CTF_WINDOWS, ...CTF_TRAFFIC, ...CTF_CONTAINERS, ...CTF_CODE, ...CTF_SIEM, ...CTF_DETECT, ...CTF_SQL];
+export const CTF: CtfChallenge[] = [...FIRST_SET, ...CTF_MORE, ...CTF_WINDOWS, ...CTF_TRAFFIC, ...CTF_CONTAINERS, ...CTF_CODE, ...CTF_SIEM, ...CTF_DETECT, ...CTF_SQL, ...CTF_PYTHON];
 
 const index = new Map(CTF.map((c) => [c.id, c]));
 

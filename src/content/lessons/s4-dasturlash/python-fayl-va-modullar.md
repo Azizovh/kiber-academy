@@ -334,6 +334,12 @@ Yangi narsalar:
 
 Bu — 45 qator. U gigabaytli jurnalni o'qiydi, xatolarga chidamli, natijani ham odam, ham boshqa dastur o'qiy oladigan shaklda beradi. Siz hozir o'zingizning birinchi xavfsizlik vositangizni yozdingiz.
 
+## Amaliyot: haqiqiy loglar bilan
+
+Fayl o'qish, xatolarni ushlash, modul import qilish, CSV va JSON hisobot — Qaydnoma'ning haqiqiy loglari ustida. SIEM labida SPL bilan topgan hujumni endi o'z skriptingiz topadi.
+
+:::lab python-log-tahlili
+
 :::try
 1. `kirish_tahlili.py` ni yozing va sinab ko'ring. Kali'da jurnal bo'sh bo'lsa, "Log tahlili" labidagi qatorlardan o'zingiz `namuna.log` fayl yarating.
 2. Mavjud bo'lmagan fayl nomi bilan ishga tushiring — xato chiroyli chiqdimi?

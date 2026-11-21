@@ -50,7 +50,7 @@ export const APPSEC: Stage[] = [
         topic('as-injection', 'Injection va uning himoyasi', 14, "SQL, NoSQL, OS command, LDAP; parametrlangan so'rovlar.", [
           "Zaif kodni ko'rib, injection nuqtasini topa olaman",
           "Uni parametrlangan so'rov bilan tuzata olaman",
-        ], [r.ps('SQL injection', 'sql-injection'), cheat], { labs: ['kod-xavfsizligi'], ctf: ['web-code-review', 'git-blame'] }),
+        ], [r.ps('SQL injection', 'sql-injection'), cheat], { labs: ['kod-xavfsizligi', 'python-sql-injection'], ctf: ['web-code-review', 'git-blame', 'py-code-review'] }),
         topic('as-xss-csp', 'XSS, output encoding va CSP', 14, "Kontekstga mos kodlash, sanitizatsiya, CSP.", [
           "Har bir kontekst (HTML, atribut, JS, URL) uchun to'g'ri kodlashni bilaman",
           "Freymvorklarning avtomatik himoyasi qayerda ishlamasligini bilaman",

@@ -63,6 +63,7 @@ import { suricata } from './suricata';
 import { zeek, zeekCut } from './zeek';
 import { stringsCmd, yara } from './yara';
 import { sqlite3 } from './sqlite';
+import { pip3, python3, pythonMissing } from './pythonCmd';
 import { PCAP_MAGIC } from './pcap';
 
 /*
@@ -592,6 +593,10 @@ export const COMMANDS: Record<string, Command> = {
   yara,
   strings: stringsCmd,
   sqlite3,
+  python3,
+  python: pythonMissing,
+  pip: pip3,
+  pip3,
   bash: () => fail('Ishlatilishi: bash SKRIPT.sh   (bu simulyator allaqachon bash ichida ishlaydi)'),
   sh: () => fail('Ishlatilishi: sh SKRIPT.sh'),
   exit: () => ok("Bu simulyator — yopish shart emas. Chiqish uchun sahifadan chiqing."),

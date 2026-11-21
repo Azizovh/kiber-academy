@@ -331,6 +331,12 @@ Oxirgi sikl — "Loglar" darsidagi asosiy naqsh, endi avtomatik: **muvaffaqiyats
 
 Keyingi darsda bu dasturni haqiqiy fayldan o'qiydigan qilamiz.
 
+## Amaliyot
+
+Funksiya, ro'yxat va lug'at topshiriqlari — Python asoslari labining ikkinchi yarmi (`juft_sonlar`, `eng_katta`, `sanash`, `parol_kuchi`).
+
+:::lab python-asoslari
+
 :::try
 1. Yuqoridagi `tahlil.py` ni qo'lda terib, ishga tushiring.
 2. Uni kengaytiring: hujumchi **qaysi foydalanuvchi nomlarini** sinab ko'rganini ham sanang (nom — `qator.split()[8]`).

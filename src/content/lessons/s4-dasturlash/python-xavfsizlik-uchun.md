@@ -339,6 +339,14 @@ Tarmoq bilan ishlaydigan dastur yozganingizda mas'uliyat ham siz bilan:
 
 Oxirgi maslahat: tayyor vosita bor ishni qayta yozmang. Nmap, curl, Wireshark yillar davomida sayqallangan. Python — ularni **birlashtirish**, natijalarini **qayta ishlash** va tayyor vosita yo'q joyda **o'zingiznikini yozish** uchun.
 
+## Amaliyot: o'z vositalaringiz
+
+Yaxlitlik tekshiruvchisi (hashlib), PowerShell `-EncodedCommand` ni ochuvchi, IOC skaneri va parol siyosati tekshiruvi — kichik, lekin haqiqiy vositalar. socket va requests bu yerda ishlamaydi (brauzer ichidagi Python tarmoqqa chiqmaydi) — ularni o'z kompyuteringizda, o'z laboratoriyangizda sinang.
+
+:::lab python-vositalar
+
+:::lab python-log-tahlili
+
 :::try
 1. `yaxlitlik.py` ni yozing. Sinov katalogi yarating, bir necha fayl qo'ying, `saqla` qiling. Keyin bitta faylni o'zgartiring, bittasini o'chiring, bitta yangi qo'shing va `tekshir` ni ishga tushiring.
 2. Kali'da SSH'ni yoqing (`sudo systemctl start ssh`) va `xizmatlar.py` bilan `127.0.0.1` ni tekshiring. Keyin SSH'ni to'xtatib, qayta tekshiring.

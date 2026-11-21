@@ -5,7 +5,7 @@ import { CommandCard } from '../components/CommandCard';
 import { Markdown } from '../components/Markdown';
 import { TeachPanel, teachGroups } from '../components/TeachPanel';
 import { getDoc } from '../engine/terminal/docs';
-import { TerminalView } from '../components/TerminalView';
+import { TerminalView, type CommandMessage } from '../components/TerminalView';
 import { SiemView } from '../components/SiemView';
 import { resultText, type SiemLang, type SiemResult } from '../engine/siem';
 import { createShell, type ShellState } from '../engine/terminal/shell';
@@ -103,10 +103,11 @@ function LabRun({ lab }: { lab: Lab }) {
 
   const onSearch = (lang: SiemLang, query: string, result: SiemResult): string | void => {
     linesRef.current.push(`${lang}> ${query}`);
-    return onCommand({ state: shellRef.current!, line: query, output: resultText(result), lines: [...linesRef.current], siem: { lang, query, result } });
+    const msg = onCommand({ state: shellRef.current!, line: query, output: resultText(result), lines: [...linesRef.current], siem: { lang, query, result } });
+    return typeof msg === 'object' && msg ? msg.warn : msg;
   };
 
-  const onCommand = (ctx: LabCheckCtx): string | void => {
+  const onCommand = (ctx: LabCheckCtx): CommandMessage => {
     const start = solvedRef.current;
     let index = start;
     // One command line may satisfy several tasks in a row (e.g. `cd docs && ls -a`).
@@ -120,7 +121,16 @@ function LabRun({ lab }: { lab: Lab }) {
       if (!passed) break;
       index++;
     }
-    if (index === start) return;
+    if (index === start) {
+      const task = lab.tasks[start];
+      if (!task?.feedback) return;
+      try {
+        const note = task.feedback(ctx);
+        return note ? { warn: note } : undefined;
+      } catch {
+        return;
+      }
+    }
     solvedRef.current = index;
     setSolved(index);
     setHint(false);

@@ -3259,3 +3259,7 @@ main:focus {
     border-bottom: 1px solid #1c2633;
   }
 }
+
+.term-warn {
+  color: #f3b648;
+}

@@ -210,6 +210,12 @@ grep -rn "render_template_string" .
 
 `grep` faqat boshlang'ich nuqta — har bir topilmani qo'lda tekshirasiz: bu yerda foydalanuvchi ma'lumoti bormi?
 
+## Amaliyot: tuzatish va isbotlash
+
+Quyidagi labda Qaydnoma'ning baza qatlamidagi satr ulab yig'ilgan so'rovlarni testlar va semgrep bilan topasiz, parametrli so'rovlar va ustun nomlari uchun ruxsat ro'yxati bilan tuzatasiz va testlar bilan isbotlaysiz. Ish himoyachi tomonidan: hujum qilish emas, kodni xavfsiz qilish.
+
+:::lab python-sql-injection
+
 ## Sinash — faqat o'z ilovangizda
 
 O'z Qaydnoma'ingizda (yoki PortSwigger Academy, OWASP Juice Shop kabi ruxsat etilgan laboratoriyalarda):

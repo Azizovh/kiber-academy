@@ -15,6 +15,23 @@ const s = (name: string, title: string, summary: string, usage: string, flags: [
 
 export const SQL_DOCS: CommandDoc[] = [
   {
+    name: 'python3',
+    category: 'sql',
+    summary: "Python dasturini ishga tushiradi. Bu yerda haqiqiy Python 3 (standart kutubxona bilan): skript lab fayllarini o'qiy oladi va yozgan fayllari terminalda ko'rinadi.",
+    usage: 'python3 FAYL.py [ARGUMENTLAR]   yoki   python3 -c "KOD"',
+    flags: [
+      ['FAYL', 'Fayldagi dasturni bajaradi.', 'python3 tahlil.py'],
+      ['ARGUMENT', "Fayldan keyingi so'zlar dasturga sys.argv ro'yxati bo'lib boradi: sys.argv[1] — birinchisi.", 'python3 salomlash.py Aziz'],
+      ['-c', "Bir qatorli kodni bajaradi — tez hisoblash va sinash uchun.", 'python3 -c "print(2 ** 10)"'],
+      ['--version', 'Python versiyasi.', 'python3 --version'],
+    ],
+    examples: [
+      ['python3 tahlil.py auth.log', "Skriptga log faylini argument qilib berish"],
+      ['python3 -c "import hashlib; print(hashlib.sha256(b\'abc\').hexdigest())"', 'Bir qatorda xesh hisoblash'],
+    ],
+    note: "Interaktiv >>> rejim va pip (internetdan paket o'rnatish) yo'q; standart kutubxona (re, json, csv, hashlib, sqlite3, collections ...) tayyor. Dastur 5 soniyadan uzoq ishlasa, to'xtatiladi.",
+  },
+  {
     name: 'sqlite3',
     category: 'sql',
     summary: "SQLite bazasi bilan ishlaydigan buyruq qatori dasturi: so'rovni bajaradi, jadvallarni ko'rsatadi, natijani turli ko'rinishda chiqaradi.",

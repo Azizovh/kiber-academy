@@ -43,7 +43,7 @@ export const DOC_CATEGORIES: Record<DocCategory, string> = {
   konteyner: 'Konteynerlar va Kubernetes',
   kod: 'Git va kod xavfsizligi',
   aniqlash: 'Aniqlash vositalari (Sigma, Suricata, Zeek, YARA)',
-  sql: "SQL va SQLite",
+  sql: "SQL va Python",
   powershell: 'PowerShell (Windows)',
   siem: "SIEM so'rovlari (SPL va KQL)",
 };

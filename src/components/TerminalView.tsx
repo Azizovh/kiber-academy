@@ -15,13 +15,17 @@ type Entry =
   | { kind: 'cmd'; user: string; host: string; path: string; text: string; ps?: boolean }
   | { kind: 'out'; text: string; err: boolean }
   | { kind: 'note'; text: string }
-  | { kind: 'ok'; text: string };
+  | { kind: 'ok'; text: string }
+  | { kind: 'warn'; text: string };
+
+/** What a lab says after a command: a success line, or advice (a failed hidden test) in amber. */
+export type CommandMessage = string | { warn: string } | void;
 
 interface Props {
   init: () => ShellInit;
   commands?: Record<string, CustomCommand>;
-  /** Called after every command; a returned string is printed as a green success line. */
-  onCommand?: (ctx: LabCheckCtx) => string | void;
+  /** Called after every command; a returned string is printed as a green success line, { warn } in amber. */
+  onCommand?: (ctx: LabCheckCtx) => CommandMessage;
   onReset?: () => void;
   banner?: string;
   height?: number;
@@ -96,7 +100,8 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
     const added: Entry[] = [echo];
     if (result.output) added.push({ kind: 'out', text: result.output, err: result.code !== 0 });
     const message = onCommand?.({ state: s, line: line.trim(), output: result.output, lines: [...lines.current] });
-    if (message) added.push({ kind: 'ok', text: message });
+    if (typeof message === 'string' && message) added.push({ kind: 'ok', text: message });
+    else if (message && typeof message === 'object') added.push({ kind: 'warn', text: message.warn });
     setEntries((e) => (result.clear ? added.slice(1) : [...e, ...added]));
   };
 
@@ -187,7 +192,7 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
             );
           }
           return (
-            <pre key={i} className={entry.kind === 'ok' ? 'term-ok' : 'term-note'}>
+            <pre key={i} className={entry.kind === 'ok' ? 'term-ok' : entry.kind === 'warn' ? 'term-warn' : 'term-note'}>
               {entry.text}
             </pre>
           );

@@ -8,3 +8,4 @@ release
 .vite
 .claude
 *.lnk
+public/pyodide

@@ -289,23 +289,23 @@ export const FOUNDATION: Stage[] = [
           "O'zgaruvchi va asosiy turlarni ishlataman",
           "`if`, `for`, `while` bilan mantiq yoza olaman",
           "Son topish o'yini kabi kichik dastur yoza olaman",
-        ], [r.course('CS50P', 'https://cs50.harvard.edu/python/'), r.book('Automate the Boring Stuff with Python', 'https://automatetheboringstuff.com/')]),
+        ], [r.course('CS50P', 'https://cs50.harvard.edu/python/'), r.book('Automate the Boring Stuff with Python', 'https://automatetheboringstuff.com/')], { labs: ['python-asoslari'] }),
         topic('python-funksiya-va-tuzilmalar', "Python: funksiya va ma'lumot tuzilmalari", 12, "Funksiya, list, dict, set, string amallari.", [
           "Funksiya yozib, qayta ishlata olaman",
           "list va dict bilan erkin ishlayman",
           "Matnni bo'lib, qidirib, almashtira olaman",
-        ], [r.book('Automate the Boring Stuff', 'https://automatetheboringstuff.com/'), r.thm('Python Basics')]),
+        ], [r.book('Automate the Boring Stuff', 'https://automatetheboringstuff.com/'), r.thm('Python Basics')], { labs: ['python-asoslari'] }),
         topic('python-fayl-va-modullar', 'Python: fayllar, xatolar, modullar', 9, "Fayl o'qish-yozish, try/except, pip va kutubxonalar.", [
           "Faylni o'qib, qayta ishlab, natijani yoza olaman",
           "Xatolarni `try/except` bilan ushlay olaman",
           "`pip` bilan kutubxona o'rnatib ishlataman",
-        ], [r.docs('Python — rasmiy tutorial', 'https://docs.python.org/3/tutorial/'), r.book('Automate the Boring Stuff', 'https://automatetheboringstuff.com/')]),
+        ], [r.docs('Python — rasmiy tutorial', 'https://docs.python.org/3/tutorial/'), r.book('Automate the Boring Stuff', 'https://automatetheboringstuff.com/')], { labs: ['python-log-tahlili'] }),
         topic('python-xavfsizlik-uchun', 'Python xavfsizlik uchun', 14, "socket, requests, hashlib: tekshiruv va tahlil vositalarini o'zingiz yozish.", [
           "`socket` bilan o'z serverimdagi portlar holatini tekshiruvchi skript yozdim",
           "`requests` bilan web so'rov yuborib, javob va sarlavhalarni tahlil qila olaman",
           "`hashlib` bilan fayl yaxlitligini tekshiruvchi skript yoza olaman",
           "Jurnal faylini tahlil qilib, hisobot chiqaruvchi dastur yozdim",
-        ], [r.docs('Python — socket hujjatlari', 'https://docs.python.org/3/library/socket.html'), r.docs('Requests kutubxonasi', 'https://requests.readthedocs.io/'), r.thm('Python Basics')]),
+        ], [r.docs('Python — socket hujjatlari', 'https://docs.python.org/3/library/socket.html'), r.docs('Requests kutubxonasi', 'https://requests.readthedocs.io/'), r.thm('Python Basics')], { labs: ['python-log-tahlili', 'python-vositalar'], ctf: ['py-config-decode', 'py-ua-rotation'] }),
       ]),
       mod('s4-vosita', 'Vositalar va web', [
         topic('git', 'Git va GitHub', 7, "Versiyalarni boshqarish va kodni ulashish.", [

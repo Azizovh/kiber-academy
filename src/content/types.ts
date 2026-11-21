@@ -125,6 +125,8 @@ export interface LabTask {
   /** One command line (or several) that solves the task; used by tests. */
   solution: string[];
   check: (ctx: LabCheckCtx) => boolean;
+  /** When the check fails, an explanation shown under the command (e.g. which hidden test failed); null shows nothing. */
+  feedback?: (ctx: LabCheckCtx) => string | null;
 }
 
 export interface Lab {

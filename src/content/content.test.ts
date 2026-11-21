@@ -13,9 +13,10 @@ import { glossaryRefs } from './lessonParser';
 import { LESSON_SOURCES, getLesson, lessonIds } from './lessonsEager';
 import META from 'virtual:lesson-meta';
 import { loadSql } from '../engine/runtime/sql';
+import { loadPython } from '../engine/runtime/python';
 
-// Labs with SQLite databases need the WebAssembly runtime before their shells are created.
-await loadSql();
+// Labs with SQLite databases or Python need their WebAssembly runtimes before their shells are created.
+await Promise.all([loadSql(), loadPython()]);
 
 function duplicates(ids: string[]): string[] {
   return ids.filter((id, i) => ids.indexOf(id) !== i);
@@ -151,6 +152,23 @@ describe('terminal labs', () => {
   });
 });
 
+describe('hidden Python tests', () => {
+  it('explain which case failed while a function is still a stub', () => {
+    const lab = getLab('python-asoslari')!;
+    const state = createShell(lab.shell());
+    const ctx = runLabLine(state, 'python3 funksiyalar.py', []);
+    const task = lab.tasks.find((t) => t.id === 'if')!;
+    expect(task.check(ctx)).toBe(false);
+    const note = task.feedback!(ctx)!;
+    expect(note).toContain("0/8 o'tdi");
+    expect(note).toContain('baho(100)');
+    expect(note).toContain(`kutilgan: "a'lo"`);
+    expect(note).toContain('sizniki:  None');
+    // Other commands stay quiet.
+    expect(task.feedback!(runLabLine(state, 'ls', []))).toBeNull();
+  });
+});
+
 function safe(fn: () => boolean): boolean {
   try {
     return fn();
@@ -220,6 +238,9 @@ describe('CTF', () => {
     'det-yara-hex': 'flag{report_q3.bin}',
     'sql-hidden-admin': 'flag{helpdesk2}',
     'sql-foreign-notes': 'flag{sardor_37}',
+    'py-config-decode': 'flag{xor_kaliti_bir_bayt}',
+    'py-ua-rotation': 'flag{198.51.100.199}',
+    'py-code-review': 'flag{qayd_eksport}',
   };
 
   it('has an answer for every challenge and nothing extra', () => {
@@ -267,6 +288,20 @@ describe('CTF', () => {
     // Without the shares check, the team lead who reads notes shared with her would look worse.
     const naive = sql('sql-foreign-notes', 'qaydlar.db', 'SELECT a.user FROM access_log a JOIN notes n ON n.id = a.note_id WHERE a.user != n.owner GROUP BY a.user ORDER BY COUNT(DISTINCT a.note_id) DESC LIMIT 1;');
     expect(naive).toBe('malika');
+  });
+
+  it('the Python challenges are solved by the scripts their hints describe', () => {
+    const py = (id: string, code: string) => execLine(createShell(CTF.find((c) => c.id === id)!.shell!()), `python3 -c "${code}"`).output.trim();
+    expect(py('py-config-decode', "import base64, json; d = base64.b64decode(open('config.txt').read()); print('flag' + json.loads(bytes(b ^ 0x5A for b in d).decode())['id'][4:])")).toBe(answers['py-config-decode']);
+    const ua = py('py-ua-rotation', "u = {}\nfor q in open('access.log'): u.setdefault(q.split()[0], set()).add(q.split(chr(34))[-2])\nprint(max(u, key=lambda ip: len(u[ip])))");
+    expect(`flag{${ua}}`).toBe(answers['py-ua-rotation']);
+    const busiest = py('py-ua-rotation', "from collections import Counter; print(Counter(q.split()[0] for q in open('access.log')).most_common(1)[0][0])");
+    expect(`flag{${busiest}}`).not.toBe(answers['py-ua-rotation']);
+    // Exactly one function builds its SQL from input.
+    const review = CTF.find((c) => c.id === 'py-code-review')!;
+    const src = (review.shell!().fs.home as { talaba: { ctf: Record<string, string> } }).talaba.ctf['baza.py']!;
+    const risky = src.split('\n\n\n').filter((f) => /% \(|f"SELECT|" \+ [a-z_]+\)|' \+ /.test(f) && !f.includes('ruxsat[ustun]'));
+    expect(risky.map((f) => /def (\w+)/.exec(f)![1])).toEqual(['qayd_eksport']);
   });
 
   it('the detection challenges are solved with the tools their hints name', () => {

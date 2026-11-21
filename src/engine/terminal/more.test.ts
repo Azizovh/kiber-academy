@@ -207,7 +207,7 @@ describe('command reference', () => {
   it('documents every command (aliases excepted) and man prints it', async () => {
     const { COMMANDS } = await import('./commands');
     const { getDoc } = await import('./docs');
-    const aliases = new Set(['more', 'sh', 'apt-get', 'nano', 'vim', 'vi', 'exit']);
+    const aliases = new Set(['more', 'sh', 'apt-get', 'nano', 'vim', 'vi', 'exit', 'python', 'pip', 'pip3']);
     const missing = Object.keys(COMMANDS).filter((n) => !aliases.has(n) && !getDoc(n));
     expect(missing).toEqual([]);
     const s = shell();

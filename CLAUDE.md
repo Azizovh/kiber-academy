@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.17.0)
+## State (v1.18.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -20,9 +20,9 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 32 labs (16–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
-analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs, three detection labs: Sigma with terminal + SIEM tabs, Zeek/Suricata, YARA, two SQL labs with terminal + code editor), 58 CTF challenges (Linux admin, Windows, traffic,
-containers, git, SOC logs, SIEM, SQL, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
+decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 36 labs (10–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs, three detection labs: Sigma with terminal + SIEM tabs, Zeek/Suricata, YARA, two SQL labs and four Python labs with terminal + code editor), 61 CTF challenges (Linux admin, Windows, traffic,
+containers, git, SOC logs, SIEM, SQL, Python, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12).
 
 The Cloud lessons take Qaydnoma to AWS (`qaydnoma-web-01`, `qaydnoma.example.com`, 203.0.113.20, VPC 10.10.0.0/16,
 account 111122223333, eu-central-1) and reuse the b4 leaked-key story (`ci-deploy`, `backup-svc`, 203.0.113.77,
@@ -275,6 +275,19 @@ autosaves into the shared shell's fs and re-reads files when its tab is shown. D
 without problems (fetch works there; checked). **Bash heredocs in this environment can halve backslashes** — write
 scripts that contain regexes or `\n` with the Write tool, not `cat <<EOF`.
 
+**Python** (v1.18): `runtime/python.ts` loads Pyodide (CPython 3.14 in WebAssembly, ~13 MB). In the browser it is
+served from `public/pyodide`, which `scripts/copy-runtimes.mjs` fills from `node_modules/pyodide` before
+`npm run dev` / `npm run build` (gitignored; Vercel runs the prebuild hook too); in tests `loadPyodide()` reads the
+package directly. `runPython` mirrors the lab's file system into Pyodide's (every top-level dir except Pyodide's own;
+under `/home` each user dir), runs `_ka_run` (runpy, fresh user modules each run, argv, cwd, tracebacks without
+runtime frames, a `sys.settrace` deadline of 5 s against endless loops, output capped) and copies created, changed
+and deleted files back. `python3 FILE|-c CODE|--version`; `python` and `pip` only explain themselves. Python's own
+`sqlite3` works on the lab's database files. Hidden tests: `labs/pyHelpers.ts` `pyCases(file, func, [[args, expected]])`
+spreads `check` + `feedback` into a task — it imports the learner's file (main block not run), calls the function
+(expected values are Python literals computed from lab data in TS; `'raises ValueError'` expects an exception) and the
+lab page prints the first failing case in amber (`LabTask.feedback`, `CommandMessage { warn }`). Sample solutions write
+files the way the editor would: `edit(path, content)` and `editFn(path, func, body)` lines in `labs/run.ts`.
+
 ## Code conventions
 
 - React 19 + TypeScript (strict) + Vite, zustand with `persist`, `HashRouter`, hand-written CSS with tokens in
@@ -296,7 +309,9 @@ scripts that contain regexes or `\n` with the Write tool, not `cat <<EOF`.
 
 ## Backlog beyond lessons
 
-- Python and SQL exercises run on the learner's own machine (the terminal has no Python or database).
+- Python in the browser has no network (socket, requests): those lesson parts are still practised on the learner's
+  own machine. Pyodide runs on the main thread; the trace deadline stops loops, but a single very slow C call cannot be
+  interrupted (a Web Worker would fix that).
 - Script support is linear on purpose: no if/for/while/functions/$(...); the shell says so when it meets them.
 - The OWASP lesson follows the 2021 list and only summarises the newer edition — verify against owasp.org.
 - No subject-matter expert has reviewed the lessons; the tests check structure, not facts.

@@ -298,6 +298,12 @@ Qadamma-qadam: `i` 1 dan 5 gacha yuradi. Juft sonlar (`2`, `4`) o'tkazib yuboril
 
 Kodni shunday "boshda bajarish" — eng muhim ko'nikmalardan biri. Notanish skriptni tekshirganda aynan shunday qilasiz.
 
+## Shu yerning o'zida mashq qiling
+
+Python'ni kompyuteringizga o'rnatmasdan ham boshlash mumkin: quyidagi labda haqiqiy Python 3 brauzer ichida ishlaydi. Kodni muharrirda yozasiz, terminalda `python3 fayl.py` bilan ishga tushirasiz, funksiyalaringiz esa yashirin testlar bilan tekshiriladi — xato bo'lsa, qaysi kirishda nima kutilgani ko'rsatiladi.
+
+:::lab python-asoslari
+
 :::try
 Quyidagilarni yozing (har biri alohida fayl):
 

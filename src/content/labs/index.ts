@@ -16,6 +16,10 @@ import { networkDetection } from './network';
 import { yaraHunt } from './yaraLab';
 import { sqlBasics } from './sqlLabs';
 import { socSql } from './sqlSoc';
+import { pyBasics } from './pyBasics';
+import { pyLogs } from './pyLogs';
+import { pyTools } from './pyTools';
+import { pySqli } from './pySqli';
 
 export interface LabGroup {
   id: string;
@@ -43,7 +47,7 @@ export const LAB_GROUPS: LabGroup[] = [
     id: 'dasturlash',
     title: 'Dasturlash: SQL va Python',
     text: "Haqiqiy SQLite bazasida so'rovlar va kod muharririda yozilgan skriptlar: ma'lumotdan javob topish.",
-    labs: [sqlBasics, socSql],
+    labs: [sqlBasics, socSql, pyBasics, pyLogs, pyTools, pySqli],
   },
   {
     id: 'tarmoq',
