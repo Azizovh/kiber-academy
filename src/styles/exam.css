@@ -469,6 +469,17 @@
 }
 
 @media (max-width: 600px) {
+  /* The score ring and the verdict text crowd each other side by side on a phone; stack them. */
+  .exam-result {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .exam-result .ring {
+    align-self: center;
+  }
+
   .exam-sheet {
     padding: 24px 18px;
   }
