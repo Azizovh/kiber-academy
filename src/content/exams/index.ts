@@ -6,6 +6,9 @@ import '../../engine/terminal/shell';
 import type { Exam } from '../examTypes';
 import { FOUNDATION_EXAM } from './foundation';
 import { SOC_EXAM } from './soc';
+import { APPSEC_EXAM } from './appsec';
+import { CLOUD_EXAM } from './cloud';
+import { PENTEST_EXAM } from './pentest';
 import type { Stage, TrackId } from '../types';
 import { ALL_STAGES, getTrack } from '../curriculum';
 import { lessonInfo } from '../lessons';
@@ -13,7 +16,7 @@ import { readiness, type Readiness } from '../../engine/exam';
 import type { ProgressData } from '../../store/progress';
 import type { ExamAttempt } from '../../store/exams';
 
-export const EXAMS: Exam[] = [FOUNDATION_EXAM, SOC_EXAM];
+export const EXAMS: Exam[] = [FOUNDATION_EXAM, SOC_EXAM, APPSEC_EXAM, CLOUD_EXAM, PENTEST_EXAM];
 
 export function getExam(id: string): Exam | null {
   return EXAMS.find((e) => e.id === id) ?? null;

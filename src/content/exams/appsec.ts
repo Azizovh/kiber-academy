@@ -99,7 +99,7 @@ const reviewPractical: ExamPractical = {
     {
       id: 'safe',
       text: "Qaysi shablon foydalanuvchi matnini avtomatik escape'siz chiqaradi? Faqat fayl yo'lini chiqaring.",
-      solution: ["grep -rl '|safe' app/templates"],
+      solution: ["grep -rl 'safe }}' app/templates"],
       check: ({ output }) => single(output) && output.trim().endsWith('templates/note.html'),
     },
     {

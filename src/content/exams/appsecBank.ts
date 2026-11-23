@@ -34,7 +34,7 @@ export const APPSEC_BANK = String.raw`
 ? Server JWT imzosini tekshirishda §alg§ maydoniga ishonsa, qaysi xavf paydo bo'ladi?
 - Token muddati hech qachon tugamaydi
 + alg: none bilan imzosiz token qabul qilinadi
-- Token uzunligi oshib, server sekinlashadi
+- Token uzunligi oshib, server javoblari sekinlashadi
 - Foydalanuvchi parolini o'zgartira olmaydi
 ! Server kutilgan algoritmni o'zi belgilashi kerak (masalan faqat HS256 yoki RS256). Tokenning o'zi aytgan algoritmga ishonish — klassik xato.
 
@@ -70,14 +70,14 @@ export const APPSEC_BANK = String.raw`
 - Sessiya ID'sini URL ichida uzatish
 + Kirishdan keyin yangi sessiya ID'si berish
 - Sessiya muddatini bir yilga uzaytirish
-- Sessiya ID'sini localStorage'da saqlash
+- Sessiya ID'sini brauzerning localStorage'ida saqlash
 ! Hujumchi oldindan bergan ID kirishdan keyin ham ishlasa, u hisobga kiradi. Login paytida sessiya qayta yaratiladi.
 
 ? MFA bilan himoyalangan ilovada qaysi joy ko'pincha unutiladi va aylanib o'tish yo'li bo'ladi?
-- Asosiy login formasi
-+ Parolni tiklash va API token oqimlari
-- Bosh sahifadagi rasmlar
-- Statik CSS fayllar
+- Asosiy login formasining o'zi
++ Parol tiklash va API tokenlari
+- Bosh sahifadagi rasm va bannerlar
+- Statik CSS va JavaScript fayllari
 ! MFA faqat login formasida bo'lsa, parol tiklash yoki eski API tokenlari orqali ikkinchi faktorsiz kirish mumkin bo'lib qoladi.
 
 ? Brauzer §Content-Type: text/plain§ javobini HTML deb "taxmin qilib" ishga tushirmasligi uchun qaysi sarlavha kerak?
@@ -89,14 +89,14 @@ export const APPSEC_BANK = String.raw`
 
 ## injection
 ? Kodda: §cur.execute("SELECT * FROM notes WHERE id = %s" % note_id)§. Bu xavfsizmi?
-- Ha, chunki %s parametrli so'rov belgisi
+- Ha, chunki %s — DB-API'dagi parametrli so'rov belgisi
 + Yo'q: % Python satr formatlash, injection mumkin
 - Ha, chunki note_id doim raqam bo'ladi
 - Yo'q, lekin faqat MySQL'da xavfli
 ! Parametrli so'rovda qiymat alohida uzatiladi: execute("... WHERE id = %s", (note_id,)). % operatori matnni so'rovga yopishtiradi.
 
 ? Stored XSS va reflected XSS farqi nima?
-- Stored faqat admin panelda, reflected faqat qidiruvda bo'ladi
+- Stored faqat admin panelida, reflected esa faqat qidiruvda bo'ladi
 + Stored bazada saqlanib ko'pchilikka, reflected so'rovdan qaytadi
 - Stored JavaScript'da, reflected faqat HTML'da yoziladi
 - Stored — server xatosi, reflected — brauzer xatosi
@@ -112,21 +112,21 @@ export const APPSEC_BANK = String.raw`
 ? CSP sarlavhasi §script-src 'self'§ nimani beradi?
 - Barcha tashqi rasm va shriftlarni bloklaydi
 + Faqat o'z domenidan skript; inline skript bloklanadi
-- Saytni boshqa saytlarda iframe qilishni taqiqlaydi
+- Saytni boshqa saytlarda iframe ichida ochishni taqiqlaydi
 - Foydalanuvchi kiritgan matnni avtomatik tozalaydi
 ! CSP XSS oqibatini kamaytiradi: in'ektsiya qilingan inline skript ishlamaydi. U kiritishni tozalamaydi — escape baribir kerak.
 
 ? CSRF hujumi qaysi shart bajarilganda ishlaydi?
 - Saytda XSS zaifligi bo'lsa
 + Brauzer cookie'ni boshqa saytdan kelgan so'rovga qo'shsa
-- Foydalanuvchi parolini bilgan hujumchi bo'lsa
+- Hujumchi foydalanuvchi parolini oldindan bilib olgan bo'lsa
 - Server HTTPS o'rniga HTTP ishlatsa
 ! Qurbon hujumchi sahifasini ochadi, brauzer esa sessiya cookie'sini avtomatik qo'shadi. Himoya: CSRF token, SameSite cookie, Origin tekshiruvi.
 
 ? Ilova foydalanuvchi bergan URL'dan rasm yuklab oladi. SSRF'dan qanday himoyalanish to'g'ri?
 - URL'da "localhost" so'zi bo'lsa rad etish
 + Ruxsat etilgan hostlar ro'yxati va ichki IP'larni bloklash
-- Faqat https:// bilan boshlanadigan URL'larni qabul qilish
+- Faqat https:// bilan boshlanadigan URL manzillarini qabul qilish
 - Yuklangan rasm hajmini 1 MB bilan cheklash
 ! Qora ro'yxat (localhost) 127.1, 0x7f000001, DNS orqali osongina aylanib o'tiladi. Allowlist va DNS hal qilingandan keyin IP tekshiruvi kerak; bulutda 169.254.169.254 alohida xavf.
 
@@ -140,21 +140,21 @@ export const APPSEC_BANK = String.raw`
 ? Ilova §os.system("ping -c 1 " + host)§ chaqiradi, host foydalanuvchidan keladi. To'g'ri tuzatish?
 - host ichidagi ; belgisini o'chirib tashlash
 + subprocess.run(["ping", "-c", "1", host]) va host'ni tekshirish
-- Buyruqni root o'rniga oddiy foydalanuvchidan ishlatish
+- Buyruqni root o'rniga oddiy, cheklangan foydalanuvchidan ishlatish
 - os.system o'rniga os.popen ishlatish
 ! Ro'yxat ko'rinishidagi argumentlar shell'siz uzatiladi — ;, |, $() ishlamaydi. Qora ro'yxat bilan tozalash doim chala qoladi.
 
 ? ORM (SQLAlchemy) ishlatilsa, SQL injection butunlay yo'qoladimi?
-- Ha, ORM har qanday so'rovni xavfsiz qiladi
-+ Yo'q: text() yoki f-string bilan xom SQL yozilsa qoladi
+- Ha, ORM har qanday so'rovni avtomatik ravishda xavfsiz qiladi
++ Yo'q: xom SQL satr bilan yozilsa, injection qoladi
 - Ha, agar baza PostgreSQL bo'lsa
 - Yo'q, ORM injection'ni yanada kuchaytiradi
 ! ORM parametrlarni o'zi bog'laydi, lekin dasturchi xom SQL'ni satr birlashtirish bilan yozsa, himoya yo'qoladi.
 
 ? Qaysi kontekstda HTML-escape yetarli emas va boshqa kodlash kerak?
-- <p> teglari orasidagi oddiy matnda
+- <p> teglari orasidagi oddiy matn qismida, sarlavhasiz
 + <script> ichida yoki href="javascript:..." atributida
-- <h1> sarlavha ichidagi matnda
+- <h1> sarlavha ichidagi qisqa matnda (title)
 - <li> ro'yxat elementi ichida
 ! Har kontekstning o'z kodlashi bor: HTML tana, atribut, JavaScript, URL. Shuning uchun foydalanuvchi ma'lumotini skript ichiga qo'ymaslik eng yaxshisi.
 
@@ -170,13 +170,13 @@ export const APPSEC_BANK = String.raw`
 - XSS; javobni HTML-escape qilish bilan
 + IDOR; serverda obyekt egasini tekshirish bilan
 - CSRF; formaga token qo'shish bilan
-- SQLi; so'rovni parametrli qilish bilan
+- SQLi; so'rovni parametrli qilish va escape bilan
 ! Har so'rovda server obyekt kimga tegishli va so'rovchi unga qanday huquqqa ega ekanini tekshirishi kerak (a2 dagi load_note(id, Action)).
 
 ? Admin tugmasi interfeysda yashirilgan, lekin §POST /api/admin/users§ oddiy foydalanuvchi tokeni bilan ham ishlaydi. Xulosa?
 - Muammo yo'q: tugma ko'rinmasa, hech kim bilmaydi
 + Funksiya darajasidagi ruxsat serverda tekshirilmayapti
-- Bu faqat interfeys xatosi, frontend'da tuzatiladi
+- Bu faqat interfeys xatosi, uni frontend'da tuzatish kifoya
 - Token muddati uzun, uni qisqartirish yetarli
 ! Yashirish — himoya emas. Har bir endpoint serverda rolni tekshiradi (BFLA — Broken Function Level Authorization).
 
@@ -189,14 +189,14 @@ export const APPSEC_BANK = String.raw`
 
 ? Kupon kodi bir buyurtmaga ikki marta parallel so'rov bilan qo'llandi va chegirma ikki barobar bo'ldi. Bu qaysi zaiflik turi?
 - Kriptografik xato
-+ Poyga holati (race condition) — biznes mantiq xatosi
++ Poyga holati (race condition)
 - Server konfiguratsiyasi xatosi
 - Kirish ma'lumotlarini noto'g'ri saqlash
 ! Tekshirish va yozish orasida oraliq bor. Tuzatish: tranzaksiya, qatorni bloklash yoki unikal cheklov (bir kupon — bir buyurtma).
 
 ? API javobida foydalanuvchi obyekti §password_hash§ va §reset_token§ maydonlari bilan to'liq qaytmoqda. Bu nima?
 - Bu normal: frontend kerakli maydonni o'zi tanlaydi
-+ Ortiqcha ma'lumot oshkor qilinmoqda (excessive data exposure)
++ Ortiqcha ma'lumot oshkor qilinmoqda
 - Bu faqat ishlash tezligiga ta'sir qiladigan masala
 - Bu XSS zaifligi, javobni escape qilish kerak
 ! Javob sxemasi aniq bo'lishi kerak: faqat kerakli maydonlar. "Frontend yashiradi" — himoya emas, javobni har kim ko'radi.
@@ -205,14 +205,14 @@ export const APPSEC_BANK = String.raw`
 - Parol xeshi uchun Argon2 ishlatish
 + Maxfiy ma'lumotni ECB rejimida AES bilan shifrlash
 - TLS 1.3 bilan HTTPS ulanish
-- Tokenlarni secrets.token_urlsafe bilan yaratish
+- Tokenlarni Python'ning secrets.token_urlsafe bilan yaratish
 ! ECB bir xil bloklarni bir xil shifrlaydi — naqshlar ko'rinadi. To'g'ri tanlov: AES-GCM kabi autentifikatsiyali rejimlar.
 
 ? Ishlab chiqarish serverida Flask §debug=True§ bilan ishlayapti. Asosiy xavf?
 - Sahifalar biroz sekinroq ochiladi
 + Xato sahifasi kod va interaktiv konsolni ochib beradi
 - Loglar diskda ko'proq joy egallaydi
-- Foydalanuvchilar dizayn o'zgarishlarini ko'radi
+- Foydalanuvchilar dizayn o'zgarishlarini oldindan ko'rib qoladi
 ! Werkzeug debugger xato sahifasida kod bajarish imkonini beradi. Ishlab chiqarishda debug har doim o'chiq.
 
 ? API'da login endpointi soniyasiga minglab so'rovni qabul qilmoqda. Qaysi nazorat yetishmayapti?
@@ -233,14 +233,14 @@ export const APPSEC_BANK = String.raw`
 - Fayl nomini o'zgartirmasdan saqlash
 + Turini mazmunidan tekshirish, bajarilmaydigan joyda saqlash
 - Faqat fayl kengaytmasi .jpg ekanini tekshirish
-- Faylni veb-ildiz papkasiga to'g'ridan-to'g'ri yozish
+- Faylni veb-ildiz papkasiga asl nomi bilan to'g'ridan-to'g'ri yozish
 ! Kengaytma va Content-Type'ni hujumchi o'zi belgilaydi. Tasodifiy nom, hajm chegarasi, mazmun tekshiruvi va skript bajarilmaydigan saqlash joyi kerak.
 
 ? GraphQL API'da bitta so'rovda chuqur ichma-ich so'rovlar serverni to'xtatib qo'ydi. Qaysi himoya yetishmayapti?
 - Javoblarni keshlash
 + So'rov chuqurligi va murakkabligiga chegara
 - Maydon nomlarini qisqartirish
-- So'rovlarni XML formatga o'tkazish
+- So'rovlarni JSON o'rniga XML formatga o'tkazish
 ! GraphQL'da depth/complexity limit, timeout va kerak bo'lsa introspection'ni ishlab chiqarishda o'chirish tavsiya etiladi.
 
 ? Xato xabarida §psycopg2.errors.SyntaxError ... near "'"§ va to'liq stack trace ko'rindi. Bu qaysi muammolarni ko'rsatadi? (Ikkita javob)
@@ -252,10 +252,10 @@ export const APPSEC_BANK = String.raw`
 
 ## ssdlc
 ? Threat modeling'da STRIDE nimani anglatadi?
-- Oltita zaiflikni tuzatish bosqichlari
-+ Tahdid turlari: aldash, o'zgartirish, inkor, oshkor qilish, DoS, imtiyoz
-- Oltita xavfsizlik vositasining nomlari
-- Kodni ko'rib chiqishning oltita qoidasi
+- Zaiflikni tuzatishning oltita bosqichi
++ Olti tahdid toifasi (Spoofing ... Elevation of privilege)
+- Oltita xavfsizlik vositasining bosh harflari
+- Xavfsiz kod yozishning oltita majburiy qoidasi to'plami
 ! Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege — har ma'lumot oqimi shular bo'yicha so'raladi.
 
 ? SAST va DAST farqi nima?
@@ -268,55 +268,55 @@ export const APPSEC_BANK = String.raw`
 ? SCA vositasi nima qiladi?
 - Kodni uslub qoidalari bo'yicha formatlaydi
 + Bog'liqliklarni ma'lum zaifliklar bazasi bilan solishtiradi
-- Ilovani ishga tushirib, hujum so'rovlarini yuboradi
+- Ilovani ishga tushirib, unga hujum so'rovlarini yuborib ko'radi
 - Serverdagi ochiq portlarni skanerlaydi
 ! npm audit, pip-audit, Trivy — lock fayldagi aniq versiyalarni CVE/GHSA bazasi bilan solishtiradi.
 
 ? SAST hisobotida 120 ta topilma chiqdi. Birinchi navbatda nima qilinadi?
 - Hammasini bir kunda tuzatishga urinish
 + Yolg'on topilmalarni ajratib, og'irlik bo'yicha saralash
-- Vositani o'chirib, qo'lda tekshirishga o'tish
+- Vositani o'chirib, butun kodni qo'lda tekshirishga o'tish
 - Faqat eng oxirgi 10 tasini ko'rib chiqish
 ! Triage: haqiqiy va yolg'on topilmalar, ta'sir va ochiqlik bo'yicha ustuvorlik. Yolg'on topilmalar qoidalarni sozlash bilan kamaytiriladi.
 
 ? Dasturchi API kalitni kodga yozib commit qilmoqchi edi, pre-commit hook to'xtatdi. Bu qaysi amaliyot?
-- DAST skanerlash
-+ Shift-left: sirni repozitoriyga tushmasdan ushlash
-- Penetratsion test
-- Kod qoplamasini o'lchash
+- DAST skanerlash bosqichi
++ Shift-left: sirni commitdan oldin ushlash
+- Penetratsion test natijasi
+- Kod qoplamasini (coverage) o'lchash
 ! Gitleaks yoki detect-secrets pre-commit'da — eng arzon nuqta. Tarixga tushgan sirni tozalashdan ko'ra oldini olish oson.
 
 ? Maxfiy kalitlarni saqlashning eng yaxshi usuli qaysi?
 - Repozitoriydagi config.py faylida
-+ Secrets manager (Vault, AWS Secrets Manager) orqali
++ Secrets manager (masalan, Vault)
 - Docker image ichidagi .env faylida
 - Jamoa chatidagi qadalgan xabarda
 ! Secrets manager kirishni boshqaradi, audit yuritadi va kalitni almashtirishni (rotation) osonlashtiradi.
 
 ? "Xavfsizlik talablari" bosqichida qaysi biri yaxshi yozilgan talab?
-- "Ilova xavfsiz bo'lishi kerak"
-+ "Parol kamida 12 belgi, 10 xatodan keyin 15 daqiqa blok"
+- "Ilova har doim va hamma joyda xavfsiz bo'lishi kerak"
++ "Parol ≥12 belgi, 10 xatodan so'ng 15 daqiqa blok"
 - "Hakerlar kira olmasligi kerak"
 - "Eng yaxshi shifrlash ishlatilsin"
 ! Talab tekshiriladigan bo'lishi kerak: test yozish va qabul qilish mumkin. ASVS shunday talablar ro'yxatini beradi.
 
 ? Secure code review paytida qaysi joylarga birinchi navbatda qaraladi?
 - CSS fayllar va rasmlar
-+ Kiritish nuqtalari, autentifikatsiya va ruxsat tekshiruvlari
-- Izohlar va o'zgaruvchi nomlarining uslubi
++ Kiritish nuqtalari, autentifikatsiya va ruxsatlar
+- Izohlar, bo'sh joylar va o'zgaruvchi nomlarining uslubi
 - README va litsenziya fayllari
 ! Ma'lumot qayerdan kiradi va qayerga boradi (source → sink), kim nimaga ruxsat oladi — xatolarning aksariyati shu yerda.
 
 ? Typosquatting hujumi nima?
 - Kodda imlo xatolari qoldirish
 + Mashhur paketga o'xshash nomli zararli paket chiqarish
-- Domen nomini muddatidan oldin uzaytirish
+- Domen nomi ro'yxatdan o'tish muddatini oldindan uzaytirish
 - Parolda ataylab xato harf ishlatish
 ! reqeusts yoki 1odash kabi nomlar — o'rnatishda xato yozgan dasturchini ushlaydi. Lock fayl va paket nomini tekshirish yordam beradi.
 
 ? SBOM nima uchun kerak?
-- Ilovaning foydalanuvchi qo'llanmasi sifatida
-+ Ilovadagi barcha komponentlar ro'yxati, yangi CVE'da tez tekshirish uchun
+- Ilovaning foydalanuvchilar uchun to'liq qo'llanmasi sifatida
++ Komponentlar ro'yxati: yangi CVE'da tez tekshirish uchun
 - Serverlar ro'yxatini avtomatik yuritish uchun
 - Kod sifatini baholash uchun ball sifatida
 ! Yangi zaiflik e'lon qilinganda (masalan Log4Shell) SBOM "bizda bu kutubxona bormi, qayerda?" degan savolga daqiqalarda javob beradi.
@@ -324,13 +324,13 @@ export const APPSEC_BANK = String.raw`
 ? DAST skaneri autentifikatsiyasiz ishga tushirildi. Natija haqida qaysi gap to'g'ri?
 - Ilovaning hamma qismi to'liq tekshirildi
 + Login ortidagi sahifalar deyarli tekshirilmagan
-- Skaner manba koddagi xatolarni ham topdi
+- Skaner manba koddagi xatolarni ham qo'shimcha ravishda topdi
 - Natija SAST natijasi bilan bir xil bo'ladi
 ! DAST faqat yetib borgan sahifalarni tekshiradi. Test foydalanuvchisi bilan autentifikatsiyali skan sozlanadi.
 
 ? Tuzatilgan zaiflik keyingi relizda qaytib kelmasligi uchun nima qilinadi?
 - Zaiflik haqidagi tiketni o'chirib tashlash
-+ Uni takrorlaydigan xavfsizlik testi yozib, CI'ga qo'shish
++ Uni takrorlaydigan testni CI'ga qo'shish
 - Dasturchiga ogohlantirish xati yuborish
 - Faqat keyingi pentestni kutish
 ! a2 dagi pytest xavfsizlik testlari kabi: regressiya testi har commitda ishlaydi va xato qaytsa build yiqiladi.
@@ -338,8 +338,8 @@ export const APPSEC_BANK = String.raw`
 ## devsecops
 ? GitHub Actions'da §pull_request_target§ va PR kodini checkout qilish birga ishlatilsa, qanday xavf bor?
 - Workflow sekinroq ishlaydi
-+ Begona PR kodi repozitoriy sirlari bilan bajariladi
-- PR avtomatik birlashtirilmay qoladi
++ Begona PR kodi sirlar bilan bajariladi
+- PR avtomatik ravishda asosiy tarmoqqa birlashtirilmay qoladi
 - Workflow loglari saqlanmaydi
 ! pull_request_target asosiy repozitoriy kontekstida, sirlar bilan ishlaydi. Unda ishonchsiz kodni bajarish — CI orqali sir o'g'irlash yo'li.
 
@@ -347,7 +347,7 @@ export const APPSEC_BANK = String.raw`
 - uses: vendor/action@main
 + uses: vendor/action@<to'liq commit SHA>
 - uses: vendor/action@latest
-- uses: vendor/action (versiyasiz)
+- uses: vendor/action (hech qanday versiyasiz)
 ! Teg va tarmoq o'zgarishi mumkin; commit SHA o'zgarmaydi. Shunday qilib, action buzilganda ham kutilmagan kod kirmaydi.
 
 ? Dockerfile'da qaysi qator xavfsizlikni yaxshilaydi?
@@ -365,8 +365,8 @@ export const APPSEC_BANK = String.raw`
 ! Har RUN/COPY yangi qatlam; keyingi qatlamda o'chirish oldingisidan olib tashlamaydi. docker history va qatlamlarni ochish sirni ko'rsatadi. BuildKit secret mount kerak.
 
 ? Zaiflikni boshqarishda CVSS 9.8 lekin ichki, internetga yopiq serverdagi zaiflik va CVSS 7.5 lekin internetdagi va KEV ro'yxatidagi zaiflik bor. Qaysi biri birinchi?
-- CVSS 9.8, chunki bali yuqori
-+ CVSS 7.5, chunki ochiq va faol ekspluatatsiya qilinmoqda
+- CVSS 9.8, chunki uning bali ancha yuqori va kritikroq
++ CVSS 7.5: ochiq va faol ekspluatatsiya qilinmoqda
 - Ikkalasi bir vaqtda, navbat muhim emas
 - Hech biri, avval keyingi skan kutiladi
 ! Ustuvorlik — og'irlik, ochiqlik va ekspluatatsiya faktini birga hisoblaydi. KEV — haqiqatda ishlatilayotgan zaifliklar ro'yxati.
@@ -382,7 +382,7 @@ export const APPSEC_BANK = String.raw`
 - Ilovani tezroq yuklanishiga yordam beradi
 + Faqat kutilgan sertifikat bilan ulanib, MITM'ni qiyinlashtiradi
 - Foydalanuvchi parolini telefonda shifrlaydi
-- Ilovani boshqa qurilmaga ko'chirishni taqiqlaydi
+- Ilovani boshqa qurilmaga ko'chirish va nusxalashni butunlay taqiqlaydi
 ! Pinning qo'shimcha qatlam: qurilmaga o'rnatilgan begona CA sertifikati bilan trafikni ushlash qiyinlashadi.
 
 ? DevSecOps'da "security gate" qayerda va qanday ishlaydi?
@@ -400,8 +400,8 @@ export const APPSEC_BANK = String.raw`
 ! privileged konteyner host qurilmalariga deyarli to'liq kira oladi. Qolgan uchtasi — tavsiya etilgan cheklovlar.
 
 ? AppSec portfolio loyihasi uchun nima eng ishonarli?
-- Topilgan zaifliklar ro'yxati, tuzatishsiz
-+ Topilma, tuzatish, test va CI tekshiruvi bilan to'liq hikoya
+- Topilgan zaifliklarning uzun ro'yxati, tuzatishlarsiz
++ Topilma, tuzatish, test va CI bilan to'liq hikoya
 - Mashhur vositalar logotiplari bilan slayd
 - Boshqa birovning loyihasidan nusxa
 ! Ish beruvchi zaiflikni topish, tushuntirish, tuzatish va qaytmasligini ta'minlash qobiliyatini ko'rmoqchi.

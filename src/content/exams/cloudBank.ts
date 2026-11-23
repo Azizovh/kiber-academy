@@ -19,14 +19,14 @@ export const CLOUD_BANK = String.raw`
 
 ? VPC 10.10.0.0/16 ichida public subnet nimasi bilan private subnet'dan farq qiladi?
 - Public subnet'da IP manzillar shifrlanadi
-+ Uning marshrut jadvalida Internet Gateway'ga yo'l bor
++ Marshrut jadvalida Internet Gateway'ga yo'l bor
 - Public subnet'dagi serverlarda firewall bo'lmaydi
 - Public subnet faqat boshqa regionda joylashadi
 ! "Public" — marshrut jadvalidagi 0.0.0.0/0 → igw yozuvi. Private subnet internetga NAT Gateway orqali chiqadi, lekin tashqaridan kirib bo'lmaydi.
 
 ? Security Group va Network ACL farqi?
 - SG subnet darajasida, NACL instance darajasida ishlaydi
-+ SG holatni eslaydi (stateful), NACL eslamaydi (stateless)
++ SG holatni eslaydi, NACL esa eslamaydi (stateless)
 - SG faqat IPv6, NACL faqat IPv4 uchun ishlaydi
 - SG pullik, NACL esa bepul xizmat sifatida beriladi
 ! SG — instance'ga, faqat ruxsat qoidalari, javob trafik avtomatik o'tadi. NACL — subnet'ga, ruxsat va taqiq, ikki yo'nalish alohida yoziladi.
@@ -54,28 +54,28 @@ export const CLOUD_BANK = String.raw`
 
 ? Region va Availability Zone farqi?
 - Region — bitta ma'lumot markazi, AZ — mamlakat
-+ Region — geografik hudud, AZ — undagi alohida markazlar
++ Region — hudud, AZ — undagi alohida markazlar
 - Region va AZ bir xil narsaning ikki nomi
 - AZ — faqat zaxira nusxalar saqlanadigan joy
 ! Yuqori mavjudlik uchun resurslar bir regiondagi bir nechta AZ'ga tarqatiladi. Ma'lumot joylashuvi talablari regionni tanlashga ta'sir qiladi.
 
 ? Azure'da AWS IAM rollariga eng yaqin tushuncha qaysi?
-- Resource Group
-+ Managed Identity va RBAC rollari
-- Virtual Network
-- Storage Account
+- Resource Group va tag'lar
++ Managed Identity va RBAC
+- Virtual Network va subnetlar
+- Storage Account kalitlari
 ! Managed Identity — xizmatga kalitsiz identifikatsiya, RBAC — unga beriladigan ruxsatlar. GCP'da — service account va IAM rollari.
 
 ? "Immutable infrastructure" yondashuvida serverni yangilash qanday bo'ladi?
 - Ishlab turgan serverga SSH bilan kirib paket yangilanadi
-+ Yangi image'dan yangi server yaratilib, eskisi o'chiriladi
++ Yangi image'dan yangi server yaratilib, eskisi o'chadi
 - Server qayta yuklanib, avtomatik yangilanishlar yoqiladi
 - Eski server saqlanadi, yangisi zaxira sifatida qo'yiladi
 ! Qo'lda o'zgarish (drift) bo'lmaydi; har versiya kod va image sifatida qayd etiladi, buzilgan server tez almashtiriladi.
 
 ? Bulut serverida hamma o'qiy oladigan §/etc/app/.env§ (mode 644) faylida baza paroli bor. To'g'ri tuzatish?
-- Faylni /tmp papkasiga ko'chirish
-+ Ruxsatni 600 qilish va egasini ilova foydalanuvchisiga berish
+- Faylni /tmp papkasiga ko'chirib, nomini yashirish
++ Ruxsatni 600 qilish (faqat egasi o'qiydi)
 - Fayl nomini .env.bak deb o'zgartirish
 - Parolni Base64 qilib, faylda qoldirish
 ! Sir faqat uni ishlatadigan jarayonga ko'rinishi kerak; yanada yaxshisi — Secrets Manager yoki Parameter Store.
@@ -90,7 +90,7 @@ export const CLOUD_BANK = String.raw`
 ## iam
 ? IAM siyosatida §"Effect": "Allow", "Action": "*", "Resource": "*"§ bo'lsa, bu nima degani?
 - Faqat o'qish huquqi beriladi
-+ Hamma xizmatda hamma amalga ruxsat (administrator)
++ Hamma xizmatda hamma amalga ruxsat
 - Hech qanday amalga ruxsat berilmaydi
 - Faqat S3 xizmatiga to'liq ruxsat beriladi
 ! Bu AdministratorAccess bilan teng. Eng kam imtiyoz tamoyili bo'yicha aniq amallar va resurslar yoziladi.
@@ -111,28 +111,28 @@ export const CLOUD_BANK = String.raw`
 
 ? AWS root hisobi uchun to'g'ri amaliyot qaysi?
 - Kundalik ish uchun root hisobidan foydalanish
-+ MFA qo'yib, kundalik ishda umuman ishlatmaslik
++ MFA qo'yib, kundalik ishda ishlatmaslik
 - Root kirish kalitini yaratib, jamoaga berish
 - Root parolini hamma adminlar bilan bo'lishish
 ! Root cheklab bo'lmaydigan huquqqa ega. MFA, kirish kalitlarisiz va faqat zarur hollarda ishlatiladi.
 
 ? IAM Access Analyzer yoki credential report'da 400 kundan beri almashtirilmagan kalit topildi. Nima qilinadi?
 - Kalit ishlab tursa, tegmaslik kerak
-+ Yangi kalit berib, eskisini o'chirish (rotation)
++ Yangi kalit berib, eskisini o'chirish
 - Kalit egasining parolini o'zgartirish yetarli
 - Kalitni boshqa foydalanuvchiga o'tkazish
 ! Uzoq yashaydigan kalitlar — sizib chiqish xavfi. Avval yangisi beriladi, ilova unga o'tkaziladi, keyin eskisi o'chiriladi.
 
 ? AssumeRole bilan olinadigan vaqtinchalik kalitlarning afzalligi nima?
 - Ularni hech qachon almashtirish kerak emas
-+ Muddati o'zi tugaydi, sizsa ham zarar cheklanadi
++ Muddati o'zi tugaydi, zarar cheklanadi
 - Ular har qanday ruxsatni avtomatik beradi
 - Ular CloudTrail'da umuman yozilmaydi
 ! STS kalitlari soatlar ichida eskiradi. Ular ham CloudTrail'da yoziladi — kim qaysi rolni olgani ko'rinadi.
 
 ? Rolning "trust policy" nimani belgilaydi?
 - Rol qaysi amallarni bajara olishini
-+ Kim (qaysi principal) bu rolni ola olishini
++ Rolni kim ola olishini (principal)
 - Rol qaysi regionda ishlashini
 - Rol uchun parol murakkabligini
 ! Permission policy — rol nima qila oladi; trust policy — kim uni assume qila oladi. Trust'dagi "Principal": "*" — xavfli xato.
@@ -146,7 +146,7 @@ export const CLOUD_BANK = String.raw`
 
 ? Ilova kodida AWS kirish kaliti topildi va u GitHub'ga push qilingan. Birinchi qadam?
 - Kodni o'chirib, yangi commit qilish
-+ Kalitni darhol o'chirish yoki faolsizlantirish
++ Kalitni darhol faolsizlantirish
 - Repozitoriyni private qilib qo'yish
 - Kalit egasidan tushuntirish xati so'rash
 ! Ochiq repozitoriylar daqiqalarda skanerlanadi. Avval kalit bekor qilinadi, keyin CloudTrail'da u bilan nima qilinganini tekshirish, keyin tarixni tozalash.
@@ -160,14 +160,14 @@ export const CLOUD_BANK = String.raw`
 
 ? Secrets Manager'da sirni avtomatik almashtirish (rotation) nima beradi?
 - Sirni boshqa regionga nusxalaydi
-+ Sir sizsa ham, qisqa vaqt ichida yaroqsiz bo'ladi
++ Sizgan sir tez orada yaroqsiz bo'ladi
 - Sirni ilova kodiga avtomatik yozib qo'yadi
 - Sirni hamma IAM foydalanuvchilariga ko'rsatadi
 ! Rotation sizib chiqqan sirning "yashash muddati"ni qisqartiradi. Ilova sirni har safar Secrets Manager'dan o'qishi kerak.
 
 ? Kubernetes podiga bulut ruxsatini berishning xavfsiz usuli qaysi?
 - Node IAM roliga hamma ruxsatlarni berish
-+ Pod'ga alohida rol (IRSA / Workload Identity)
++ Pod'ga alohida rol (IRSA va h.k.)
 - Kalitni ConfigMap'ga yozib qo'yish
 - Kalitni image ichiga ENV bilan qo'shish
 ! Pod darajasidagi identifikatsiya har ilovaga o'zining minimal rolini beradi; node roli hamma podlarga umumiy bo'lib qoladi.
@@ -182,14 +182,14 @@ export const CLOUD_BANK = String.raw`
 
 ? Ma'lumotni "at rest" shifrlashda KMS kalitining afzalligi nima?
 - Shifrlash umuman kerak bo'lmay qoladi
-+ Kalitdan foydalanish IAM bilan boshqariladi va logga yoziladi
++ Foydalanish IAM bilan cheklanadi va loglanadi
 - Ma'lumot avtomatik ravishda boshqa regionga ko'chadi
 - Shifrlangan ma'lumotni hamma ko'ra oladi
 ! KMS kalit siyosati kim deshifrlay olishini belgilaydi, har foydalanish CloudTrail'da ko'rinadi, kalitni almashtirish mumkin.
 
 ? CloudTrail nimani yozadi?
 - Serverlarning CPU va xotira grafiklarini
-+ Hisobdagi API chaqiruvlarini: kim, qachon, qayerdan, nima
++ API chaqiruvlarini: kim, qachon, qayerdan, nima
 - VPC ichidagi barcha paketlarning to'liq nusxasini
 - Ilova loglarini va foydalanuvchi xatolarini
 ! CloudTrail — boshqaruv amallari jurnali. Tarmoq oqimlari — VPC Flow Logs, metrikalar — CloudWatch.
@@ -203,78 +203,78 @@ export const CLOUD_BANK = String.raw`
 
 ? GuardDuty kabi xizmat nima qiladi?
 - Serverlarga avtomatik patch o'rnatadi
-+ CloudTrail, DNS va Flow loglarida tahdid belgilarini topadi
++ Loglarda tahdid belgilarini topadi
 - IAM siyosatlarini avtomatik yozib beradi
 - S3 bucket'larni avtomatik shifrlaydi
 ! U loglarni tahlil qilib, masalan kriptomayner domenlari yoki g'ayrioddiy API chaqiruvlari haqida topilma beradi.
 
 ? CSPM vositasi (masalan, CIS benchmark tekshiruvi) nima qiladi?
 - Ilova kodidagi zaifliklarni topadi
-+ Bulut sozlamalarini xavfsizlik standartlari bilan solishtiradi
++ Sozlamalarni standartlar bilan solishtiradi
 - Serverlarga hujumlarni real vaqtda to'sadi
 - Foydalanuvchilar parollarini tekshirib chiqadi
 ! CSPM ochiq bucket, MFA'siz root, 0.0.0.0/0 ga ochiq portlar kabi noto'g'ri sozlamalarni doimiy kuzatadi.
 
 ? Bulutdagi buzilishlarning eng ko'p uchraydigan sababi qaysi?
 - Provayder ma'lumot markazining jismoniy buzilishi
-+ Mijoz tomonidagi noto'g'ri sozlamalar va sizgan kalitlar
++ Noto'g'ri sozlamalar va sizgan kalitlar
 - Gipervizordagi nol-kunlik zaifliklar
 - Provayder xodimlarining ichki hujumlari
 ! Ochiq bucket'lar, keng IAM huquqlari va kodga yozilgan kalitlar — eng tez-tez uchraydigan sabablar.
 
 ? Ma'lumotni "in transit" himoyalash uchun nima kerak?
 - Disk shifrlash (EBS encryption)
-+ TLS bilan shifrlangan ulanishlar
++ TLS bilan shifrlangan ulanish
 - S3 Versioning
 - Kunlik zaxira nusxalar
 ! In transit — tarmoqda harakatlanayotgan ma'lumot (TLS); at rest — saqlanayotgan ma'lumot (KMS, disk shifrlash).
 
 ? Zaxira nusxalarni ransomware'dan himoyalashning eng yaxshi usuli?
 - Nusxalarni shu hisobdagi boshqa bucket'da saqlash
-+ Alohida hisob va o'zgartirib bo'lmaydigan (Object Lock) saqlash
++ Alohida hisob va Object Lock (WORM) saqlash
 - Nusxalarni faqat shu serverning diskida saqlash
 - Nusxalar sonini kamaytirib, joyni tejash
 ! Hujumchi asosiy hisobni egallasa, shu hisobdagi nusxalarni ham o'chiradi. Alohida hisob va WORM saqlash buni to'xtatadi.
 
 ? WAF qaysi turdagi hujumlarga qarshi qatlam beradi?
 - Serverdagi zaif SSH konfiguratsiyasiga
-+ HTTP so'rovlaridagi SQLi va XSS naqshlariga
++ HTTP so'rovlaridagi SQLi va XSS'ga
 - IAM kalitlarining sizib chiqishiga
 - Disk shifrlanmaganligiga
 ! WAF HTTP darajasida filtrlaydi va vaqt yutadi, lekin koddagi zaiflikni tuzatishning o'rnini bosmaydi.
 
 ? CloudTrail loglarini hujumchi o'chira olmasligi uchun nima qilinadi?
 - Loglarni faqat shu hisobdagi bucket'da saqlash
-+ Alohida log hisobiga yuborish va yaxlitlik tekshiruvini yoqish
++ Alohida log hisobi va yaxlitlik tekshiruvi
 - CloudTrail'ni kerak bo'lganda yoqib, keyin o'chirish
 - Loglarni har hafta qo'lda yuklab olish
 ! Markazlashgan log hisobi (organization trail), Object Lock va log file validation — o'zgartirish va o'chirishga qarshi.
 
 ? DLP (data loss prevention) yoki Macie kabi xizmat bulutda nimani topadi?
 - Ochiq SSH portlarini
-+ Bucket'lardagi shaxsiy va maxfiy ma'lumotlarni
++ Bucket'dagi maxfiy ma'lumotni
 - Eskirgan IAM siyosatlarini
-- Server diskidagi bo'sh joyni
+- Server diskidagi bo'sh joy miqdorini
 ! Ular pasport raqami, karta raqami, kalitlar kabi ma'lumotlarni qidiradi — qayerda nima saqlanishini bilish himoyaning boshi.
 
 ## konteyner
 ? Docker image va konteyner farqi nima?
-- Image — ishlab turgan jarayon, konteyner — fayl
-+ Image — o'zgarmas shablon, konteyner — uning ishlab turgan nusxasi
+- Image — ishlab turgan jarayon, konteyner — diskdagi fayl
++ Image — o'zgarmas shablon, konteyner — uning nusxasi
 - Image faqat Linux'da, konteyner faqat Windows'da
 - Image — tarmoq sozlamasi, konteyner — disk
 ! Bitta image'dan ko'p konteyner ishga tushiriladi; konteyner o'z yoziladigan qatlamiga ega.
 
 ? §docker run -v /:/host§ bilan ishga tushirilgan konteyner haqida qaysi gap to'g'ri?
 - Konteyner faqat o'qish rejimida ishlaydi
-+ Konteyner hostning butun fayl tizimiga kira oladi
++ Konteyner butun host diskini ko'radi
 - Konteyner tarmoqqa chiqa olmaydi
 - Bu konteyner xotirasini cheklaydi
 ! Host ildizini ulash — izolyatsiyani deyarli yo'q qiladi: /host/etc/shadow, /host/root ham ko'rinadi.
 
 ? Docker socket'ini (§/var/run/docker.sock§) konteynerga ulash nega xavfli?
 - Konteyner tezroq ishlab, resurs ko'p sarflaydi
-+ Konteyner Docker'ni boshqarib, hostni egallashi mumkin
++ Konteyner Docker orqali hostni egallay oladi
 - Socket konteyner loglarini o'chirib yuboradi
 - Docker socket faqat Windows'da ishlaydi
 ! docker.sock'ga kira olgan har kim yangi privileged konteyner yaratib, host ustidan to'liq nazorat oladi.
@@ -295,21 +295,21 @@ export const CLOUD_BANK = String.raw`
 
 ? NetworkPolicy bo'lmagan Kubernetes klasterida podlar orasidagi trafik qanday?
 - Hamma trafik standart holatda bloklangan
-+ Hamma pod hamma pod bilan erkin gaplasha oladi
++ Hamma pod hamma pod bilan gaplashadi
 - Faqat bir xil namespace ichida ruxsat
 - Faqat HTTPS trafikka ruxsat beriladi
 ! Standart — hammasi ochiq. "Default deny" NetworkPolicy va kerakli yo'llarga aniq ruxsat — lateral harakatni cheklaydi.
 
 ? Pod Security Standards'ning "restricted" profili nimani talab qiladi?
 - Konteynerlar root sifatida ishlashini
-+ Root'siz ishlash, imtiyoz oshirishni taqiqlash
++ Root'siz ishlash va imtiyoz oshirmaslik
 - Har podda kamida bitta privileged konteyner
 - Barcha podlar host tarmog'idan foydalanishini
 ! restricted: runAsNonRoot, allowPrivilegeEscalation: false, capabilities drop ALL, seccomp RuntimeDefault.
 
 ? Terraform state fayli nega maxfiy hisoblanadi?
 - U faqat resurslar nomlarini saqlaydi, maxfiy emas
-+ Unda resurs atributlari, ba'zan parollar ochiq saqlanadi
++ Unda resurs atributlari, ba'zan parollar bor
 - U shifrlangan, lekin juda katta hajmli bo'ladi
 - U faqat lokal kompyuterda ishlagani uchun
 ! State'da baza parollari va kalitlar ochiq matnda bo'lishi mumkin. Remote backend, shifrlash va qat'iy kirish nazorati kerak.
@@ -323,21 +323,21 @@ export const CLOUD_BANK = String.raw`
 
 ? §terraform plan§ natijasida "1 to destroy" ko'rinsa, nima qilish kerak?
 - Darhol apply qilish, plan har doim to'g'ri
-+ Qaysi resurs nega o'chirilishini tekshirib, keyin qaror qilish
++ O'chirish sababini tekshirib, keyin qaror qilish
 - State faylini qo'lda tahrirlab, satrni o'chirish
 - Terraform versiyasini yangilab, qayta urinish
 ! Plan — apply'dan oldingi tekshiruv nuqtasi. Kutilmagan o'chirish (masalan, baza) katta yo'qotish bo'lishi mumkin.
 
 ? Trivy image skanerida bir xil CVE uchun "fixed version" yo'q. Bu nimani anglatadi?
 - Zaiflik yolg'on, e'tiborsiz qoldirish mumkin
-+ Hozircha tuzatish chiqmagan; boshqa choralar yoki boshqa image kerak
++ Tuzatish hali yo'q: boshqa chora yoki image kerak
 - Image avtomatik ravishda yangilanadi
 - Skaner ishlamay qolgan, qayta ishga tushirish kerak
 ! Tuzatish yo'q bo'lsa: paket haqiqatda ishlatiladimi, ta'sirni kamaytirish mumkinmi, slim/distroless image'ga o'tish mumkinmi — ko'riladi.
 
 ? Konteynerda §readOnlyRootFilesystem: true§ nima beradi?
 - Konteyner tarmoqqa chiqa olmaydi
-+ Hujumchi konteyner fayl tizimiga dastur yoza olmaydi
++ Fayl tizimiga dastur yozib bo'lmaydi
 - Konteyner loglari saqlanmaydi
 - Konteyner faqat bir marta ishga tushadi
 ! Yoziladigan joylar (masalan /tmp) alohida volume sifatida beriladi; qolgani o'zgarmaydi — zararli faylni yozish qiyinlashadi.
@@ -345,21 +345,21 @@ export const CLOUD_BANK = String.raw`
 ## professional
 ? Bulutdagi insidentda sizgan kirish kaliti bilan nima qilinganini aniqlash uchun birinchi manba qaysi?
 - S3 bucket'dagi fayllar ro'yxati
-+ CloudTrail'dagi shu kalit bilan qilingan chaqiruvlar
++ CloudTrail'dagi shu kalit amallari
 - EC2 serverlarining CPU grafiklari
 - Billing hisobotidagi umumiy summa
 ! CloudTrail'da accessKeyId bo'yicha filtr: qaysi IP'dan, qaysi amallar (CreateUser, CreateAccessKey, GetObject) qilingan.
 
 ? Buzilgan EC2 serveri bo'yicha dalillarni saqlash uchun to'g'ri qadam?
 - Serverni darhol terminate qilish
-+ EBS snapshot olib, serverni izolyatsiya SG'siga o'tkazish
-- Serverga kirib, shubhali fayllarni o'chirish
++ EBS snapshot olib, izolyatsiya SG'siga o'tkazish
+- Serverga kirib, shubhali fayllarni darhol o'chirib tashlash
 - Serverni qayta yuklab, loglarni tozalash
 ! Terminate disk va xotirani yo'q qiladi. Snapshot dalilni saqlaydi, bo'sh SG esa tarmoqni kesadi.
 
 ? Zero trust tamoyilining mohiyati nima?
 - Ichki tarmoqdagi hamma narsaga ishonish
-+ Har so'rovni joylashuvdan qat'iy nazar tekshirish
++ Har so'rovni har safar tekshirish
 - Faqat firewall bilan perimetrni himoyalash
 - VPN'ga ulanganlarga to'liq ruxsat berish
 ! "Hech qachon ishonma, doim tekshir": identifikatsiya, qurilma holati va kontekst har so'rovda baholanadi.
@@ -387,42 +387,42 @@ export const CLOUD_BANK = String.raw`
 
 ? Bulutdagi IR rejasida oldindan nima tayyorlab qo'yiladi?
 - Insident bo'lganda keyin o'ylab topiladigan rejalar
-+ Izolyatsiya SG'si, forensik rol va log saqlash sozlamalari
++ Izolyatsiya SG'si, forensik rol va loglar
 - Barcha xodimlarning shaxsiy telefon raqamlari ro'yxati
 - Zaxira nusxalarni o'chirish bo'yicha yo'riqnoma
 ! Tayyorgarlik bosqichida "break glass" rollar, izolyatsiya uchun SG, markaziy loglar va playbook'lar tayyor bo'ladi.
 
 ? CloudTrail'da §DeleteTrail§ va §StopLogging§ hodisalari chiqdi. Bu nima belgisi?
 - Rejali xarajatlarni kamaytirish
-+ Hujumchi izlarini yashirishga urinmoqda
++ Hujumchi izini yashirmoqda
 - AWS tomonidan avtomatik texnik xizmat
 - Yangi region qo'shilganini bildiradi
 ! Loglashni o'chirish — klassik iz yashirish (ATT&CK: Impair Defenses). Bunday hodisalar uchun alohida ogohlantirish bo'lishi kerak.
 
 ? Cloud xavfsizlik portfolio loyihasi uchun nima eng kuchli?
 - Faqat sertifikatlar ro'yxati
-+ IaC bilan qurilgan, skanerlangan va hujjatlashtirilgan muhit
++ IaC bilan qurilgan, skanerlangan muhit
 - Bulut provayderining marketing materiallari
 - Boshqa loyihadan ko'chirilgan skrinshotlar
 ! Terraform kodi, CI'dagi IaC skan, CSPM topilmalari va tuzatishlar — amaliy ko'nikmaning isboti.
 
 ? Multi-account strategiyasining xavfsizlik afzalligi nima?
 - Barcha resurslar bitta joyda bo'lib, boshqarish oson
-+ Muhitlar ajratiladi, bitta hisob buzilsa zarar cheklanadi
++ Muhitlar ajraladi, buzilish zarari cheklanadi
 - Xarajatlar avtomatik ravishda nolga tushadi
 - IAM foydalanuvchilarga ehtiyoj qolmaydi
 ! Prod, dev, log va xavfsizlik hisoblari alohida bo'lsa, "portlash radiusi" kichrayadi va SCP bilan markaziy cheklovlar qo'yiladi.
 
 ? Sertifikat tayyorgarligida (masalan, AWS Security Specialty) eng samarali yondashuv?
 - Faqat savol-javob to'plamlarini yodlash
-+ Amaliy laboratoriya va rasmiy hujjatlar bilan o'rganish
++ Amaliy laboratoriya va rasmiy hujjatlar
 - Imtihonni tayyorgarliksiz topshirib ko'rish
 - Faqat video kurslarni tez ko'rib chiqish
 ! Sertifikat savollari vaziyatli: xizmatlar qanday birga ishlashini bilish kerak, bu esa amaliyot bilan keladi.
 
 ? "Shift left" bulut xavfsizligida nimani anglatadi?
 - Xavfsizlikni faqat ishlab chiqarishda tekshirish
-+ Xavfsizlik tekshiruvlarini IaC va CI bosqichiga ko'chirish
++ Tekshiruvlarni IaC va CI bosqichiga ko'chirish
 - Barcha resurslarni chap regionlarga ko'chirish
 - Xavfsizlik jamoasini dasturchilardan ajratish
 ! Xato qancha erta topilsa, shuncha arzon tuzatiladi: PR'dagi IaC skan, policy-as-code, avtomatik testlar.

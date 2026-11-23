@@ -182,17 +182,22 @@ describe('exams', () => {
     expect(duplicates(ids)).toEqual([]);
   });
 
-  // "Pick the longest option" must not pass an exam: right answers stay short, explanations carry the reasons.
+  // Neither "pick the longest" nor "pick the shortest" option may pass an exam: right answers stay about as long as
+  // the wrong ones, explanations carry the reasons.
   it.each(EXAMS.map((e) => [e.id, e] as const))('%s does not give answers away by their length', (_n, exam) => {
     const single = exam.questions.filter((q) => q.options.filter((o) => o.correct).length === 1);
     let longest = 0;
+    let shortest = 0;
     for (const q of single) {
       const right = q.options.find((o) => o.correct)!.text.length;
-      const max = Math.max(...q.options.filter((o) => !o.correct).map((o) => o.text.length));
+      const wrong = q.options.filter((o) => !o.correct).map((o) => o.text.length);
+      const max = Math.max(...wrong);
       if (right > max) longest++;
+      if (right < Math.min(...wrong)) shortest++;
       expect.soft(right, `${q.id}: right option much longer than the others`).toBeLessThanOrEqual(Math.ceil(max * 1.25));
     }
     expect(longest / single.length, 'share of questions where the right option is the longest').toBeLessThanOrEqual(0.4);
+    expect(shortest / single.length, 'share of questions where the right option is the shortest').toBeLessThanOrEqual(0.4);
   });
 
   it.each(EXAMS.flatMap((e) => e.practicals.map((p) => [`${e.id}/${p.id}`, e, p] as const)))('%s is solvable', (_n, exam, p) => {
