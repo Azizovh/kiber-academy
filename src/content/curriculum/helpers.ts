@@ -54,4 +54,12 @@ export const r = {
     lang: 'en',
     note: 'Bepul nazariya va interaktiv lablar.',
   }),
+  /** HackNow — O'zbekistondagi mahalliy CTF va amaliyot platformasi (izolyatsiyalangan lablar). */
+  hacknow: (name: string): Resource => ({
+    kind: 'lab',
+    title: `HackNow — ${name}`,
+    url: 'https://platform.hacknow.uz/',
+    lang: 'uz',
+    note: "O'zbekcha platforma: izolyatsiyalangan labda CTF va HTB/THM uslubidagi xonalar. Kuniga 4 ta lab bepul.",
+  }),
 };
