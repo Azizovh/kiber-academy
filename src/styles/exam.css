@@ -197,6 +197,18 @@
   color: var(--warn);
 }
 
+.exam-keys {
+  margin: 14px 0 0;
+  text-align: right;
+}
+
+/* Touch screens have no keyboard to use the shortcuts with. */
+@media (hover: none) {
+  .exam-keys {
+    display: none;
+  }
+}
+
 .exam-nav {
   position: sticky;
   top: 70px;

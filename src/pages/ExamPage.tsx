@@ -344,6 +344,30 @@ function Theory({ exam, active, now, onEnd }: { exam: Exam; active: ActiveExam; 
   };
   const topic = exam.topics.find((t) => t.id === q.topic);
 
+  // A timed exam should not need the mouse: A–D (or 1–4) pick the option shown at that place, ← → move between
+  // questions. Re-subscribed every render so the handler always sees the current question.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      const k = e.key.toLowerCase();
+      const pos = k.length === 1 ? Math.max('abcd'.indexOf(k), '1234'.indexOf(k)) : -1;
+      if (pos >= 0 && pos < drawn.order.length) {
+        e.preventDefault();
+        pick(drawn.order[pos]!);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (index + 1 < total) go(index + 1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        go(index - 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   return (
     <div className="page exam-run" style={tone(exam.id)}>
       <header className="exam-bar">
@@ -396,6 +420,9 @@ function Theory({ exam, active, now, onEnd }: { exam: Exam; active: ActiveExam; 
               </button>
             )}
           </div>
+          <p className="small faint exam-keys">
+            Klaviatura: <kbd className="kbd">A</kbd>–<kbd className="kbd">D</kbd> javob, <kbd className="kbd">←</kbd> <kbd className="kbd">→</kbd> savollar
+          </p>
         </section>
 
         <aside className="card pad exam-nav" aria-label="Savollar">

@@ -1701,6 +1701,9 @@ button.chip.on {
 /* ── onboarding ────────────────────────────────────────────────────── */
 .onb {
   display: grid;
+  /* Without an explicit track the column sizes to the card's content, so the card's 100% never caps it and the
+     first screen ran 36px off a 375px phone. */
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   min-height: 100vh;
   padding: 24px;
@@ -1804,6 +1807,15 @@ button.chip.on {
 @media (max-width: 560px) {
   .onb-card {
     padding: 24px 20px;
+  }
+
+  /* "Akkauntim bor — kirish" and the primary button do not fit side by side on a phone. */
+  .onb-card .row {
+    flex-wrap: wrap;
+  }
+
+  .onb-card .seg {
+    flex-wrap: wrap;
   }
 }
 
@@ -2486,6 +2498,9 @@ main:focus {
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: var(--accent-strong);
+  /* Registry paths and long filters have no spaces; "anywhere" also lowers the table's min-content width, so the
+     flags table fits tablets too, not only phones. */
+  overflow-wrap: anywhere;
 }
 
 .cmd-examples {
@@ -2515,8 +2530,24 @@ main:focus {
 }
 
 @media (max-width: 640px) {
+  /* As a table it is as wide as its longest cell; as blocks the rows follow the screen width. */
+  .cmd-flags,
+  .cmd-flags tbody {
+    display: block;
+  }
+
   .cmd-flags thead {
     display: none;
+  }
+
+  .cmd-flags td:first-child {
+    white-space: normal;
+  }
+
+  /* A scrollbar for the last couple of characters looks broken on a phone; wrap the usage line instead. */
+  .cmd-usage {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
   .cmd-flags tr {
