@@ -27,11 +27,17 @@ export function SettingsPage() {
 
   const onImport = async (file: File | undefined) => {
     if (!file) return;
-    try {
-      restoreBackup(await file.text());
-      notify('Zaxira nusxa tiklandi');
-    } catch (err) {
-      notify(err instanceof Error ? err.message : 'Faylni tiklab bo\'lmadi');
+    // Restoring replaces everything on this device; picking the wrong file should not silently wipe the history.
+    const ok = window.confirm(
+      `"${file.name}" fayli tiklanadi: shu qurilmadagi joriy progress, qaydlar va kartochkalar shu zaxira bilan almashtiriladi.\n\nDavom etilsinmi?`,
+    );
+    if (ok) {
+      try {
+        restoreBackup(await file.text());
+        notify('Zaxira nusxa tiklandi');
+      } catch (err) {
+        notify(err instanceof Error ? err.message : 'Faylni tiklab bo\'lmadi');
+      }
     }
     if (fileInput.current) fileInput.current.value = '';
   };
@@ -175,7 +181,11 @@ export function SettingsPage() {
         </p>
       </section>
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <div className="toast" role="status" aria-live="polite">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

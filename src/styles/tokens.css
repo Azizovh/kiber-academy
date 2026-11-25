@@ -61,29 +61,31 @@
   --border-strong: #c5ceda;
   --text: #121a25;
   --text-2: #4b596b;
-  --text-3: #5f6c7e;
+  /* Every text colour below keeps WCAG AA (4.5:1) even on its own soft tint over --surface-2 — the case of active
+     chips and callout titles, which the previous values missed (3.3–4.4:1). */
+  --text-3: #56636f;
 
-  --accent: #077a58;
-  --accent-strong: #06664a;
+  --accent: #066b4d;
+  --accent-strong: #05593f;
   --accent-ink: #ffffff;
   --accent-soft: rgba(11, 154, 112, 0.1);
   --accent-line: rgba(11, 154, 112, 0.35);
 
-  --ok: #077a58;
-  --warn: #8f5f00;
-  --danger: #c13030;
-  --info: #1f72d6;
+  --ok: #066b4d;
+  --warn: #845700;
+  --danger: #b52b2b;
+  --info: #1a63bd;
   --ok-soft: rgba(11, 154, 112, 0.1);
   --warn-soft: rgba(185, 122, 9, 0.1);
   --danger-soft: rgba(212, 60, 60, 0.09);
   --info-soft: rgba(31, 114, 214, 0.09);
 
-  --t-foundation: #0b9a70;
-  --t-pentest: #d43c3c;
-  --t-soc: #1f72d6;
-  --t-appsec: #b97a09;
-  --t-cloud: #7b4fe0;
-  --t-career: #c8479a;
+  --t-foundation: #066b4d;
+  --t-pentest: #b52b2b;
+  --t-soc: #1a63bd;
+  --t-appsec: #845700;
+  --t-cloud: #6a3fd0;
+  --t-career: #9d3279;
 
   --term-bg: #0c1219;
   --term-text: #d3e0ee;

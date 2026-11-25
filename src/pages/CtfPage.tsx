@@ -35,6 +35,8 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
 
   const [value, setValue] = useState('');
   const [wrong, setWrong] = useState(0);
+  // A wrong answer in the right shape needs a different hint from one that is not a flag at all.
+  const [badShape, setBadShape] = useState(false);
   const solved = state?.solved ?? false;
   const hints = state?.hints ?? 0;
   const nextOpen = CTF.find((c) => c.id !== challenge.id && !allCtf[c.id]?.solved);
@@ -48,6 +50,7 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
         addEvent();
       }
     } else {
+      setBadShape(!/^\s*flag\{.+\}\s*$/i.test(value));
       setWrong((w) => w + 1);
     }
   };
@@ -141,7 +144,13 @@ function Challenge({ challenge }: { challenge: CtfChallenge }) {
         </div>
         {wrong > 0 && (
           <div className="hint" style={{ color: 'var(--danger)' }} role="alert">
-            Noto'g'ri flag. Formatga e'tibor bering: <code>flag{'{...}'}</code>
+            {badShape ? (
+              <>
+                Bu flag emas: javob <code>flag{'{...}'}</code> ko'rinishida bo'lishi kerak.
+              </>
+            ) : (
+              <>Noto'g'ri flag — ko'rinishi to'g'ri, lekin qiymat boshqa. Yana urinib ko'ring{wrong > 1 ? ` (${wrong}-urinish)` : ''}.</>
+            )}
           </div>
         )}
       </div>
