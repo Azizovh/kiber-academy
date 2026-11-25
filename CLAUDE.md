@@ -311,6 +311,20 @@ files the way the editor would: `edit(path, content)` and `editFn(path, func, bo
 - `store/exams.ts`: finished attempts (synced, union by id) and the active attempt (this device only; timers are
   deadlines, so a reload does not stop the clock; terminal state is not kept, accepted answers are).
 
+## UI quality checks
+
+- `scripts/ui-audit.js` is a browser-console audit: paste it into the running app (or `eval` it from
+  `fetch('/scripts/ui-audit.js')` in the dev server), then `await kaAudit()` — `{ links: true }` also opens every
+  internal link. It reports horizontal overflow, WCAG AA contrast against the real (blended) background, unnamed
+  buttons/links, unlabeled form fields and internal links that redirect. Run it at 375 px and 768 px and in both
+  themes after UI changes; screenshots alone missed every issue it found.
+- Found and fixed with it in November 2026: onboarding (the first screen) ran 36 px off a 375 px phone because the
+  centered grid had no explicit column; the command reference table overflowed phones and tablets on space-less
+  registry paths; light-theme accent, track tones and callout colours were 3.3–4.4:1 on their own soft tints. Light
+  tokens in `tokens.css` are now chosen to keep 4.5:1 on their tint over `--surface-2` — keep that when adding colours.
+- In a hidden Browser pane timers are throttled and a long `javascript_tool` call times out after 45 s: run long
+  checks in the background and poll, or pass a short `routes` list.
+
 ## Code conventions
 
 - React 19 + TypeScript (strict) + Vite, zustand with `persist`, `HashRouter`, hand-written CSS with tokens in
