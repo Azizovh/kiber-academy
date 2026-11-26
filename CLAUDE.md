@@ -20,7 +20,7 @@ certification), **the Career stage** (`k1-karyera`, 8 topics, written for all tr
 track** (`a1`–`a4`, 28 topics) and **the whole Cloud track** (`c1`–`c4`, 24 topics: servers and networks, AWS,
 IAM, cloud network and data protection, monitoring, misconfigurations, CSPM, secrets, Docker, Kubernetes,
 Terraform, IaC scanning, cloud IR, zero trust, compliance, portfolio, certification). **Pentest is partial by
-decision** (17 topics: all of `p1` and `p4`, plus three `p2` topics — see "Content boundaries"). 36 labs (10–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
+decision** (19 topics written: all of `p1` (10) and `p4` (6), plus three `p2` topics — see "Content boundaries"). 36 labs (10–29 tasks each, last one a `challenge`; three are PowerShell on Windows, three traffic
 analysis, three Docker/Kubernetes, three Git/code security, two SIEM labs, three detection labs: Sigma with terminal + SIEM tabs, Zeek/Suricata, YARA, two SQL labs and four Python labs with terminal + code editor), 61 CTF challenges (Linux admin, Windows, traffic,
 containers, git, SOC logs, SIEM, SQL, Python, AppSec, Cloud included), glossary, interview bank (68 questions: general 12, Pentest 15, SOC 15, AppSec 14, Cloud 12). Final exams (v1.19–v1.20):
 one per track — Foundation, SOC, AppSec, Cloud and Pentest (written part only) — see "Exams".
@@ -46,7 +46,7 @@ Not written yet — every topic below has goals and resources only ("map mode"):
 
 | Track | Stage ids | Notes |
 |---|---|---|
-| Pentest | `p2-web` (8 vulnerability topics), `p3-tizim` (all) | Paused by decision — see "Content boundaries" |
+| Pentest | `p2-web` (13 of 16: the OWASP Top 10 and advanced-attacks modules), `p3-tizim` (all 12) | Paused by decision — see "Content boundaries" |
 
 Topic ids, titles, goals and hours live in `src/content/curriculum/*.ts`. Other backlog is at the end of this file.
 
@@ -163,6 +163,13 @@ lesson was rewritten without it. Practical consequences:
   red team concepts, how defensive tools detect, certification), and `burp-suite`, `web-razvedka`,
   `pt-web-amaliyot` in p2. `himoyadan-otish` is written strictly as "how AV/EDR detect and what traces a tester
   leaves"; it says outright that evasion is not taught. Keep it that way.
+- In November 2026 the `p2-web` and `p3-tizim` topics were restructured to mirror the training centre's plan the user
+  teaches from (Notion "Cybersecurity plan", modules 2–5: OWASP Top 10, advanced web attacks, exploitation and network
+  security, Active Directory). They stay in map mode — goals worded as detect / prove safely / remediate, resources
+  only — and each links a legal practice platform, including the local Uzbek one, HackNow (`r.hacknow`,
+  platform.hacknow.uz). Metasploit, exploits and password attacks from the plan's module 4 are the written p1 lessons.
+  Two later sessions were again stopped by the safety filter while reading or restructuring this plan: keep this work
+  to curriculum structure and resources, never lesson text about carrying out the attacks.
 
 ## Accounts and cloud sync (v1.8.0)
 
