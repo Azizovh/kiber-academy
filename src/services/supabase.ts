@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * The client wants the bare project URL (https://xxxx.supabase.co). The dashboard also shows the REST endpoint
@@ -18,15 +18,24 @@ function projectUrl(raw: string | undefined): string | undefined {
 const url = projectUrl(import.meta.env.VITE_SUPABASE_URL as string | undefined);
 const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim();
 
+/** False when the build has no Supabase keys — the app then stays local-only, exactly as before. */
+export const cloudEnabled = Boolean(url && anonKey);
+
+let client: Promise<SupabaseClient | null> | null = null;
+
 /**
- * null when the build has no Supabase keys — the app then stays local-only, exactly as before.
+ * The client library is about a third of what the first screen would otherwise download (~210 kB), so it is loaded
+ * on demand: never in a build without keys, and after the first paint in one with keys.
  * PKCE returns the sign-in result as `?code=` in the query string; the default implicit flow would put tokens in the
  * URL hash, which HashRouter owns.
  */
-export const supabase: SupabaseClient | null =
-  url && anonKey ? createClient(url, anonKey, { auth: { flowType: 'pkce', detectSessionInUrl: true } }) : null;
-
-export const cloudEnabled = supabase !== null;
+export function getSupabase(): Promise<SupabaseClient | null> {
+  if (!cloudEnabled) return Promise.resolve(null);
+  client ??= import('@supabase/supabase-js').then(({ createClient }) =>
+    createClient(url!, anonKey!, { auth: { flowType: 'pkce', detectSessionInUrl: true } }),
+  );
+  return client;
+}
 
 /** The Electron window: Google sign-in cannot return to a file:// page, so it offers email and password only. */
 export const isDesktop = typeof navigator !== 'undefined' && navigator.userAgent.includes('Electron');

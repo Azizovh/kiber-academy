@@ -1,5 +1,5 @@
 import type { Summary } from './sync';
-import { supabase } from './supabase';
+import { getSupabase } from './supabase';
 
 export interface AdminRow {
   id: string;
@@ -16,6 +16,7 @@ export interface AdminRow {
  * people's rows; for anyone else this returns just their own row.
  */
 export async function fetchLearners(): Promise<AdminRow[]> {
+  const supabase = await getSupabase();
   if (!supabase) return [];
   const [profiles, states] = await Promise.all([
     supabase.from('profiles').select('id, email, display_name, created_at, last_seen_at, is_admin'),

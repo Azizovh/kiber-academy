@@ -12,7 +12,7 @@ import { useNotes } from '../store/notes';
 import { useExams } from '../store/exams';
 import { PROGRESS_DEFAULTS, useProgress } from '../store/progress';
 import { SETTINGS_DEFAULTS, useSettings, type Settings } from '../store/settings';
-import { siteUrl, supabase } from './supabase';
+import { cloudEnabled, getSupabase, siteUrl } from './supabase';
 
 /*
  * Cloud sync. One row per learner in `user_state` (see supabase/schema.sql) holds the whole SyncData as JSON, plus a
@@ -136,6 +136,7 @@ function fail(context: string, error: { message: string } | null): boolean {
 }
 
 async function fetchCloud(userId: string): Promise<SyncData | null | undefined> {
+  const supabase = await getSupabase();
   if (!supabase) return undefined;
   const { data, error } = await supabase.from('user_state').select('data').eq('user_id', userId).maybeSingle();
   if (fail("Ma'lumotni yuklab bo'lmadi", error)) return undefined;
@@ -143,6 +144,7 @@ async function fetchCloud(userId: string): Promise<SyncData | null | undefined> 
 }
 
 async function writeCloud(userId: string, d: SyncData): Promise<boolean> {
+  const supabase = await getSupabase();
   if (!supabase) return false;
   const now = new Date().toISOString();
   const { error } = await supabase
@@ -198,6 +200,7 @@ async function hydrate(userId: string): Promise<void> {
 }
 
 async function onUser(user: User): Promise<void> {
+  const supabase = await getSupabase();
   if (!supabase) return;
   const { data } = await supabase.from('profiles').select('display_name, is_admin').eq('id', user.id).maybeSingle();
   const meta = user.user_metadata as Record<string, unknown> | undefined;
@@ -233,12 +236,14 @@ let started = false;
 export function initSync(): void {
   if (started) return;
   started = true;
-  if (!supabase) {
+  if (!cloudEnabled) {
     useAuth.getState().set({ status: 'disabled' });
     return;
   }
   let currentId: string | null = null;
-  supabase.auth.onAuthStateChange((event, session) => {
+  // The client arrives a moment after the first paint; until then the auth status stays 'loading'.
+  void getSupabase()
+    .then((supabase) => supabase?.auth.onAuthStateChange((event, session) => {
     // The link from a "forgot password" email signs the learner in; the account page then asks for a new password.
     if (event === 'PASSWORD_RECOVERY') useAuth.getState().set({ recovery: true });
     const user = session?.user ?? null;
@@ -254,7 +259,12 @@ export function initSync(): void {
     cleanUrl();
     // Supabase warns against awaiting its own client inside this callback.
     setTimeout(() => void onUser(user), 0);
-  });
+  }))
+    .catch((err: unknown) => {
+      // Offline at start, or a stale deploy: stay usable as a guest instead of spinning forever.
+      console.warn('[sync] the Supabase client did not load', err);
+      useAuth.getState().set({ status: 'guest', syncError: "Akkaunt xizmati yuklanmadi — internet aloqasini tekshiring." });
+    });
 
   for (const store of [useSettings, useProgress, useActivity, useCards, useNotes, useExams] as const) {
     (store as { subscribe: (fn: () => void) => () => void }).subscribe(scheduleSave);
@@ -298,13 +308,14 @@ function uz(message: string): Error {
   return new Error(MESSAGES.find(([re]) => re.test(message))?.[1] ?? message);
 }
 
-function client() {
+async function client() {
+  const supabase = await getSupabase();
   if (!supabase) throw new Error("Akkauntlar bu nusxada sozlanmagan.");
   return supabase;
 }
 
 export async function signUp(email: string, password: string, name: string): Promise<{ needsConfirmation: boolean }> {
-  const { data, error } = await client().auth.signUp({
+  const { data, error } = await (await client()).auth.signUp({
     email,
     password,
     options: { data: { full_name: name }, emailRedirectTo: siteUrl() },
@@ -314,22 +325,22 @@ export async function signUp(email: string, password: string, name: string): Pro
 }
 
 export async function signIn(email: string, password: string): Promise<void> {
-  const { error } = await client().auth.signInWithPassword({ email, password });
+  const { error } = await (await client()).auth.signInWithPassword({ email, password });
   if (error) throw uz(error.message);
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  const { error } = await client().auth.signInWithOAuth({ provider: 'google', options: { redirectTo: siteUrl() } });
+  const { error } = await (await client()).auth.signInWithOAuth({ provider: 'google', options: { redirectTo: siteUrl() } });
   if (error) throw uz(error.message);
 }
 
 export async function sendPasswordReset(email: string): Promise<void> {
-  const { error } = await client().auth.resetPasswordForEmail(email, { redirectTo: siteUrl() });
+  const { error } = await (await client()).auth.resetPasswordForEmail(email, { redirectTo: siteUrl() });
   if (error) throw uz(error.message);
 }
 
 export async function updatePassword(password: string): Promise<void> {
-  const { error } = await client().auth.updateUser({ password });
+  const { error } = await (await client()).auth.updateUser({ password });
   if (error) throw uz(error.message);
 }
 
@@ -341,7 +352,7 @@ export async function signOut(): Promise<void> {
     const { user } = useAuth.getState();
     if (user) await syncNow(user.id);
   }
-  await supabase?.auth.signOut();
+  await (await getSupabase())?.auth.signOut();
   applying = true;
   try {
     resetLearningData();

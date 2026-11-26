@@ -1,8 +1,7 @@
-import { lazy, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { DashboardPage } from './pages/DashboardPage';
-import { OnboardingPage } from './pages/OnboardingPage';
 import { RoadmapPage } from './pages/RoadmapPage';
 import { StagePage } from './pages/StagePage';
 import { useSettings } from './store/settings';
@@ -34,6 +33,8 @@ const page = <K extends string>(load: () => Promise<Record<K, React.ComponentTyp
       },
     ),
   );
+// Seen once, on the very first start: returning learners should not download it (it also pulls the sign-in form).
+const OnboardingPage = page(() => import('./pages/OnboardingPage'), 'OnboardingPage');
 const AccountPage = page(() => import('./pages/AccountPage'), 'AccountPage');
 const AdminPage = page(() => import('./pages/AdminPage'), 'AdminPage');
 const CommandsPage = page(() => import('./pages/CommandsPage'), 'CommandsPage');
@@ -69,7 +70,14 @@ export function App() {
   useTheme();
   const onboarded = useSettings((s) => s.onboarded);
 
-  if (!onboarded) return <OnboardingPage />;
+  if (!onboarded) {
+    return (
+      // The page's own background while its chunk loads, so the first start does not flash white.
+      <Suspense fallback={<div className="onb" />}>
+        <OnboardingPage />
+      </Suspense>
+    );
+  }
 
   return (
     <Routes>
