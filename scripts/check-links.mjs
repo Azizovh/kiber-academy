@@ -29,9 +29,16 @@ function isExample(url) {
     /(^|\.)example(\.(com|org|net|uz))?$/.test(host) ||
     /(^|[.-])example[.-]/.test(host) ||
     /\.(lab|test|local|localhost|internal|corp)$/.test(host) ||
-    /^(localhost|\d+\.\d+\.\d+\.\d+)$/.test(host) ||
-    /(^|\.)(mybank\.uz|qaydnoma\.\w+)$/.test(host) ||
-    !host.includes('.')
+    /^(localhost|\d+\.\d+\.\d+\.(\d+|x))$/.test(host) ||
+    /(^|\.)(mybank\.uz|rnybank\.uz|mybamk\.uz|qaydnoma\.\w+)$/.test(host) ||
+    /(^|\.)qaydnoma-/.test(host) ||
+    !host.includes('.') ||
+    // Lesson code samples: API endpoints, URL templates, an OIDC issuer and placeholder repositories.
+    url.includes('{') ||
+    host.startsWith('api.') ||
+    /\/api\/v\d/.test(url) ||
+    host === 'token.actions.githubusercontent.com' ||
+    url.startsWith('https://github.com/foydalanuvchi/')
   );
 }
 

@@ -359,9 +359,10 @@ files the way the editor would: `edit(path, content)` and `editFn(path, func, bo
 - Script support is linear on purpose: no if/for/while/functions/$(...); the shell says so when it meets them.
 - The OWASP lesson follows the 2021 list and only summarises the newer edition — verify against owasp.org.
 - No subject-matter expert has reviewed the lessons; the tests check structure, not facts.
-- Links were last checked at v1.16 (`node scripts/check-links.mjs`, which now also reads lesson Markdown and skips
-  example/simulated addresses): every real link answers or is behind a bot check (Cloudflare "Just a moment" on
-  rhinosecuritylabs.com and abuseipdb.com; cloudflare.com/learning and securityheaders.com open in a browser).
+- Links were last checked at v1.20 (`node scripts/check-links.mjs`, which also reads lesson Markdown and skips
+  example/simulated addresses, API endpoints and URL templates from code samples): every real link answers, HackNow
+  included, or is behind a bot check (Cloudflare "Just a moment" on rhinosecuritylabs.com and abuseipdb.com;
+  cloudflare.com/learning, securityheaders.com and linkedin.com open in a browser).
   `git-scm.com`, `catb.org` and `neverssl.com` cannot be reached from this network at all and were not verified.
 - Lessons must not use real domains as examples: the v1.16 check found `bank.uz`, `shop.uz`, `tolov.com`,
   `gooogle.com`/`paypa1.com` and others; they now use `mybank.uz`, `rnybank.uz`/`mybamk.uz` for look-alikes, and
