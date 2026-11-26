@@ -1,4 +1,4 @@
-OWASP Top 10'ning birinchi o'rnida injection ham, XSS ham emas — **kirish nazoratining buzilishi** (Broken Access Control) turadi. Sababi oddiy: uni skaner deyarli topa olmaydi, freymvork avtomatik hal qilmaydi, va har bir yangi endpoint — uni unutish uchun yangi imkoniyat.
+OWASP Top 10'ning birinchi o'rnida injection ham, XSS ham emas — **kirish nazoratining buzilishi** (Broken Access Control) turadi: 2021-yilda ham, 2025-yilgi nashrda ham (u yerda SSRF ham shu toifaga qo'shilgan). Sababi oddiy: uni skaner deyarli topa olmaydi, freymvork avtomatik hal qilmaydi, va har bir yangi endpoint — uni unutish uchun yangi imkoniyat.
 
 Qaydnoma'da bunga misol a1 bosqichidan beri tanish: `/notes/43` — boshqa foydalanuvchining qaydi. Biz uni `AND owner_id = ?` bilan tuzatgan edik. Lekin endi ilova o'smoqda: qaydlarni ulashish (o'qish yoki tahrirlash huquqi bilan), administrator paneli, API. Har bir endpointga qo'lda `AND owner_id = ?` yozish — ertami-kechmi biri unutiladi.
 

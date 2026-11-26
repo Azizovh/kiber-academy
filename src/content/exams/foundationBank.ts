@@ -427,6 +427,20 @@ Bu nimani bildiradi?
 - Serverda eski, yangilanmagan kutubxona ishlab turibdi
 ! IDOR — server obyekt egasini tekshirmayapti. Qolganlari: kriptografik xato, injection, eskirgan komponent.
 
+? OWASP Top 10:2025 da butunlay yangi paydo bo'lgan toifa qaysi?
+- Server-Side Request Forgery (SSRF)
++ Mishandling of Exceptional Conditions
+- Security Logging and Monitoring Failures
+- Vulnerable and Outdated Components
+! Xatolarni noto'g'ri boshqarish (fail open, sezgir xato xabarlari) 2025-yilda qo'shildi. SSRF Broken Access Control ichiga kirdi, eski komponentlar Software Supply Chain Failures'ga kengaydi, A09 esa "Logging and Alerting" deb ataladi.
+
+? Autentifikatsiya xizmati javob bermadi, ilova esa foydalanuvchini baribir ichkariga kiritdi. Bu qanday xato?
+- Fail closed — xavfsiz tomonga yiqilish
++ Fail open — xavfli tomonga yiqilish
+- Graceful degradation — me'yoriy holat
+- Defense in depth — ko'p qatlamli himoya
+! Shubha bo'lsa, rad etish kerak (fail closed). OWASP Top 10:2025 da bu A10 — Mishandling of Exceptional Conditions.
+
 ? Kompaniyada ishlayotganingizda ochiq qolgan admin panelini tasodifan topdingiz. Etik va qonuniy yo'l?
 - Ichiga kirib, qanchalik xavfli ekanini aniqlash
 + Hech narsaga tegmasdan mas'ul jamoaga xabar berish

@@ -5,7 +5,7 @@ Qaydnoma kodi toza: parametrlangan so'rovlar, kodlash, CSRF tokenlari, markazlas
 - Ma'lumotlar bazasi paneli internetga ochiq, standart parol bilan.
 - Xato bo'lganda foydalanuvchiga to'liq stack trace ko'rsatiladi — fayl yo'llari, versiyalar, SQL so'rovlar bilan.
 
-Kodda bitta ham zaiflik yo'q. Ilovada — to'rtta. **Xavfsizlik konfiguratsiyasi xatolari** — kod emas, uning **atrofi**: sozlamalar, standart qiymatlar, unutilgan fayllar, ochiq qoldirilgan xizmatlar. Ular OWASP Top 10'da doimiy, chunki ularni yaratish oson va sezish qiyin.
+Kodda bitta ham zaiflik yo'q. Ilovada — to'rtta. **Xavfsizlik konfiguratsiyasi xatolari** — kod emas, uning **atrofi**: sozlamalar, standart qiymatlar, unutilgan fayllar, ochiq qoldirilgan xizmatlar. Ular OWASP Top 10'da doimiy — 2025-yilgi nashrda esa beshinchidan ikkinchi o'ringa ko'tarildi, chunki ularni yaratish oson va sezish qiyin.
 
 ## Eng keng tarqalgan xatolar
 

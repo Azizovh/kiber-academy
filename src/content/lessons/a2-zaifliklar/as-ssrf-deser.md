@@ -2,7 +2,7 @@ Qaydnoma'ga qulay funksiya qo'shildi: qaydga havola yozsangiz, server o'sha sahi
 
 Endi tasavvur qiling, foydalanuvchi tashqi sayt emas, `http://localhost:8080/admin` yoki ichki tarmoqdagi `http://10.10.10.5/` ni yozdi. Yoki bulutdagi serverning maxsus ichki manzilini — u yerdan serverning **bulut kalitlari** qaytadi. Server buni bajonidil ochadi: axir u ichkarida, unga hamma narsa ochiq.
 
-Bu — **SSRF** (Server-Side Request Forgery). Bu darsda server tomonidagi uchta murakkab zaiflik sinfini ko'rasiz: SSRF, xavfli deserializatsiya va XXE. Ularning umumiy jihati: **server ishonchsiz ma'lumotga o'z imkoniyatlari bilan ishlov beradi** — tarmoqqa chiqish, obyektlarni tiklash, fayllarni o'qish.
+Bu — **SSRF** (Server-Side Request Forgery). Bu darsda server tomonidagi uchta murakkab zaiflik sinfini ko'rasiz: SSRF, xavfli deserializatsiya va XXE. OWASP Top 10:2025 da ular uch xil toifada turadi: SSRF — Broken Access Control (A01) ichida (2021-yilda alohida A10 edi), XXE — Security Misconfiguration (A02), deserializatsiya — Software or Data Integrity Failures (A08). Ularning umumiy jihati: **server ishonchsiz ma'lumotga o'z imkoniyatlari bilan ishlov beradi** — tarmoqqa chiqish, obyektlarni tiklash, fayllarni o'qish.
 
 ## SSRF
 

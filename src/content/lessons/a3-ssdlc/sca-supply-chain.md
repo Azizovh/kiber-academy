@@ -2,7 +2,7 @@ Qaydnoma kodiga qarang: siz yozgan qatorlar — bir necha yuz. Endi `pip list` n
 
 Agar ulardan birida zaiflik bo'lsa — u sizning ilovangizda ham bor. Agar ulardan biri **buzilgan** bo'lsa (hujumchi paketga zararli kod qo'shgan bo'lsa) — siz uni o'z qo'lingiz bilan o'rnatasiz va ishga tushirasiz.
 
-Bu — **dasturiy ta'minot ta'minot zanjiri** (software supply chain) xavfsizligi. Xavfsizlik bosqichidagi "supply chain" hujumlari haqidagi tushuncha va b3 bosqichidagi malware tahlili bilan bog'liq soha — endi dasturchi nuqtai nazaridan.
+Bu — **dasturiy ta'minot ta'minot zanjiri** (software supply chain) xavfsizligi. OWASP Top 10:2025 da u uchinchi o'rindagi alohida toifa — **Software Supply Chain Failures** (2021-yilgi "Vulnerable and Outdated Components" ning kengaytirilgani: endi faqat ma'lum zaifliklar emas, balki paketlar, yig'ish tizimi va tarqatish ham). Xavfsizlik bosqichidagi "supply chain" hujumlari haqidagi tushuncha va b3 bosqichidagi malware tahlili bilan bog'liq soha — endi dasturchi nuqtai nazaridan.
 
 ## Ikki xil xavf
 

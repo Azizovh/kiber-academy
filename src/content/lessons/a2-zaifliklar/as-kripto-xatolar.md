@@ -8,7 +8,7 @@ requests.get(url, verify=False)                        # 3
 
 Uchalasi ham ishlaydi. Testlar o'tadi. Lekin birinchisi — GitHub'ga joylangan kunidan boshlab hammaga ochiq kalit. Ikkinchisi — taxmin qilsa bo'ladigan parolni tiklash kodi. Uchinchisi — HTTPS'ning butun ma'nosini yo'qqa chiqaradi.
 
-Kriptografik xatolar (OWASP Top 10'da ikkinchi o'rinlarda) kamdan-kam hollarda "algoritmni buzish" haqida. Deyarli har doim — **to'g'ri vositadan noto'g'ri foydalanish**: noto'g'ri funksiya, kodga yozilgan kalit, o'chirilgan tekshiruv. Xavfsizlik bosqichidagi kriptografiya darslarida nazariyani o'rgangansiz; bu darsda — kodda bu xatolarni **tanish** va **tuzatish**.
+Kriptografik xatolar (OWASP Top 10'da doim yuqori o'rinlarda: 2021-yilda ikkinchi, 2025-yilda to'rtinchi) kamdan-kam hollarda "algoritmni buzish" haqida. Deyarli har doim — **to'g'ri vositadan noto'g'ri foydalanish**: noto'g'ri funksiya, kodga yozilgan kalit, o'chirilgan tekshiruv. Xavfsizlik bosqichidagi kriptografiya darslarida nazariyani o'rgangansiz; bu darsda — kodda bu xatolarni **tanish** va **tuzatish**.
 
 ## Asosiy qoida: o'zingiz kriptografiya yozmang
 

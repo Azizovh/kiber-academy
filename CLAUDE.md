@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.21.0)
+## State (v1.22.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -368,7 +368,11 @@ files the way the editor would: `edit(path, content)` and `editFn(path, func, bo
   own machine. Output appears when a program ends (lines are streamed from the worker but only kept for a stopped run);
   python3 has no stdin.
 - Script support is linear on purpose: no if/for/while/functions/$(...); the shell says so when it meets them.
-- The OWASP lesson follows the 2021 list and only summarises the newer edition — verify against owasp.org.
+- OWASP Top 10 follows the 2025 edition since v1.22 (checked against top10.owasp.org/2025 in November 2026: A01 Broken
+  Access Control incl. SSRF, A02 Security Misconfiguration, A03 Software Supply Chain Failures, A04 Cryptographic Failures,
+  A05 Injection, A06 Insecure Design, A07 Authentication Failures, A08 Software or Data Integrity Failures, A09 Security
+  Logging and Alerting Failures, A10 Mishandling of Exceptional Conditions). The s5 lesson keeps a 2021 → 2025 mapping
+  table; other lessons name a category's place in both editions. The site gives no release date — do not invent one.
 - No subject-matter expert has reviewed the lessons; the tests check structure, not facts.
 - Links were last checked at v1.20 (`node scripts/check-links.mjs`, which also reads lesson Markdown and skips
   example/simulated addresses, API endpoints and URL templates from code samples): every real link answers, HackNow

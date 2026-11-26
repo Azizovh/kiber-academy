@@ -65,14 +65,14 @@ export const APPSEC: Stage[] = [
         topic('as-kripto-xatolar', 'Kriptografik xatolar', 10, "Zaif algoritm, qattiq kodlangan kalit, noto'g'ri tasodifiylik.", [
           "Kodda kriptografik xatolarni taniy olaman",
           "Kalit va sirlarni qayerda saqlashni bilaman",
-        ], [r.docs('OWASP — Cryptographic Failures', 'https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'), r.lab('CryptoHack', 'https://cryptohack.org/')]),
+        ], [r.docs('OWASP — Cryptographic Failures', 'https://top10.owasp.org/2025/A04_2025-Cryptographic_Failures/'), r.lab('CryptoHack', 'https://cryptohack.org/')]),
         topic('as-ssrf-deser', 'SSRF, deserialization, XXE', 14, "Server tomondagi murakkab zaifliklar va ularning himoyasi.", [
           "SSRF uchun allowlist himoyasini qura olaman",
           "Ishonchsiz ma'lumotni deserializatsiya qilish xavfini bilaman",
         ], [r.ps('SSRF', 'ssrf'), r.ps('Insecure deserialization', 'deserialization')]),
         topic('as-misconfig', 'Xavfsizlik konfiguratsiyasi xatolari', 8, "Standart parollar, ochiq debug, keraksiz xizmatlar, xato xabarlari.", [
           "Ilova va serverni mustahkamlash (hardening) ro'yxatim bor",
-        ], [r.docs('OWASP — Security Misconfiguration', 'https://owasp.org/Top10/A05_2021-Security_Misconfiguration/'), cheat], { labs: ['http-tekshiruvi'] }),
+        ], [r.docs('OWASP — Security Misconfiguration', 'https://top10.owasp.org/2025/A02_2025-Security_Misconfiguration/'), cheat], { labs: ['http-tekshiruvi'] }),
         topic('as-biznes-mantiq', 'Biznes mantiq zaifliklari', 10, "Skaner topa olmaydigan xatolar: narx, miqdor, ketma-ketlik, poyga holati.", [
           "Ilova oqimida mantiqiy xatolarni izlay olaman",
           "Race condition nima ekanini bilaman",

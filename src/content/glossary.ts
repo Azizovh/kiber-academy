@@ -61,6 +61,7 @@ export const GLOSSARY: GlossaryTerm[] = [
   // ── himoya
   g('himoya', 'patch', 'Patch', "Dasturdagi xato yoki zaiflikni tuzatadigan yangilanish.", 'Yamoq'),
   g('himoya', 'cve', 'CVE', "Common Vulnerabilities and Exposures — har bir ommaga ma'lum zaiflikka beriladigan yagona raqam, masalan CVE-2021-44228."),
+  g('himoya', 'cwe', 'CWE', "Common Weakness Enumeration — zaiflik turlari katalogi: CVE aniq bir dasturdagi teshik bo'lsa, CWE uning turi (masalan, CWE-89 — SQL injection)."),
   g('himoya', 'firewall', 'Firewall', "Tarmoq trafigini qoidalar asosida o'tkazadigan yoki to'sadigan filtr.", 'Tarmoq ekrani'),
   g('himoya', 'antivirus', 'Antivirus', "Ma'lum zararli dasturlarni aniqlab, bloklaydigan dastur."),
   g('himoya', 'edr', 'EDR', "Endpoint Detection and Response — kompyuterlardagi shubhali xatti-harakatni kuzatib, javob beradigan tizim."),

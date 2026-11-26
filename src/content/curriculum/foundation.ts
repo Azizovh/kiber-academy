@@ -393,7 +393,7 @@ export const FOUNDATION: Stage[] = [
           "OWASP Top 10 toifalarini ayta olaman",
           "SQL injection va XSS g'oyasini tushuntira olaman",
           "Juice Shop'da birinchi zaiflikni topdim",
-        ], [r.docs('OWASP Top Ten', 'https://owasp.org/www-project-top-ten/'), r.lab('OWASP Juice Shop', 'https://owasp.org/www-project-juice-shop/')], { ctf: ['web-source'] }),
+        ], [r.docs('OWASP Top 10:2025', 'https://top10.owasp.org/2025/'), r.lab('OWASP Juice Shop', 'https://owasp.org/www-project-juice-shop/')], { ctf: ['web-source'] }),
         topic('yonalish-tanlash', "Yo'nalishni tanlash", 1, "Poydevor tugadi: Pentest, SOC, AppSec yoki Cloud?", [
           "To'rt yo'nalishning kundalik ishini solishtirdim",
           "O'zimga mos yo'nalishni tanladim va sozlamalarda belgiladim",
