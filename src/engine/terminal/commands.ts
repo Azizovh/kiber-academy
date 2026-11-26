@@ -1,5 +1,5 @@
 import { canAccess, dirname, getNode, resolvePath, type FsNode } from './fs';
-import { fail, ok, type CmdCtx, type CmdResult, type Command } from './shell';
+import { fail, ok, type CmdCtx, type CmdResult, type Command, type AsyncCommand } from './shell';
 import {
   basenameCmd,
   cat,
@@ -483,7 +483,7 @@ const xxd: Command = (args, ctx) => {
 const noEditor: Command = () =>
   fail("Bu simulyatorda matn muharriri yo'q. Faylga yozish uchun: echo \"matn\" > fayl.txt   (qo'shish uchun >>)");
 
-export const COMMANDS: Record<string, Command> = {
+export const COMMANDS: Record<string, Command | AsyncCommand> = {
   help,
   man,
   pwd,

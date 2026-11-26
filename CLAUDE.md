@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.20.0)
+## State (v1.21.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -283,12 +283,23 @@ autosaves into the shared shell's fs and re-reads files when its tab is shown. D
 without problems (fetch works there; checked). **Bash heredocs in this environment can halve backslashes** — write
 scripts that contain regexes or `\n` with the Write tool, not `cat <<EOF`.
 
-**Python** (v1.18): `runtime/python.ts` loads Pyodide (CPython 3.14 in WebAssembly, ~13 MB). In the browser it is
+**Python** (v1.18, worker since v1.21): Pyodide (CPython 3.14 in WebAssembly, ~13 MB) runs in a Web Worker
+(`runtime/python.worker.ts`); `runtime/python.ts` is the page-side facade, `runtime/pyCore.ts` the code next to Pyodide
+(bootstrap, file mirroring, capture). Each run sends a snapshot of the lab's files and gets back only what the program
+created, changed or deleted. Stop (Ctrl+C, the terminal's stop button) and a watchdog (TIME_LIMIT 10 s + 3 s, for code
+stuck in one C call such as a backtracking regex) terminate the worker and start a fresh one. Where a worker cannot start,
+and in tests (Node), the same code runs in-process ("inline" mode). Running is asynchronous: commands may be
+`AsyncCommand`s, and the shell's pipeline code uses `terminal/maybe.ts` (`andThen`, `each`) so that lines without
+python3 stay synchronous. `execLine` is sync and python3 refuses there (also under sudo, find -exec, xargs, docker exec);
+`execLineAsync` is what the terminal and `runLabLine` use. A lab task's `check`/`feedback` may return a Promise (only
+`pyCases` does); exam checks stay synchronous. **Never export a function named `then` from a module**: dynamic
+`import()` treats the module as a Promise and every test suite failed to load. Electron runs the worker from `file://`
+(checked with a hidden window in v1.21). In the browser Pyodide is
 served from `public/pyodide`, which `scripts/copy-runtimes.mjs` fills from `node_modules/pyodide` before
 `npm run dev` / `npm run build` (gitignored; Vercel runs the prebuild hook too); in tests `loadPyodide()` reads the
 package directly. `runPython` mirrors the lab's file system into Pyodide's (every top-level dir except Pyodide's own;
 under `/home` each user dir), runs `_ka_run` (runpy, fresh user modules each run, argv, cwd, tracebacks without
-runtime frames, a `sys.settrace` deadline of 5 s against endless loops, output capped) and copies created, changed
+runtime frames, a `sys.settrace` deadline of 10 s against endless loops, output capped) and copies created, changed
 and deleted files back. `python3 FILE|-c CODE|--version`; `python` and `pip` only explain themselves. Python's own
 `sqlite3` works on the lab's database files. Hidden tests: `labs/pyHelpers.ts` `pyCases(file, func, [[args, expected]])`
 spreads `check` + `feedback` into a task — it imports the learner's file (main block not run), calls the function
@@ -354,8 +365,8 @@ files the way the editor would: `edit(path, content)` and `editFn(path, func, bo
 ## Backlog beyond lessons
 
 - Python in the browser has no network (socket, requests): those lesson parts are still practised on the learner's
-  own machine. Pyodide runs on the main thread; the trace deadline stops loops, but a single very slow C call cannot be
-  interrupted (a Web Worker would fix that).
+  own machine. Output appears when a program ends (lines are streamed from the worker but only kept for a stopped run);
+  python3 has no stdin.
 - Script support is linear on purpose: no if/for/while/functions/$(...); the shell says so when it meets them.
 - The OWASP lesson follows the 2021 list and only summarises the newer edition — verify against owasp.org.
 - No subject-matter expert has reviewed the lessons; the tests check structure, not facts.

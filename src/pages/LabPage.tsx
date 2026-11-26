@@ -101,20 +101,21 @@ function LabRun({ lab }: { lab: Lab }) {
   const [runId, setRunId] = useState(0);
   const desktop = window.matchMedia('(min-width: 1001px)').matches;
 
-  const onSearch = (lang: SiemLang, query: string, result: SiemResult): string | void => {
+  const onSearch = async (lang: SiemLang, query: string, result: SiemResult): Promise<string | void> => {
     linesRef.current.push(`${lang}> ${query}`);
-    const msg = onCommand({ state: shellRef.current!, line: query, output: resultText(result), lines: [...linesRef.current], siem: { lang, query, result } });
+    const msg = await onCommand({ state: shellRef.current!, line: query, output: resultText(result), lines: [...linesRef.current], siem: { lang, query, result } });
     return typeof msg === 'object' && msg ? msg.warn : msg;
   };
 
-  const onCommand = (ctx: LabCheckCtx): CommandMessage => {
+  // Asynchronous because Python hidden tests run in the Python worker; every other check answers at once.
+  const onCommand = async (ctx: LabCheckCtx): Promise<CommandMessage> => {
     const start = solvedRef.current;
     let index = start;
     // One command line may satisfy several tasks in a row (e.g. `cd docs && ls -a`).
     while (index < lab.tasks.length) {
       let passed = false;
       try {
-        passed = lab.tasks[index]!.check(ctx);
+        passed = await lab.tasks[index]!.check(ctx);
       } catch {
         passed = false;
       }
@@ -125,7 +126,7 @@ function LabRun({ lab }: { lab: Lab }) {
       const task = lab.tasks[start];
       if (!task?.feedback) return;
       try {
-        const note = task.feedback(ctx);
+        const note = await task.feedback(ctx);
         return note ? { warn: note } : undefined;
       } catch {
         return;

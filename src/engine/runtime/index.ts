@@ -1,13 +1,13 @@
 /* WebAssembly runtimes a lab may need before its shell is created. Each is downloaded once, on first use. */
 
-import { getPython, loadPython } from './python';
+import { loadPython, pythonReady } from './python';
 import { getSql, loadSql } from './sql';
 
 export type Runtime = 'sql' | 'python';
 
 const LOADERS: Record<Runtime, { ready: () => boolean; load: () => Promise<unknown> }> = {
   sql: { ready: () => !!getSql(), load: loadSql },
-  python: { ready: () => !!getPython(), load: loadPython },
+  python: { ready: pythonReady, load: loadPython },
 };
 
 export function runtimesReady(list: Runtime[] = []): boolean {

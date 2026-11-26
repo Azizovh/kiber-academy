@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { checkFlag } from '../engine/hash';
-import { createShell, execLine } from '../engine/terminal/shell';
+import { createShell, execLine, execLineAsync } from '../engine/terminal/shell';
 import type { LabCheckCtx } from './types';
 import { runLabLine } from './labs/run';
 import { runSiem } from '../engine/siem';
@@ -136,21 +136,21 @@ describe('terminal labs', () => {
     expect(duplicates(LABS.map((l) => l.id))).toEqual([]);
   });
 
-  it.each(LABS.map((lab) => [lab.id, lab] as const))('%s is solvable with its sample solution', (_id, lab) => {
+  it.each(LABS.map((lab) => [lab.id, lab] as const))('%s is solvable with its sample solution', async (_id, lab) => {
     const state = createShell(lab.shell());
     const lines: string[] = [];
     expect(duplicates(lab.tasks.map((t) => t.id))).toEqual([]);
 
-    lab.tasks.forEach((task, i) => {
+    for (const [i, task] of lab.tasks.entries()) {
       let ctx: LabCheckCtx = { state, line: '', output: '', lines };
       // A task must not be already solved before its own commands run.
-      if (i > 0) expect(safe(() => task.check(ctx)), `${task.id}: solved too early`).toBe(false);
+      if (i > 0) expect(await safe(() => task.check(ctx)), `${task.id}: solved too early`).toBe(false);
       for (const line of task.solution) {
-        ctx = runLabLine(state, line, lines, lab.commands);
+        ctx = await runLabLine(state, line, lines, lab.commands);
         expect(ctx.siem?.result.error, `${task.id}: ${line}`).toBeUndefined();
       }
-      expect(task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
-    });
+      expect(await task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
+    }
   });
 });
 
@@ -200,41 +200,41 @@ describe('exams', () => {
     expect(shortest / single.length, 'share of questions where the right option is the shortest').toBeLessThanOrEqual(0.4);
   });
 
-  it.each(EXAMS.flatMap((e) => e.practicals.map((p) => [`${e.id}/${p.id}`, e, p] as const)))('%s is solvable', (_n, exam, p) => {
+  it.each(EXAMS.flatMap((e) => e.practicals.map((p) => [`${e.id}/${p.id}`, e, p] as const)))('%s is solvable', async (_n, exam, p) => {
     expect(exam.topics.some((t) => t.id === p.topic)).toBe(true);
     expect(p.tasks.length).toBeGreaterThanOrEqual(3);
     const state = createShell(p.shell());
     const lines: string[] = [];
     // Exam tasks may be solved in any order: none is solved before its own commands.
-    for (const task of p.tasks) expect(safe(() => task.check({ state, line: '', output: '', lines })), `${task.id}: solved too early`).toBe(false);
+    for (const task of p.tasks) expect(await safe(() => task.check({ state, line: '', output: '', lines })), `${task.id}: solved too early`).toBe(false);
     for (const task of p.tasks) {
       let ctx: LabCheckCtx = { state, line: '', output: '', lines };
-      for (const line of task.solution) ctx = runLabLine(state, line, lines, p.commands);
-      expect(task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
+      for (const line of task.solution) ctx = await runLabLine(state, line, lines, p.commands);
+      expect(await task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
     }
   });
 });
 
 describe('hidden Python tests', () => {
-  it('explain which case failed while a function is still a stub', () => {
+  it('explain which case failed while a function is still a stub', async () => {
     const lab = getLab('python-asoslari')!;
     const state = createShell(lab.shell());
-    const ctx = runLabLine(state, 'python3 funksiyalar.py', []);
+    const ctx = await runLabLine(state, 'python3 funksiyalar.py', []);
     const task = lab.tasks.find((t) => t.id === 'if')!;
-    expect(task.check(ctx)).toBe(false);
-    const note = task.feedback!(ctx)!;
+    expect(await task.check(ctx)).toBe(false);
+    const note = (await task.feedback!(ctx))!;
     expect(note).toContain("0/8 o'tdi");
     expect(note).toContain('baho(100)');
     expect(note).toContain(`kutilgan: "a'lo"`);
     expect(note).toContain('sizniki:  None');
     // Other commands stay quiet.
-    expect(task.feedback!(runLabLine(state, 'ls', []))).toBeNull();
+    expect(await task.feedback!(await runLabLine(state, 'ls', []))).toBeNull();
   });
 });
 
-function safe(fn: () => boolean): boolean {
+async function safe(fn: () => boolean | Promise<boolean>): Promise<boolean> {
   try {
-    return fn();
+    return await fn();
   } catch {
     return false;
   }
@@ -353,12 +353,12 @@ describe('CTF', () => {
     expect(naive).toBe('malika');
   });
 
-  it('the Python challenges are solved by the scripts their hints describe', () => {
-    const py = (id: string, code: string) => execLine(createShell(CTF.find((c) => c.id === id)!.shell!()), `python3 -c "${code}"`).output.trim();
-    expect(py('py-config-decode', "import base64, json; d = base64.b64decode(open('config.txt').read()); print('flag' + json.loads(bytes(b ^ 0x5A for b in d).decode())['id'][4:])")).toBe(answers['py-config-decode']);
-    const ua = py('py-ua-rotation', "u = {}\nfor q in open('access.log'): u.setdefault(q.split()[0], set()).add(q.split(chr(34))[-2])\nprint(max(u, key=lambda ip: len(u[ip])))");
+  it('the Python challenges are solved by the scripts their hints describe', async () => {
+    const py = async (id: string, code: string) => (await execLineAsync(createShell(CTF.find((c) => c.id === id)!.shell!()), `python3 -c "${code}"`)).output.trim();
+    expect(await py('py-config-decode', "import base64, json; d = base64.b64decode(open('config.txt').read()); print('flag' + json.loads(bytes(b ^ 0x5A for b in d).decode())['id'][4:])")).toBe(answers['py-config-decode']);
+    const ua = await py('py-ua-rotation', "u = {}\nfor q in open('access.log'): u.setdefault(q.split()[0], set()).add(q.split(chr(34))[-2])\nprint(max(u, key=lambda ip: len(u[ip])))");
     expect(`flag{${ua}}`).toBe(answers['py-ua-rotation']);
-    const busiest = py('py-ua-rotation', "from collections import Counter; print(Counter(q.split()[0] for q in open('access.log')).most_common(1)[0][0])");
+    const busiest = await py('py-ua-rotation', "from collections import Counter; print(Counter(q.split()[0] for q in open('access.log')).most_common(1)[0][0])");
     expect(`flag{${busiest}}`).not.toBe(answers['py-ua-rotation']);
     // Exactly one function builds its SQL from input.
     const review = CTF.find((c) => c.id === 'py-code-review')!;

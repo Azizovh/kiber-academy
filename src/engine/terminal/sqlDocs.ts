@@ -29,7 +29,7 @@ export const SQL_DOCS: CommandDoc[] = [
       ['python3 tahlil.py auth.log', "Skriptga log faylini argument qilib berish"],
       ['python3 -c "import hashlib; print(hashlib.sha256(b\'abc\').hexdigest())"', 'Bir qatorda xesh hisoblash'],
     ],
-    note: "Interaktiv >>> rejim va pip (internetdan paket o'rnatish) yo'q; standart kutubxona (re, json, csv, hashlib, sqlite3, collections ...) tayyor. Dastur 5 soniyadan uzoq ishlasa, to'xtatiladi.",
+    note: "Interaktiv >>> rejim va pip (internetdan paket o'rnatish) yo'q; standart kutubxona (re, json, csv, hashlib, sqlite3, collections ...) tayyor. Dastur 10 soniyadan uzoq ishlasa, to'xtatiladi; Ctrl+C yoki \"To'xtatish\" tugmasi uni darhol to'xtatadi.",
   },
   {
     name: 'sqlite3',

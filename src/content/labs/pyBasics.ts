@@ -82,7 +82,7 @@ export const pyBasics: Lab = {
   intro:
     "s4 bosqichidagi Python darslarining amaliyoti. Bu yerda **haqiqiy Python 3** ishlaydi — kompyuteringizga hech narsa o'rnatish shart emas.\n\n" +
     "Ish tartibi: **Kod** oynasida faylni tahrirlaysiz (u avtomatik saqlanadi), **Terminal**da `python3 fayl.py` bilan ishga tushirasiz. Ko'p topshiriqlarda `funksiyalar.py` dagi bitta funksiyani to'ldirasiz — `python3 funksiyalar.py` ni ishga tushirganingizda funksiya **yashirin testlar** bilan tekshiriladi; xato bo'lsa, qaysi kirishda nima kutilgani sariq rangda ko'rsatiladi.\n\n" +
-    "Python'da **chekinish** (indent) muhim: funksiya yoki `if` ichidagi qatorlar 4 bo'sh joy bilan boshlanadi — muharrirda Tab buni o'zi qiladi. Xato chiqsa, oxirgi qatorini o'qing: xato turi va sababi o'sha yerda. Cheksiz sikl yozib qo'ysangiz, dastur 5 soniyadan keyin to'xtatiladi.",
+    "Python'da **chekinish** (indent) muhim: funksiya yoki `if` ichidagi qatorlar 4 bo'sh joy bilan boshlanadi — muharrirda Tab buni o'zi qiladi. Xato chiqsa, oxirgi qatorini o'qing: xato turi va sababi o'sha yerda. Cheksiz sikl yozib qo'ysangiz, dastur 10 soniyadan keyin to'xtatiladi — yoki o'zingiz Ctrl+C bilan to'xtatasiz.",
   shell: () => ({
     fs: { home: { talaba: { python: { 'salom.py': SALOM, 'funksiyalar.py': FUNKSIYALAR, 'talabalar.csv': TALABALAR, 'salomlash.py': SALOMLASH, 'hisobot.py': HISOBOT } } }, tmp: {} },
     cwd: DIR,

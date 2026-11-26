@@ -6,7 +6,7 @@
 
 import { resultText, runSiem } from '../../engine/siem';
 import type { SiemLang } from '../../engine/siem/types';
-import { execLine, type CustomCommand, type ShellState } from '../../engine/terminal/shell';
+import { execLineAsync, type CustomCommand, type ShellState } from '../../engine/terminal/shell';
 import { basename, dirname, getNode, resolvePath } from '../../engine/terminal/fs';
 import type { LabCheckCtx } from '../types';
 
@@ -48,7 +48,8 @@ function applyEdit(state: ShellState, spec: { path: string; content?: string; fn
   node.content = node.content.replace(re, (_, head: string) => head + body);
 }
 
-export function runLabLine(state: ShellState, line: string, lines: string[], commands?: Record<string, CustomCommand>): LabCheckCtx {
+/** Asynchronous because python3 runs in a worker on the lab page; tests run solutions through the same path. */
+export async function runLabLine(state: ShellState, line: string, lines: string[], commands?: Record<string, CustomCommand>): Promise<LabCheckCtx> {
   if (line.startsWith('edit> ')) {
     applyEdit(state, JSON.parse(line.slice(6)) as never);
     return { state, line: '', output: '', lines: [...lines] };
@@ -56,6 +57,6 @@ export function runLabLine(state: ShellState, line: string, lines: string[], com
   lines.push(line);
   const s = siemLine(line);
   if (s) return siemCtx(state, s[0], s[1], [...lines]);
-  const res = execLine(state, line, commands);
+  const res = await execLineAsync(state, line, commands);
   return { state, line, output: res.output, lines: [...lines] };
 }

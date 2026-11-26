@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { evalPython, loadPython } from '../runtime/python';
 import { loadSql } from '../runtime/sql';
-import { createShell, execLine } from './shell';
+import { createShell, execLine, execLineAsync } from './shell';
 import { fileAt } from '../../content/labs/helpers';
 
 beforeAll(async () => {
@@ -30,57 +30,64 @@ function sh() {
     },
     sqlite: { '/home/talaba/app.db': 'CREATE TABLE t (x INTEGER); INSERT INTO t VALUES (5);' },
   });
-  return { state, run: (line: string) => execLine(state, line) };
+  return { state, run: (line: string) => execLineAsync(state, line) };
 }
 
 describe('python3', () => {
-  it('runs a script that reads lab files, with arguments', () => {
+  it('runs a script that reads lab files, with arguments', async () => {
     const { run } = sh();
-    expect(run('python3 tahlil.py --qisqa').output).toBe("203.0.113.77 2\n10.10.0.5 1\nargv: ['--qisqa']");
-    expect(run('python3 -c "print(sum(range(10)))"').output).toBe('45');
-    expect(run('python3 --version').output).toMatch(/^Python 3\.\d+\.\d+$/);
+    expect((await run('python3 tahlil.py --qisqa')).output).toBe("203.0.113.77 2\n10.10.0.5 1\nargv: ['--qisqa']");
+    expect((await run('python3 -c "print(sum(range(10)))"')).output).toBe('45');
+    expect((await run('python3 --version')).output).toMatch(/^Python 3\.\d+\.\d+$/);
   });
 
-  it('copies files the program writes or deletes back to the lab', () => {
+  it('copies files the program writes or deletes back to the lab', async () => {
     const { state, run } = sh();
-    run('python3 yoz.py');
+    await run('python3 yoz.py');
     expect(fileAt(state, '/home/talaba/hisobot.txt')).toBe('salom\n');
     expect(fileAt(state, '/home/talaba/ochir.txt')).toBeNull();
-    expect(run('cat hisobot.txt').output).toBe('salom');
+    expect((await run('cat hisobot.txt')).output).toBe('salom');
   });
 
-  it('prints tracebacks like CPython, without the runtime frames', () => {
+  it('prints tracebacks like CPython, without the runtime frames', async () => {
     const { run } = sh();
-    const r = run('python3 xato.py');
+    const r = await run('python3 xato.py');
     expect(r.output).toContain('Traceback (most recent call last):');
     expect(r.output).toContain('File "/home/talaba/xato.py", line 4, in <module>');
     expect(r.output).toContain('ZeroDivisionError: division by zero');
     expect(r.output).not.toContain('runpy');
-    expect(run('python3 sintaksis.py').output).toMatch(/SyntaxError: '\(' was never closed/);
-    expect(run('python3 yoq.py').output).toBe("python3: can't open file '/home/talaba/yoq.py': [Errno 2] No such file or directory");
+    expect((await run('python3 sintaksis.py')).output).toMatch(/SyntaxError: '\(' was never closed/);
+    expect((await run('python3 yoq.py')).output).toBe("python3: can't open file '/home/talaba/yoq.py': [Errno 2] No such file or directory");
   });
 
-  it('stops endless loops', () => {
+  it('stops endless loops', async () => {
     const { run } = sh();
     const t = Date.now();
-    expect(run('python3 sikl.py').output).toContain('TimeoutError');
+    expect((await run('python3 sikl.py')).output).toContain('TimeoutError');
     expect(Date.now() - t).toBeLessThan(15000);
   }, 20000);
 
-  it('sees changes to imported modules between runs, and works with sqlite3 files', () => {
+  it('sees changes to imported modules between runs, and works with sqlite3 files', async () => {
     const { state, run } = sh();
-    expect(run('python3 -c "from modul import kvadrat; print(kvadrat(4))"').output).toBe('16');
-    run("sed -i 's/n \\* n/n * n * n/' modul.py");
-    expect(run('python3 -c "from modul import kvadrat; print(kvadrat(4))"').output).toBe('64');
-    expect(run('python3 baza.py').output).toBe('12');
-    expect(run('sqlite3 app.db "SELECT COUNT(*) FROM t"').output).toBe('2');
-    expect(evalPython(state, 'from modul import kvadrat\nkvadrat(3)').value).toBe(27);
+    expect((await run('python3 -c "from modul import kvadrat; print(kvadrat(4))"')).output).toBe('16');
+    await run("sed -i 's/n \\* n/n * n * n/' modul.py");
+    expect((await run('python3 -c "from modul import kvadrat; print(kvadrat(4))"')).output).toBe('64');
+    expect((await run('python3 baza.py')).output).toBe('12');
+    expect((await run('sqlite3 app.db "SELECT COUNT(*) FROM t"')).output).toBe('2');
+    expect((await evalPython(state, 'from modul import kvadrat\nkvadrat(3)')).value).toBe(27);
   });
 
-  it('explains python and pip', () => {
+  it('refuses to run where nobody can wait for it (sudo, find -exec, execLine)', async () => {
+    const { state } = sh();
+    expect(execLine(state, 'python3 tahlil.py').output).toMatch(/to'g'ridan-to'g'ri/);
+    expect(execLine(state, 'python3 --version').output).toMatch(/^Python 3/);
+    expect((await execLineAsync(state, 'sudo python3 tahlil.py')).output).toMatch(/to'g'ridan-to'g'ri/);
+  });
+
+  it('explains python and pip', async () => {
     const { run } = sh();
-    expect(run('python x.py').output).toMatch(/Command 'python' not found/);
-    expect(run('pip install requests').output).toMatch(/internet yo'q/);
-    expect(run('python3').output).toMatch(/interaktiv >>> rejim yo'q/);
+    expect((await run('python x.py')).output).toMatch(/Command 'python' not found/);
+    expect((await run('pip install requests')).output).toMatch(/internet yo'q/);
+    expect((await run('python3')).output).toMatch(/interaktiv >>> rejim yo'q/);
   });
 });

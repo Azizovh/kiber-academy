@@ -6,7 +6,7 @@ import { fmtTime, str, values } from '../engine/siem/values';
 interface Props {
   siem: SiemState;
   /** Called after every search; a returned string is shown as a green success line. */
-  onSearch?: (lang: SiemLang, query: string, result: SiemResult) => string | void;
+  onSearch?: (lang: SiemLang, query: string, result: SiemResult) => string | void | Promise<string | void>;
   autoFocus?: boolean;
 }
 
@@ -42,7 +42,8 @@ export function SiemView({ siem, onSearch, autoFocus = true }: Props) {
     if (h[h.length - 1] !== text) h.push(text);
     setCursor(null);
     setResult(r);
-    setMessage(onSearch?.(l, text, r) || null);
+    setMessage(null);
+    void Promise.resolve(onSearch?.(l, text, r)).then((msg) => setMessage(msg || null));
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {

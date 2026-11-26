@@ -8,6 +8,8 @@ export default defineConfig({
   base: './',
   plugins: [react(), lessonMetaPlugin()],
   server: { port: 5183 },
+  // The Python worker loads Pyodide with a dynamic import, which needs a module worker.
+  worker: { format: 'es' },
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],

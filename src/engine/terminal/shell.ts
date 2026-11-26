@@ -11,6 +11,7 @@ import { createRepos, type GitRepoSpec, type GitState } from './git';
 import type { NpmSpec } from './codesec';
 import { createSiem, type SiemSpec, type SiemState } from '../siem/types';
 import { buildDatabase } from '../runtime/sql';
+import { andThen, each, isPromise, type Maybe } from './maybe';
 
 export interface ShellInit {
   fs: FsSpec;
@@ -92,9 +93,13 @@ export interface CmdCtx {
   piped?: boolean;
   /** Real programs print a final newline; piped text here has it stripped. True when the previous stage was echo -n. */
   stdinNoNewline?: boolean;
+  /** The caller can wait for a Promise (the terminal does; sudo, find -exec, xargs and execLine cannot). */
+  allowAsync?: boolean;
 }
 
 export type Command = (args: string[], ctx: CmdCtx) => CmdResult;
+/** A command that may have to wait (python3 runs in a Web Worker). */
+export type AsyncCommand = (args: string[], ctx: CmdCtx) => Maybe<CmdResult>;
 /** A lab-specific command; returning a string means success with that output. */
 export type CustomCommand = (args: string[], ctx: CmdCtx) => CmdResult | string;
 
@@ -269,22 +274,25 @@ function runArgv(
   depth = 0,
   piped = false,
   stdinNoNewline = false,
-): CmdResult {
+  allowAsync = false,
+): Maybe<CmdResult> {
   const [name, ...args] = argv;
   if (!name) return ok();
   const ctx: CmdCtx = {
     state,
     user,
     stdin,
-    run: (innerArgv, asUser) => runArgv(state, innerArgv, asUser, stdin, custom, depth, piped),
+    // sudo, find -exec and xargs use the result at once, so what they run has to be synchronous.
+    run: (innerArgv, asUser) => runArgv(state, innerArgv, asUser, stdin, custom, depth, piped, false, false) as CmdResult,
     commandNames: () => [...new Set([...Object.keys(COMMANDS), ...Object.keys(custom)])].sort(),
     piped,
     stdinNoNewline,
+    allowAsync,
   };
   if ((name === 'bash' || name === 'sh') && args.length && !args[0]!.startsWith('-')) {
-    return runScript(state, args[0]!, args.slice(1), user, custom, depth, false);
+    return runScript(state, args[0]!, args.slice(1), user, custom, depth, false, allowAsync);
   }
-  if (name.includes('/')) return runScript(state, name, args, user, custom, depth, true);
+  if (name.includes('/')) return runScript(state, name, args, user, custom, depth, true, allowAsync);
   const lab = custom[name];
   if (lab) {
     const res = lab(args, ctx);
@@ -307,7 +315,8 @@ function runScript(
   custom: Record<string, CustomCommand>,
   depth: number,
   direct: boolean,
-): CmdResult {
+  allowAsync: boolean,
+): Maybe<CmdResult> {
   const abs = resolvePath(state.cwd, path, state.home);
   const node = getNode(state.root, abs);
   if (!node) return fail(`bash: ${path}: No such file or directory`, 127);
@@ -324,29 +333,30 @@ function runScript(
   let code = 0;
   let stopOnError = false;
   const lines = node.content.split('\n');
-  for (let n = 0; n < lines.length; n++) {
+  const done = each(lines.length, (n) => {
     const line = lines[n]!.trim();
-    if (!line || line.startsWith('#')) continue;
+    if (!line || line.startsWith('#')) return;
     if (/^set\s+-e\b/.test(line)) {
       stopOnError = true;
-      continue;
+      return;
     }
     if (/^(if|then|else|elif|fi|for|while|until|do|done|case|esac|function)\b/.test(line) || line.includes('$(')) {
       out.push(`${path}: ${n + 1}-qator: bu simulyatorda if, for, while, funksiyalar va $(...) yo'q — skript qatorma-qator bajariladi`);
       code = 2;
-      break;
+      return true;
     }
     const exit = /^exit(?:\s+(\d+))?$/.exec(line);
     if (exit) {
       code = Number(exit[1] ?? 0);
-      break;
+      return true;
     }
-    const res = runLine(state, line, custom, user, positional, depth + 1);
-    if (res.output) out.push(res.output);
-    code = res.code;
-    if (code !== 0 && stopOnError) break;
-  }
-  return { out: out.join('\n'), code };
+    return andThen(runLine(state, line, custom, user, positional, depth + 1, allowAsync), (res) => {
+      if (res.output) out.push(res.output);
+      code = res.code;
+      return code !== 0 && stopOnError;
+    });
+  });
+  return andThen(done, () => ({ out: out.join('\n'), code }));
 }
 
 function writeRedirect(state: ShellState, redirect: { path: string; append: boolean }, text: string): string | null {
@@ -374,24 +384,36 @@ function runPipeline(
   custom: Record<string, CustomCommand>,
   user: string,
   depth: number,
-): CmdResult {
+  allowAsync: boolean,
+): Maybe<CmdResult> {
   let stdin: string | null = null;
   let prevNoNewline = false;
   let errors = '';
   let last: CmdResult = ok();
-  for (const [index, stage] of stages.entries()) {
-    last = runArgv(state, stage.argv, user, stdin, custom, depth, index < stages.length - 1 || !!stage.redirect, !!prevNoNewline);
-    if (last.err) errors += (errors ? '\n' : '') + last.err;
-    if (last.clear) return last;
-    if (stage.redirect) {
-      const problem = writeRedirect(state, stage.redirect, last.out);
-      if (problem) return fail((errors ? errors + '\n' : '') + problem);
-      last = { ...last, out: '' };
-    }
-    stdin = last.out;
-    prevNoNewline = !!last.noNewline;
-  }
-  return { out: last.out, err: errors || undefined, code: last.code };
+  let early: CmdResult | null = null;
+  const done = each(stages.length, (index) => {
+    const stage = stages[index]!;
+    const piped = index < stages.length - 1 || !!stage.redirect;
+    return andThen(runArgv(state, stage.argv, user, stdin, custom, depth, piped, !!prevNoNewline, allowAsync), (res) => {
+      last = res;
+      if (last.err) errors += (errors ? '\n' : '') + last.err;
+      if (last.clear) {
+        early = last;
+        return true;
+      }
+      if (stage.redirect) {
+        const problem = writeRedirect(state, stage.redirect, last.out);
+        if (problem) {
+          early = fail((errors ? errors + '\n' : '') + problem);
+          return true;
+        }
+        last = { ...last, out: '' };
+      }
+      stdin = last.out;
+      prevNoNewline = !!last.noNewline;
+    });
+  });
+  return andThen(done, () => early ?? { out: last.out, err: errors || undefined, code: last.code });
 }
 
 type WordToken = { kind: 'word'; text: string; quoted: boolean };
@@ -406,7 +428,8 @@ function runLine(
   user: string,
   positional: string[],
   depth: number,
-): ExecResult {
+  allowAsync: boolean,
+): Maybe<ExecResult> {
   const tokens = tokenize(line);
   if (typeof tokens === 'string') return { output: `xato: ${tokens}`, code: 2, clear: false };
 
@@ -448,14 +471,15 @@ function runLine(
   const parts: string[] = [];
   let code = 0;
   let clear = false;
-  for (const chain of chains) {
+  const done = each(chains.length, (i) => {
+    const chain = chains[i]!;
     const first = chain.stages[0]!;
     const assign =
       chain.stages.length === 1 && first.words.length === 1 && !first.redirect ? ASSIGNMENT.exec(first.words[0]!.text) : null;
     if (assign) {
       state.vars[assign[1]!] = expandWord(state, { text: assign[2]!, quoted: true }, positional)[0] ?? '';
       code = 0;
-      continue;
+      return;
     }
     const expanded: Stage[] = chain.stages.map((s) => ({
       argv: s.words.flatMap((w) => expandWord(state, w, positional)),
@@ -463,31 +487,47 @@ function runLine(
         ? { path: expandWord(state, s.redirect.target, positional)[0]!, append: s.redirect.append }
         : undefined,
     }));
-    const res = runPipeline(state, expanded, custom, user, depth);
-    code = res.code;
-    if (res.clear) {
-      clear = true;
-      parts.length = 0;
-      continue;
-    }
-    if (res.err) parts.push(res.err);
-    if (res.out) parts.push(res.out);
-    if (chain.andNext && code !== 0) break;
-  }
-  return { output: parts.join('\n'), code, clear };
+    return andThen(runPipeline(state, expanded, custom, user, depth, allowAsync), (res) => {
+      code = res.code;
+      if (res.clear) {
+        clear = true;
+        parts.length = 0;
+        return;
+      }
+      if (res.err) parts.push(res.err);
+      if (res.out) parts.push(res.out);
+      return chain.andNext && code !== 0;
+    });
+  });
+  return andThen(done, () => ({ output: parts.join('\n'), code, clear }));
 }
 
-/** Execute one command line; mutates `state`. */
+function startLine(state: ShellState, line: string, custom: Record<string, CustomCommand>, allowAsync: boolean): Maybe<ExecResult> {
+  const trimmed = line.trim();
+  if (!trimmed) return { output: '', code: 0, clear: false };
+  state.history.push(trimmed);
+  if (state.win) return runPsLine(state, trimmed);
+  return runLine(state, trimmed, custom, state.user, [], 0, allowAsync);
+}
+
+/** Execute one command line; mutates `state`. Synchronous: a command that would have to wait (python3) refuses. */
 export function execLine(
   state: ShellState,
   line: string,
   custom: Record<string, CustomCommand> = {},
 ): ExecResult {
-  const trimmed = line.trim();
-  if (!trimmed) return { output: '', code: 0, clear: false };
-  state.history.push(trimmed);
-  if (state.win) return runPsLine(state, trimmed);
-  return runLine(state, trimmed, custom, state.user, [], 0);
+  const res = startLine(state, line, custom, false);
+  if (isPromise(res)) throw new Error('execLine: a command went asynchronous although allowAsync was false');
+  return res;
+}
+
+/** Execute one command line where waiting is possible (the terminal, lab solutions): python3 works here. */
+export async function execLineAsync(
+  state: ShellState,
+  line: string,
+  custom: Record<string, CustomCommand> = {},
+): Promise<ExecResult> {
+  return startLine(state, line, custom, true);
 }
 
 /** Tab completion: the completed line, or the candidates when ambiguous. */

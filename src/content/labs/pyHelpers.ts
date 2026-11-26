@@ -15,7 +15,8 @@ interface CaseResult {
   msg?: string;
 }
 
-const cache = new WeakMap<LabCheckCtx, CaseResult[]>();
+// check and feedback ask for the same results after one command: run the tests once per context.
+const cache = new WeakMap<LabCheckCtx, Promise<CaseResult[]>>();
 
 /** A Python string literal for any JS string (JSON strings are valid Python literals for our inputs). */
 export const pyStr = (s: string) => JSON.stringify(s);
@@ -67,16 +68,16 @@ json.dumps(_ka_tests())
 `;
 }
 
-function results(c: LabCheckCtx, file: string, func: string, cases: [string, string][]): CaseResult[] {
+function results(c: LabCheckCtx, file: string, func: string, cases: [string, string][]): Promise<CaseResult[]> {
   const hit = cache.get(c);
   if (hit) return hit;
-  const { value } = evalPython(c.state, harness(file, func, cases));
-  let res: CaseResult[];
-  try {
-    res = JSON.parse(String(value)) as CaseResult[];
-  } catch {
-    res = [{ ok: false, call: '', msg: 'Testlarni ishga tushirib bo\'lmadi' }];
-  }
+  const res = evalPython(c.state, harness(file, func, cases)).then(({ value, err }) => {
+    try {
+      return JSON.parse(String(value)) as CaseResult[];
+    } catch {
+      return [{ ok: false, call: '', msg: `Testlarni ishga tushirib bo'lmadi${err ? `: ${err}` : ''}` }];
+    }
+  });
   cache.set(c, res);
   return res;
 }
@@ -89,10 +90,10 @@ const ranPython = (c: LabCheckCtx) => /^\s*python3\b/.test(c.line);
  */
 export function pyCases(file: string, func: string, cases: [string, string][]) {
   return {
-    check: (c: LabCheckCtx) => ranPython(c) && results(c, file, func, cases).every((r) => r.ok),
-    feedback: (c: LabCheckCtx) => {
+    check: async (c: LabCheckCtx) => ranPython(c) && (await results(c, file, func, cases)).every((r) => r.ok),
+    feedback: async (c: LabCheckCtx) => {
       if (!ranPython(c)) return null;
-      const res = results(c, file, func, cases);
+      const res = await results(c, file, func, cases);
       const bad = res.find((r) => !r.ok);
       if (!bad) return null;
       if (bad.msg) return `✗ Yashirin test: ${bad.msg}`;

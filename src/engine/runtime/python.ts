@@ -1,223 +1,201 @@
 /*
- * Real CPython (Pyodide, WebAssembly). Loading is asynchronous; running code afterwards is synchronous, so the
- * terminal's `python3` stays an ordinary command. Before every run the lab's simulated file system is mirrored into
- * Pyodide's in-memory file system, and files the program creates or changes are copied back afterwards — so a
- * script reads the lab's logs and writes reports the terminal can `cat`.
+ * Real CPython (Pyodide, WebAssembly) for the terminal's python3 and the hidden tests of Python labs.
  *
- * Safety nets for the main thread: a trace function stops a program after TIME_LIMIT seconds (an endless loop would
- * otherwise freeze the page), and output is capped.
+ * In the browser Pyodide runs in a Web Worker (python.worker.ts): the page stays responsive while a program runs,
+ * and stop (Ctrl+C, the stop button) or the watchdog terminate the worker — the only way to stop code stuck inside
+ * one C call, such as a catastrophic regular expression — and a fresh worker loads in the background. Where a worker
+ * cannot start, and in tests (Node), the same code runs in-process: then only the trace deadline stops loops.
+ *
+ * Each run gets a snapshot of the lab's files and returns what the program created, changed or deleted; only those
+ * changes are applied, so a file the code editor saves while the program runs is not overwritten.
  */
 
 import type { PyodideInterface } from 'pyodide';
 import { getNode, walk, type FsDir } from '../terminal/fs';
 import type { ShellState } from '../terminal/shell';
+import { evalIn, runIn, setup, TIME_LIMIT, type EvalDone, type EvalRequest, type FsChanges, type FsSnapshot, type RunDone, type RunRequest, type Stream } from './pyCore';
 
-let PY: PyodideInterface | null = null;
-let loading: Promise<PyodideInterface> | null = null;
+export { TIME_LIMIT };
 
-export const TIME_LIMIT = 5;
-const MAX_LINES = 3000;
+/** Seconds past TIME_LIMIT before the watchdog terminates a worker whose program ignores the trace deadline. */
+const WATCHDOG_MARGIN = 3;
 
-const BOOTSTRAP = `
-import sys, os, time, runpy, traceback, importlib
+export type WorkerIn =
+  | { type: 'init'; indexURL: string }
+  | { type: 'run'; id: number; req: RunRequest }
+  | { type: 'eval'; id: number; req: EvalRequest };
 
-_ka_deadline = [0.0]
+export type WorkerOut =
+  | { type: 'ready'; version: string }
+  | { type: 'failed'; message: string }
+  | { type: 'line'; id: number; stream: Stream; text: string }
+  | { type: 'done'; id: number; done: RunDone }
+  | { type: 'evaled'; id: number; done: EvalDone };
 
-def _ka_trace(frame, event, arg):
-    if time.monotonic() > _ka_deadline[0]:
-        sys.settrace(None)
-        raise TimeoutError("dastur ${TIME_LIMIT} soniyadan ko'p ishladi (cheksiz sikl bo'lishi mumkin) va to'xtatildi")
-    return _ka_trace
-
-def _ka_user_frames(tb):
-    keep = []
-    for f in traceback.extract_tb(tb):
-        name = f.filename
-        if name.startswith('<frozen') or name == '<exec>' or '/lib/python' in name or name.endswith('runpy.py'):
-            continue
-        keep.append(f)
-    return keep
-
-def _ka_print_exc(etype, value, tb):
-    if issubclass(etype, SyntaxError):
-        sys.stderr.write(''.join(traceback.format_exception_only(etype, value)))
-        return
-    frames = _ka_user_frames(tb)
-    sys.stderr.write('Traceback (most recent call last):\\n')
-    sys.stderr.write(''.join(traceback.format_list(frames)))
-    sys.stderr.write(''.join(traceback.format_exception_only(etype, value)))
-
-def _ka_forget_user_modules():
-    # Every run is a fresh "python3": modules imported from the lab's folders are imported again.
-    for name, mod in list(sys.modules.items()):
-        f = getattr(mod, '__file__', None) or ''
-        if f.startswith('/home/') or f.startswith('/srv/') or f.startswith('/opt/'):
-            del sys.modules[name]
-    importlib.invalidate_caches()
-
-def _ka_run(kind, target, argv, cwd):
-    _ka_forget_user_modules()
-    sys.argv = list(argv)
-    old_path = list(sys.path)
-    try:
-        os.chdir(cwd)
-    except OSError:
-        pass
-    sys.path.insert(0, os.path.dirname(os.path.abspath(target)) if kind == 'file' else '')
-    _ka_deadline[0] = time.monotonic() + ${TIME_LIMIT}
-    sys.settrace(_ka_trace)
-    try:
-        if kind == 'file':
-            runpy.run_path(target, run_name='__main__')
-        else:
-            exec(compile(target, '<string>', 'exec'), {'__name__': '__main__'})
-        return 0
-    except SystemExit as e:
-        code = e.code
-        if code is None:
-            return 0
-        if isinstance(code, int):
-            return code
-        sys.stderr.write(str(code) + '\\n')
-        return 1
-    except BaseException:
-        _ka_print_exc(*sys.exc_info())
-        return 1
-    finally:
-        sys.settrace(None)
-        sys.path[:] = old_path
-        sys.stdout.flush()
-        sys.stderr.flush()
-`;
-
-export function getPython(): PyodideInterface | null {
-  return PY;
+export interface PyRun {
+  out: string;
+  err: string;
+  code: number;
 }
 
-export function loadPython(): Promise<PyodideInterface> {
-  if (PY) return Promise.resolve(PY);
+/* ── backends ────────────────────────────────────────────────────── */
+
+let mode: 'worker' | 'inline' | null = null;
+let version: string | null = null;
+let loading: Promise<void> | null = null;
+
+// Worker mode
+let worker: Worker | null = null;
+let workerReady: Promise<void> | null = null;
+let seq = 0;
+interface Job {
+  id: number;
+  line: (stream: Stream, text: string) => void;
+  done: (msg: WorkerOut) => void;
+  kill: (why: 'stop' | 'timeout') => void;
+}
+let current: Job | null = null;
+
+// Inline mode
+let inlinePy: PyodideInterface | null = null;
+
+const canUseWorker = () => typeof window !== 'undefined' && typeof Worker !== 'undefined';
+const indexURL = () => new URL('pyodide/', document.baseURI).href;
+
+function spawnWorker(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let w: Worker;
+    try {
+      w = new Worker(new URL('./python.worker.ts', import.meta.url), { type: 'module' });
+    } catch (err) {
+      reject(err);
+      return;
+    }
+    worker = w;
+    w.onmessage = (e: MessageEvent<WorkerOut>) => {
+      const msg = e.data;
+      if (msg.type === 'ready') {
+        version = msg.version;
+        resolve();
+      } else if (msg.type === 'failed') reject(new Error(msg.message));
+      else if (current && msg.id === current.id) {
+        if (msg.type === 'line') current.line(msg.stream, msg.text);
+        else current.done(msg);
+      }
+    };
+    w.onerror = (e) => {
+      e.preventDefault();
+      reject(new Error(e.message || 'Python worker could not start'));
+    };
+    w.postMessage({ type: 'init', indexURL: indexURL() } satisfies WorkerIn);
+  });
+}
+
+async function loadInline(): Promise<void> {
+  const { loadPyodide } = await import('pyodide');
+  const py = typeof window === 'undefined' ? await loadPyodide() : await loadPyodide({ indexURL: indexURL() });
+  version = setup(py);
+  inlinePy = py;
+  mode = 'inline';
+}
+
+/** Downloads and starts Python once; later calls return the same promise. */
+export function loadPython(): Promise<void> {
+  if (mode) return Promise.resolve();
   loading ??= (async () => {
-    const { loadPyodide } = await import('pyodide');
-    // In the browser the runtime files are served from public/pyodide (copied by scripts/copy-runtimes.mjs).
-    const py = typeof window === 'undefined' ? await loadPyodide() : await loadPyodide({ indexURL: new URL('pyodide/', document.baseURI).href });
-    py.runPython(BOOTSTRAP);
-    py.setStdin({ stdin: () => null });
-    PY = py;
-    return py;
+    if (canUseWorker()) {
+      try {
+        workerReady = spawnWorker();
+        await workerReady;
+        mode = 'worker';
+        return;
+      } catch (err) {
+        // file:// pages in some browsers, strict policies: run in the page as before.
+        console.warn('[python] worker unavailable, running in the page:', err);
+        worker?.terminate();
+        worker = null;
+      }
+    }
+    await loadInline();
   })();
   return loading;
+}
+
+/** True once Python has loaded (a stopped worker reloading in the background still counts: runs wait for it). */
+export const pythonReady = () => mode !== null;
+export const pythonVersion = () => version;
+
+/** Throws the running program away (worker mode). Returns false when nothing was running. */
+export function stopPython(): boolean {
+  return kill('stop');
+}
+
+export const pythonRunning = () => current !== null;
+
+function kill(why: 'stop' | 'timeout'): boolean {
+  if (mode !== 'worker' || !current) return false;
+  const job = current;
+  current = null;
+  worker?.terminate();
+  worker = null;
+  workerReady = spawnWorker().catch(async (err) => {
+    console.warn('[python] worker restart failed, running in the page:', err);
+    await loadInline();
+  });
+  job.kill(why);
+  return true;
+}
+
+/** One program at a time: the terminal waits for a run, and hidden tests run after it. */
+let queue: Promise<unknown> = Promise.resolve();
+function enqueue<T>(task: () => Promise<T>): Promise<T> {
+  const next = queue.then(task, task);
+  queue = next.catch(() => undefined);
+  return next;
+}
+
+function workerJob<T>(build: (id: number) => WorkerIn, onDone: (msg: WorkerOut) => T, onLine: Job['line'], onKill: (why: 'stop' | 'timeout') => T): Promise<T> {
+  return new Promise<T>((resolve) => {
+    const id = ++seq;
+    const timer = setTimeout(() => kill('timeout'), (TIME_LIMIT + WATCHDOG_MARGIN) * 1000);
+    current = {
+      id,
+      line: onLine,
+      done: (msg) => {
+        clearTimeout(timer);
+        current = null;
+        resolve(onDone(msg));
+      },
+      kill: (why) => {
+        clearTimeout(timer);
+        resolve(onKill(why));
+      },
+    };
+    worker!.postMessage(build(id));
+  });
 }
 
 /* ── file-system bridge ──────────────────────────────────────────── */
 
 /** Top-level folders of Pyodide's own file system that the lab must not replace. */
 const SYSTEM = new Set(['dev', 'proc', 'lib', 'sys', 'usr', 'bin']);
-const mirrored = new Set<string>();
 
-const isBinary = (s: string) => s.includes('\u0000') || s.startsWith('SQLite format 3') || s.startsWith('MZ');
-
-function encode(content: string): Uint8Array {
-  if (isBinary(content) && ![...content].some((c) => c.charCodeAt(0) > 0xff)) {
-    const b = new Uint8Array(content.length);
-    for (let i = 0; i < content.length; i++) b[i] = content.charCodeAt(i);
-    return b;
-  }
-  return new TextEncoder().encode(content);
-}
-
-function decode(bytes: Uint8Array): string {
-  if (!bytes.includes(0)) {
-    try {
-      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    } catch {
-      /* not UTF-8: keep the bytes */
-    }
-  }
-  let s = '';
-  for (let i = 0; i < bytes.length; i += 8192) s += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  return s;
-}
-
-type FS = PyodideInterface['FS'];
-
-function rmTree(fs: FS, path: string) {
-  try {
-    const st = fs.stat(path);
-    if (fs.isDir(st.mode)) {
-      for (const n of fs.readdir(path)) if (n !== '.' && n !== '..') rmTree(fs, `${path}/${n}`);
-      fs.rmdir(path);
-    } else fs.unlink(path);
-  } catch {
-    /* already gone */
-  }
-}
-
-function roots(state: ShellState): string[] {
-  const out: string[] = [];
+export function snapshot(state: ShellState): FsSnapshot {
+  const snap: FsSnapshot = { roots: [], dirs: [], files: [] };
   for (const name of Object.keys(state.root.children)) {
     if (SYSTEM.has(name)) continue;
     if (name === 'home') {
       const home = state.root.children.home as FsDir;
-      for (const u of Object.keys(home.children)) out.push(`/home/${u}`);
-    } else out.push(`/${name}`);
+      for (const u of Object.keys(home.children)) snap.roots.push(`/home/${u}`);
+    } else snap.roots.push(`/${name}`);
   }
-  return out;
-}
-
-function mirrorIn(py: PyodideInterface, state: ShellState): string[] {
-  const fs = py.FS;
-  for (const p of mirrored) rmTree(fs, p);
-  mirrored.clear();
-  const rs = roots(state);
-  for (const r of rs) {
-    rmTree(fs, r);
+  for (const r of snap.roots) {
     for (const { path, node } of walk(state.root, r)) {
-      if (node.type === 'dir') fs.mkdirTree(path);
-      else fs.writeFile(path, encode(node.content));
-    }
-    mirrored.add(r);
-  }
-  return rs;
-}
-
-function mirrorOut(py: PyodideInterface, state: ShellState, rs: string[]) {
-  const fs = py.FS;
-  const seen = new Set<string>();
-  const visit = (path: string) => {
-    let st;
-    try {
-      st = fs.stat(path);
-    } catch {
-      return;
-    }
-    if (fs.isDir(st.mode)) {
-      ensureDir(state, path);
-      for (const n of fs.readdir(path)) if (n !== '.' && n !== '..') visit(`${path}/${n}`);
-      return;
-    }
-    seen.add(path);
-    const text = decode(fs.readFile(path) as Uint8Array);
-    const node = getNode(state.root, path);
-    if (node && node.type === 'file') {
-      if (node.content !== text) {
-        node.content = text;
-        node.mtime = Date.now();
-      }
-    } else {
-      const parent = ensureDir(state, path.slice(0, path.lastIndexOf('/')) || '/');
-      parent.children[path.slice(path.lastIndexOf('/') + 1)] = { type: 'file', content: text, mode: 0o644, owner: state.user, mtime: Date.now() };
-    }
-  };
-  for (const r of rs) visit(r);
-  // Files the program deleted (os.remove) disappear from the lab too.
-  for (const r of rs) {
-    for (const { path, node } of walk(state.root, r)) {
-      if (node.type === 'file' && !seen.has(path)) {
-        const parent = getNode(state.root, path.slice(0, path.lastIndexOf('/')) || '/');
-        if (parent?.type === 'dir') delete parent.children[path.slice(path.lastIndexOf('/') + 1)];
-      }
+      if (node.type === 'dir') snap.dirs.push(path);
+      else snap.files.push([path, node.content]);
     }
   }
+  return snap;
 }
 
 function ensureDir(state: ShellState, path: string): FsDir {
@@ -233,64 +211,84 @@ function ensureDir(state: ShellState, path: string): FsDir {
   return cur;
 }
 
-/* ── running ─────────────────────────────────────────────────────── */
-
-export interface PyRun {
-  out: string;
-  err: string;
-  code: number;
+export function applyChanges(state: ShellState, changes: FsChanges): void {
+  for (const d of changes.dirs) ensureDir(state, d);
+  for (const [path, text] of changes.files) {
+    const node = getNode(state.root, path);
+    if (node && node.type === 'file') {
+      node.content = text;
+      node.mtime = Date.now();
+    } else {
+      const parent = ensureDir(state, path.slice(0, path.lastIndexOf('/')) || '/');
+      parent.children[path.slice(path.lastIndexOf('/') + 1)] = { type: 'file', content: text, mode: 0o644, owner: state.user, mtime: Date.now() };
+    }
+  }
+  // Files the program deleted (os.remove) disappear from the lab too.
+  for (const path of changes.deleted) {
+    const parent = getNode(state.root, path.slice(0, path.lastIndexOf('/')) || '/');
+    if (parent?.type === 'dir' && parent.children[path.slice(path.lastIndexOf('/') + 1)]?.type === 'file') {
+      delete parent.children[path.slice(path.lastIndexOf('/') + 1)];
+    }
+  }
 }
 
-function capture(py: PyodideInterface, run: () => number): PyRun {
-  const out: string[] = [];
-  const err: string[] = [];
-  let dropped = 0;
-  const push = (arr: string[]) => (s: string) => {
-    if (out.length + err.length < MAX_LINES) arr.push(s);
-    else dropped++;
-  };
-  py.setStdout({ batched: push(out) });
-  py.setStderr({ batched: push(err) });
-  let code: number;
-  try {
-    code = run();
-  } catch (e) {
-    err.push(String((e as Error).message ?? e));
-    code = 1;
-  } finally {
-    py.setStdout();
-    py.setStderr();
-  }
+/* ── running ─────────────────────────────────────────────────────── */
+
+const NOT_LOADED: PyRun = { out: '', err: 'python3: Python hali yuklanmagan — sahifani qayta oching.', code: 1 };
+
+function assemble(out: string[], err: string[], dropped: number, code: number): PyRun {
   if (dropped) err.push(`... chiqish juda uzun: yana ${dropped} qator ko'rsatilmadi`);
   return { out: out.join('\n'), err: err.join('\n'), code };
 }
 
+const KILLED: Record<'stop' | 'timeout', string> = {
+  stop: 'KeyboardInterrupt',
+  timeout: `TimeoutError: dastur ${TIME_LIMIT + WATCHDOG_MARGIN} soniyadan ko'p ishladi (bitta og'ir amal ichida qolib ketdi) va to'xtatildi`,
+};
+
 /** Runs a Python file or a code string as `python3` would, in the lab's file system. */
-export function runPython(state: ShellState, kind: 'file' | 'code', target: string, argv: string[]): PyRun {
-  const py = PY;
-  if (!py) return { out: '', err: 'python3: Python hali yuklanmagan — sahifani qayta oching.', code: 1 };
-  const rs = mirrorIn(py, state);
-  const runner = py.globals.get('_ka_run') as (kind: string, target: string, argv: string[], cwd: string) => number;
-  const res = capture(py, () => runner(kind, target, py.toPy(argv) as unknown as string[], state.cwd));
-  mirrorOut(py, state, rs);
-  return res;
+export function runPython(state: ShellState, kind: 'file' | 'code', target: string, argv: string[]): Promise<PyRun> {
+  if (!mode) return Promise.resolve(NOT_LOADED);
+  return enqueue(async () => {
+    if (mode === 'worker') await workerReady;
+    const req: RunRequest = { snap: snapshot(state), kind, target, argv, cwd: state.cwd };
+    const out: string[] = [];
+    const err: string[] = [];
+    const line = (stream: Stream, text: string) => (stream === 'out' ? out : err).push(text);
+    if (mode === 'inline') {
+      const done = runIn(inlinePy!, req, line);
+      applyChanges(state, done.changes);
+      return assemble(out, err, done.dropped, done.code);
+    }
+    return workerJob(
+      (id) => ({ type: 'run', id, req }),
+      (msg) => {
+        const done = (msg as Extract<WorkerOut, { type: 'done' }>).done;
+        applyChanges(state, done.changes);
+        return assemble(out, err, done.dropped, done.code);
+      },
+      line,
+      // A stopped program's file changes are lost with its worker; what it printed so far is kept.
+      (why) => assemble(out, [...err, KILLED[why]], 0, why === 'stop' ? 130 : 1),
+    );
+  });
 }
 
 /**
  * Evaluates Python for a lab check (hidden tests): the lab's files are visible, nothing is written back, and the
- * value of the last expression is returned as JSON-able data.
+ * value of the last expression is returned as plain data.
  */
-export function evalPython(state: ShellState, code: string): { value: unknown; out: string; err: string } {
-  const py = PY;
-  if (!py) return { value: null, out: '', err: 'no python' };
-  mirrorIn(py, state);
-  let value: unknown = null;
-  const res = capture(py, () => {
-    const prev = state.cwd;
-    py.runPython(`import os\ntry:\n    os.chdir(${JSON.stringify(prev)})\nexcept OSError:\n    pass`);
-    const r = py.runPython(code, { globals: py.toPy({ __name__: 'tekshiruv' }) as never });
-    value = r && typeof r === 'object' && 'toJs' in r ? (r as { toJs: (o: object) => unknown }).toJs({ dict_converter: Object.fromEntries }) : r;
-    return 0;
+export function evalPython(state: ShellState, code: string): Promise<EvalDone> {
+  if (!mode) return Promise.resolve({ value: null, out: '', err: 'no python' });
+  return enqueue(async () => {
+    if (mode === 'worker') await workerReady;
+    const req: EvalRequest = { snap: snapshot(state), code, cwd: state.cwd };
+    if (mode === 'inline') return evalIn(inlinePy!, req);
+    return workerJob(
+      (id) => ({ type: 'eval', id, req }),
+      (msg) => (msg as Extract<WorkerOut, { type: 'evaled' }>).done,
+      () => undefined,
+      (why) => ({ value: null, out: '', err: KILLED[why] }),
+    );
   });
-  return { value, out: res.out, err: res.err };
 }

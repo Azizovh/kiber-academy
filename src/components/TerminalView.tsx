@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type MutableRefObject } from 'react';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Square } from 'lucide-react';
 import {
   complete,
   createShell,
-  execLine,
+  execLineAsync,
   promptPath,
   type CustomCommand,
+  type ExecResult,
   type ShellInit,
   type ShellState,
 } from '../engine/terminal/shell';
+import { stopPython } from '../engine/runtime/python';
 import type { LabCheckCtx } from '../content/types';
 
 type Entry =
@@ -25,7 +27,7 @@ interface Props {
   init: () => ShellInit;
   commands?: Record<string, CustomCommand>;
   /** Called after every command; a returned string is printed as a green success line, { warn } in amber. */
-  onCommand?: (ctx: LabCheckCtx) => CommandMessage;
+  onCommand?: (ctx: LabCheckCtx) => CommandMessage | Promise<CommandMessage>;
   onReset?: () => void;
   banner?: string;
   height?: number;
@@ -71,14 +73,32 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
   const [cursor, setCursor] = useState<number | null>(null);
   const body = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  // The line still running (python3 waits for its worker); input is closed until it finishes.
+  const [running, setRunning] = useState<string | null>(null);
+  // The "running" row appears only for programs that take a moment, so quick commands do not flicker.
+  const [showBusy, setShowBusy] = useState(false);
+  // Bumped by reset: a run that finishes on the old machine is dropped.
+  const runToken = useRef(0);
 
   useEffect(() => {
     body.current?.scrollTo({ top: body.current.scrollHeight });
-  }, [entries]);
+  }, [entries, showBusy]);
+
+  useEffect(() => {
+    if (!running) {
+      setShowBusy(false);
+      return;
+    }
+    const t = setTimeout(() => setShowBusy(true), 300);
+    return () => clearTimeout(t);
+  }, [running]);
 
   const state = shell.current;
 
   const reset = () => {
+    runToken.current++;
+    stopPython();
+    setRunning(null);
     shell.current = createShell(init());
     lines.current = [];
     setEntries(bannerText ? [{ kind: 'note', text: bannerText }] : []);
@@ -88,28 +108,47 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
     input.current?.focus();
   };
 
-  const run = (line: string) => {
+  const run = async (line: string) => {
     const s = shell.current!;
     const echo: Entry = { kind: 'cmd', user: s.user, host: s.host, path: promptPath(s), ps: !!s.win, text: line };
     if (!line.trim()) {
       setEntries((e) => [...e, echo]);
       return;
     }
-    const result = execLine(s, line, commands);
+    const token = ++runToken.current;
+    setRunning(line);
+    let result: ExecResult;
+    try {
+      result = await execLineAsync(s, line, commands);
+    } catch (err) {
+      result = { output: String((err as Error)?.message ?? err), code: 1, clear: false };
+    }
+    if (token !== runToken.current) return;
     lines.current.push(line.trim());
     const added: Entry[] = [echo];
     if (result.output) added.push({ kind: 'out', text: result.output, err: result.code !== 0 });
-    const message = onCommand?.({ state: s, line: line.trim(), output: result.output, lines: [...lines.current] });
+    const message = await onCommand?.({ state: s, line: line.trim(), output: result.output, lines: [...lines.current] });
+    if (token !== runToken.current) return;
     if (typeof message === 'string' && message) added.push({ kind: 'ok', text: message });
     else if (message && typeof message === 'object') added.push({ kind: 'warn', text: message.warn });
     setEntries((e) => (result.clear ? added.slice(1) : [...e, ...added]));
+    setRunning(null);
+    input.current?.focus();
   };
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
     const history = shell.current!.history;
+    if (running) {
+      // Only Ctrl+C works while a program runs, as in a real terminal.
+      if (e.key === 'c' && e.ctrlKey && !window.getSelection()?.toString()) {
+        e.preventDefault();
+        stopPython();
+      } else if (e.key === 'Enter' || e.key === 'Tab') e.preventDefault();
+      return;
+    }
     if (e.key === 'Enter') {
       e.preventDefault();
-      run(value);
+      void run(value);
       setValue('');
       setCursor(null);
     } else if (e.key === 'ArrowUp') {
@@ -202,7 +241,8 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
           <input
             ref={input}
             className="term-input"
-            value={value}
+            value={running ?? value}
+            readOnly={running !== null}
             onChange={(e) => {
               setValue(e.target.value);
               setCursor(null);
@@ -216,6 +256,14 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
             aria-label="Terminal buyrug'i"
           />
         </div>
+        {showBusy && (
+          <div className="term-busy" role="status">
+            <span>Dastur ishlayapti…</span>
+            <button type="button" className="term-stop" onClick={() => stopPython()}>
+              <Square aria-hidden /> To'xtatish (Ctrl+C)
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

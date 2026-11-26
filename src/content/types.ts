@@ -124,9 +124,10 @@ export interface LabTask {
   challenge?: boolean;
   /** One command line (or several) that solves the task; used by tests. */
   solution: string[];
-  check: (ctx: LabCheckCtx) => boolean;
+  /** A Promise only for Python hidden tests, which run in the Python worker. */
+  check: (ctx: LabCheckCtx) => boolean | Promise<boolean>;
   /** When the check fails, an explanation shown under the command (e.g. which hidden test failed); null shows nothing. */
-  feedback?: (ctx: LabCheckCtx) => string | null;
+  feedback?: (ctx: LabCheckCtx) => string | null | Promise<string | null>;
 }
 
 export interface Lab {
