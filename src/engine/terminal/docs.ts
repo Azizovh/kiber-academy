@@ -81,7 +81,7 @@ export const DOCS: CommandDoc[] = [
   d('cd', 'fayl', 'Boshqa katalogga o\'tadi (change directory).', "cd [KATALOG]", [
     ['..', 'Bir pog\'ona yuqoriga.', 'cd ..'],
     ['~', 'Uy katalogingizga (shunchaki cd ham shunday qiladi).', 'cd ~'],
-    ['-', 'Oldingi turgan joyingizga qaytadi.', 'cd -'],
+    ['-', "Oldingi turgan joyingizga qaytadi va uning yo'lini chiqaradi.", 'cd -'],
     ['/', "Mutlaq yo'l: ildizdan boshlab.", 'cd /var/log'],
   ], [['cd /etc && pwd', "/etc ga o'tib, tekshiradi"], ['cd ../..', 'Ikki pog\'ona yuqoriga']]),
   d('tree', 'fayl', "Katalog tuzilmasini daraxt ko'rinishida chiqaradi.", "tree [-a] [-d] [-L N] [YO'L]", [

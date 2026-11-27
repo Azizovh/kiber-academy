@@ -213,13 +213,11 @@ export const firstSteps: Lab = {
       id: 'cd-back',
       teach: ['cd -'],
       text: 'Oldingi turgan joyingizga bitta qisqa buyruq bilan qayting.',
-      hint: '`cd -` — oxirgi `cd` dan oldingi katalogga qaytaradi (bu yerda — uy katalogi).',
+      hint: '`cd -` — oxirgi `cd` dan oldingi katalogga qaytaradi va qaysi katalogga borganini chiqarib beradi.',
       solution: ['cd -'],
-      check: ({ line, state }) => /^cd\s+-\s*$/.test(line) && state.cwd === HOME,
-      feedback: ({ line, state }) =>
-        /^cd\b/.test(line) && state.cwd !== HOME
-          ? `Siz hozir ${state.cwd} dasiz. \`cd -\` oxirgi \`cd\` dan oldingi joyga qaytaradi; bu topshiriq uchun u uy katalogi bo'lishi kerak. Qayta urinish: \`cd ~\`, \`cd /etc\`, keyin \`cd -\``
-          : null,
+      // Where "previous" is depends on the learner's own path through the lab, so any successful `cd -` counts
+      // (it prints the directory it went to, as bash does).
+      check: ({ line, output, state }) => /^cd\s+-\s*$/.test(line) && output.trim() === state.cwd,
     },
     {
       id: 'ls-t',
@@ -249,7 +247,7 @@ export const firstSteps: Lab = {
       id: 'challenge',
       challenge: true,
       text: 'Mustaqil vazifa: uy katalogingizda eng oxirgi o\'zgartirilgan faylni aniqlang va uni o\'qing — unda bugungi xabar bor.',
-      hint: '`ls -lt ~` (eng yangisi birinchi), keyin shu faylni `cat` qiling.',
+      hint: '`ls -lt ~` (eng yangisi birinchi), keyin shu faylni `cat` qiling — uy katalogida turmagan bo\'lsangiz, `~/` bilan: `cat ~/fayl-nomi`.',
       solution: ['ls -lt ~', 'cat yangi-xabar.txt'],
       check: ({ output }) => output.includes("jamoa yig'ilishi"),
     },

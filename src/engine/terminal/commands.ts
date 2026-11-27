@@ -232,7 +232,8 @@ const cd: Command = (args, ctx) => {
   if (!canAccess(node, ctx.user, 'x')) return fail(`cd: ${target}: ${EACCES}`);
   ctx.state.prevCwd = ctx.state.cwd;
   ctx.state.cwd = abs;
-  return ok();
+  // Like bash, `cd -` prints where it went: the learner sees which directory was "previous".
+  return ok(target === '-' ? abs : '');
 };
 
 const echo: Command = (args) => {

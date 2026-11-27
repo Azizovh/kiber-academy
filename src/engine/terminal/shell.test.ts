@@ -34,7 +34,7 @@ describe('navigation', () => {
     run(s, 'cd ../..');
     expect(s.cwd).toBe('/home');
     run(s, 'cd /etc');
-    run(s, 'cd -');
+    expect(run(s, 'cd -')).toBe('/home');
     expect(s.cwd).toBe('/home');
     run(s, 'cd');
     expect(s.cwd).toBe('/home/talaba');
