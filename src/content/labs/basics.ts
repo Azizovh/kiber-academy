@@ -156,6 +156,11 @@ export const firstSteps: Lab = {
       hint: '`cd ..` — `..` har doim "ota katalog" degani.',
       solution: ['cd ..'],
       check: ({ line, state }) => /^cd\s+\.\./.test(line) && state.cwd === HOME,
+      // `cd ..` only lands in ~ from ~/hujjatlar; a learner who wandered off gets told where they are.
+      feedback: ({ line, state }) =>
+        /^cd\b/.test(line) && state.cwd !== HOME
+          ? `Siz hozir ${state.cwd} dasiz. \`cd ..\` turgan joyingizdan bir pog'ona yuqoriga chiqaradi — uy katalogiga (~) yetish uchun avval ~/hujjatlar ichida bo'ling: \`cd ~/hujjatlar\`, keyin \`cd ..\``
+          : null,
     },
     {
       id: 'tree',
@@ -211,6 +216,10 @@ export const firstSteps: Lab = {
       hint: '`cd -` — oxirgi `cd` dan oldingi katalogga qaytaradi (bu yerda — uy katalogi).',
       solution: ['cd -'],
       check: ({ line, state }) => /^cd\s+-\s*$/.test(line) && state.cwd === HOME,
+      feedback: ({ line, state }) =>
+        /^cd\b/.test(line) && state.cwd !== HOME
+          ? `Siz hozir ${state.cwd} dasiz. \`cd -\` oxirgi \`cd\` dan oldingi joyga qaytaradi; bu topshiriq uchun u uy katalogi bo'lishi kerak. Qayta urinish: \`cd ~\`, \`cd /etc\`, keyin \`cd -\``
+          : null,
     },
     {
       id: 'ls-t',
