@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { checkFlag } from '../engine/hash';
 import { createShell, execLine, execLineAsync } from '../engine/terminal/shell';
 import type { LabCheckCtx } from './types';
-import { runLabLine } from './labs/run';
+import { replayJournal, runLabLine } from './labs/run';
 import { runSiem } from '../engine/siem';
 import { CTF } from './ctf';
 import { ALL_STAGES, TRACKS, allTopics, getTopicRef } from './curriculum';
@@ -149,6 +149,23 @@ describe('terminal labs', () => {
         ctx = await runLabLine(state, line, lines, lab.commands);
         expect(ctx.siem?.result.error, `${task.id}: ${line}`).toBeUndefined();
       }
+      expect(await task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
+    }
+  });
+});
+
+// A reload in the middle of a lab replays the saved journal on a fresh machine. The journal has the same form as the
+// sample solutions (commands, "spl>"/"kql>" searches, "edit>" saves), so: replay the first half, then the second half
+// must solve exactly as it does without the interruption.
+describe('saved lab runs', () => {
+  it.each(LABS.map((lab) => [lab.id, lab] as const))('%s continues after a reload halfway', async (_id, lab) => {
+    const half = Math.floor(lab.tasks.length / 2);
+    const journal = lab.tasks.slice(0, half).flatMap((t) => t.solution);
+    const state = createShell(lab.shell());
+    const lines = await replayJournal(state, journal, lab.commands);
+    for (const task of lab.tasks.slice(half)) {
+      let ctx: LabCheckCtx = { state, line: '', output: '', lines };
+      for (const line of task.solution) ctx = await runLabLine(state, line, lines, lab.commands);
       expect(await task.check(ctx), `${task.id}: "${task.solution.join(' ; ')}"`).toBe(true);
     }
   });

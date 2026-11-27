@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isEmptyData, mergeCard, mergeData, mergeSettings, mergeTopic, type SyncData, type SyncSettings } from './merge';
+import { isEmptyData, mergeCard, mergeData, mergeLab, mergeSettings, mergeTopic, type SyncData, type SyncSettings } from './merge';
 
 const settings = (patch: Partial<SyncSettings> = {}): SyncSettings => ({
   name: '',
@@ -61,6 +61,24 @@ describe('mergeSettings', () => {
     );
     expect(merged.startedAt).toBe('2026-10-01');
     expect(merged.name).toBe('Ali');
+  });
+});
+
+describe('mergeLab', () => {
+  const run = (step: number, at: string) => ({ step, journal: Array.from({ length: step }, (_, i) => `cmd${i}`), at });
+
+  it('keeps the newer run, so a finished or restarted lab does not get an old run back', () => {
+    const old = { done: false, runs: 0, run: run(10, '2026-11-26T10:00:00Z') };
+    const finished = { done: true, runs: 1, run: run(0, '2026-11-27T09:00:00Z') };
+    expect(mergeLab(old, finished)).toEqual({ done: true, runs: 1, run: finished.run });
+    expect(mergeLab(finished, old)).toEqual({ done: true, runs: 1, run: finished.run });
+  });
+
+  it('takes the run from whichever side has one, and is idempotent', () => {
+    const a = { done: false, runs: 0 };
+    const b = { done: false, runs: 0, run: run(3, '2026-11-27T09:00:00Z') };
+    expect(mergeLab(a, b).run).toEqual(b.run);
+    expect(mergeLab(mergeLab(a, b), b)).toEqual(mergeLab(a, b));
   });
 });
 

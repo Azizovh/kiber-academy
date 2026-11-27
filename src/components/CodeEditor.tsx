@@ -20,6 +20,8 @@ interface Props {
   open?: string;
   /** True while the editor tab is shown: the file list and the open file are re-read then (the terminal may have changed them). */
   active: boolean;
+  /** Called after every save (absolute path, new text): the lab page journals it so a reload restores the file. */
+  onWrite?: (path: string, text: string) => void;
 }
 
 /** Text files only: databases, executables and captures are not edited here. */
@@ -61,7 +63,7 @@ function language(name: string): Extension[] {
 }
 
 /** A small code editor over the lab's file system: file list, CodeMirror, autosave. */
-export function CodeEditor({ getState, root, open, active }: Props) {
+export function CodeEditor({ getState, root, open, active, onWrite }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const [files, setFiles] = useState<string[]>([]);
@@ -99,6 +101,7 @@ export function CodeEditor({ getState, root, open, active }: Props) {
       node.mtime = Date.now();
     } else parent.children[basename(abs)] = { type: 'file', content: text, mode: 0o644, owner: st.user, mtime: Date.now() };
     setSaved(true);
+    onWrite?.(abs, text);
   };
 
   const flush = () => {

@@ -17,6 +17,7 @@ import { useActivity } from '../store/activity';
 import { useProgress } from '../store/progress';
 import { useRuntimes } from '../hooks/useRuntimes';
 import { RUNTIME_NAMES } from '../engine/runtime';
+import { edit, replayJournal } from '../content/labs/run';
 
 // CodeMirror is only downloaded for labs that have an editor.
 const CodeEditor = lazy(() => import('../components/CodeEditor'));
@@ -80,8 +81,17 @@ function LabGate({ lab }: { lab: Lab }) {
 function LabRun({ lab }: { lab: Lab }) {
   useStudyTimer();
   const completeLab = useProgress((s) => s.completeLab);
+  const saveLabRun = useProgress((s) => s.saveLabRun);
+  const clearLabRun = useProgress((s) => s.clearLabRun);
   const everDone = useProgress((s) => s.labs[lab.id]?.done ?? false);
   const addEvent = useActivity((s) => s.addEvent);
+
+  // A run saved earlier (this device or, through sync, another one) is replayed before the terminal appears.
+  const [saved] = useState(() => {
+    const run = useProgress.getState().labs[lab.id]?.run;
+    return run && run.journal.length ? run : null;
+  });
+  const [restoring, setRestoring] = useState(saved !== null);
 
   const [solved, setSolved] = useState(0);
   const [hint, setHint] = useState(false);
@@ -95,20 +105,62 @@ function LabRun({ lab }: { lab: Lab }) {
   const shellRef = useRef<ShellState | null>(null);
   if (!shellRef.current) shellRef.current = createShell(lab.shell());
   const linesRef = useRef<string[]>([]);
+  // Every line that changed the machine, in order, plus editor saves: saved after each step (see LabRun in merge.ts).
+  const journalRef = useRef<string[]>([]);
   const panes: Pane[] = lab.panes ?? ['terminal'];
   const [pane, setPane] = useState<Pane>(panes[0]!);
   // Bumped when the terminal resets the machine, so the SIEM pane starts over on the new one.
   const [runId, setRunId] = useState(0);
   const desktop = window.matchMedia('(min-width: 1001px)').matches;
 
+  useEffect(() => {
+    if (!saved) return;
+    let alive = true;
+    void replayJournal(shellRef.current!, saved.journal, lab.commands).then((lines) => {
+      if (!alive) return;
+      linesRef.current = lines;
+      journalRef.current = [...saved.journal];
+      const step = Math.min(saved.step, lab.tasks.length);
+      solvedRef.current = step;
+      setSolved(step);
+      setRestoring(false);
+    });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const persist = () => {
+    if (solvedRef.current < lab.tasks.length) saveLabRun(lab.id, solvedRef.current, [...journalRef.current]);
+  };
+
+  // An editor save is journaled as an edit line; repeated saves of the same file collapse into the last one.
+  const onWrite = (path: string, text: string) => {
+    const entry = edit(path, text);
+    const j = journalRef.current;
+    const last = j[j.length - 1];
+    if (last?.startsWith('edit> ') && (JSON.parse(last.slice(6)) as { path: string }).path === path) j[j.length - 1] = entry;
+    else j.push(entry);
+    persist();
+  };
+
   const onSearch = async (lang: SiemLang, query: string, result: SiemResult): Promise<string | void> => {
     linesRef.current.push(`${lang}> ${query}`);
+    journalRef.current.push(`${lang}> ${query}`);
     const msg = await onCommand({ state: shellRef.current!, line: query, output: resultText(result), lines: [...linesRef.current], siem: { lang, query, result } });
     return typeof msg === 'object' && msg ? msg.warn : msg;
   };
 
-  // Asynchronous because Python hidden tests run in the Python worker; every other check answers at once.
   const onCommand = async (ctx: LabCheckCtx): Promise<CommandMessage> => {
+    if (!ctx.siem) journalRef.current.push(ctx.line);
+    const msg = await checkTasks(ctx);
+    persist();
+    return msg;
+  };
+
+  // Asynchronous because Python hidden tests run in the Python worker; every other check answers at once.
+  const checkTasks = async (ctx: LabCheckCtx): Promise<CommandMessage> => {
     const start = solvedRef.current;
     let index = start;
     // One command line may satisfy several tasks in a row (e.g. `cd docs && ls -a`).
@@ -149,6 +201,8 @@ function LabRun({ lab }: { lab: Lab }) {
     solvedRef.current = 0;
     setSolved(0);
     setHint(false);
+    journalRef.current = [];
+    clearLabRun(lab.id);
   };
 
   const current = lab.tasks[solved];
@@ -162,6 +216,20 @@ function LabRun({ lab }: { lab: Lab }) {
   useEffect(() => {
     if (window.matchMedia('(min-width: 1001px)').matches) currentRef.current?.scrollIntoView({ block: 'nearest' });
   }, [solved]);
+
+  if (restoring) {
+    return (
+      <div className="page narrow">
+        <div className="card pad row" style={{ gap: 12 }} role="status">
+          <Loader2 aria-hidden className="spin" /> <span>Oldingi ishingiz tiklanmoqda… ({saved!.journal.length} ta buyruq)</span>
+        </div>
+      </div>
+    );
+  }
+
+  const banner =
+    "KiberAkademiya o'quv terminali. Buyruqlar ro'yxati: help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓" +
+    (saved ? `\nOldingi ishingiz tiklandi: ${saved.journal.length} ta buyruq qayta bajarildi, ${Math.min(saved.step, lab.tasks.length)} ta topshiriq bajarilgan. Boshidan boshlash uchun — "Qayta boshlash".` : '');
 
   return (
     <div className="page workspace">
@@ -255,14 +323,14 @@ function LabRun({ lab }: { lab: Lab }) {
                 fill
                 // On phones focusing the input would open the keyboard over the task before it is read.
                 autoFocus={desktop && panes[0] === 'terminal'}
-                banner={"KiberAkademiya o'quv terminali. Buyruqlar ro'yxati: help  ·  to'ldirish: Tab  ·  tarix: ↑ ↓"}
+                banner={banner}
               />
             </div>
           )}
           {panes.includes('editor') && lab.editor && (
             <div className="lab-terminal lab-editor" hidden={pane !== 'editor'}>
               <Suspense fallback={<div className="card pad">Muharrir yuklanmoqda…</div>}>
-                <CodeEditor key={runId} getState={() => shellRef.current!} root={lab.editor.root} open={lab.editor.open} active={pane === 'editor'} />
+                <CodeEditor key={runId} getState={() => shellRef.current!} root={lab.editor.root} open={lab.editor.open} active={pane === 'editor'} onWrite={onWrite} />
               </Suspense>
             </div>
           )}

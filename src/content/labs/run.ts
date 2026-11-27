@@ -48,6 +48,22 @@ function applyEdit(state: ShellState, spec: { path: string; content?: string; fn
   node.content = node.content.replace(re, (_, head: string) => head + body);
 }
 
+/**
+ * Rebuilds a saved lab run: replays its journal on a fresh machine (the simulator is deterministic) and returns the
+ * executed lines, which lab checks read as `ctx.lines`.
+ */
+export async function replayJournal(state: ShellState, journal: string[], commands?: Record<string, CustomCommand>): Promise<string[]> {
+  const lines: string[] = [];
+  for (const line of journal) {
+    try {
+      await runLabLine(state, line, lines, commands);
+    } catch {
+      // A line that fails now failed then too (or refers to something gone): the rest still replays.
+    }
+  }
+  return lines;
+}
+
 /** Asynchronous because python3 runs in a worker on the lab page; tests run solutions through the same path. */
 export async function runLabLine(state: ShellState, line: string, lines: string[], commands?: Record<string, CustomCommand>): Promise<LabCheckCtx> {
   if (line.startsWith('edit> ')) {

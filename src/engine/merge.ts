@@ -23,10 +23,34 @@ export interface SyncSettings {
   startedAt: string | null;
 }
 
+/**
+ * A lab in progress: how many tasks are solved and every line that changed the machine (shell commands, SIEM
+ * searches, editor saves as "edit> {json}"). The simulator is deterministic, so replaying the journal rebuilds the
+ * machine exactly. `at` decides between devices: a finished or restarted lab leaves an empty run with a newer `at`,
+ * so an older half-done run from another device does not come back.
+ */
+export interface LabRun {
+  step: number;
+  journal: string[];
+  at: string;
+}
+
+export interface LabRecord {
+  done: boolean;
+  runs: number;
+  run?: LabRun;
+}
+
+/** The newer run wins; without `at` order (equal stamps) the further one. */
+export function mergeLab(a: LabRecord, b: LabRecord): LabRecord {
+  const run = !a.run ? b.run : !b.run ? a.run : a.run.at !== b.run.at ? (a.run.at > b.run.at ? a.run : b.run) : a.run.step >= b.run.step ? a.run : b.run;
+  return { done: a.done || b.done, runs: Math.max(a.runs, b.runs), ...(run ? { run } : {}) };
+}
+
 export interface SyncData {
   settings: SyncSettings;
   topics: ProgressMap;
-  labs: Record<string, { done: boolean; runs: number } | undefined>;
+  labs: Record<string, LabRecord | undefined>;
   ctf: Record<string, { solved: boolean; hints: number } | undefined>;
   days: Record<string, DayActivity>;
   cards: Record<string, CardState | undefined>;
@@ -91,7 +115,7 @@ export function mergeData(cloud: SyncData, local: SyncData): SyncData {
   return {
     settings: mergeSettings(cloud.settings, local.settings),
     topics: mergeRecords(cloud.topics, local.topics, mergeTopic),
-    labs: mergeRecords(cloud.labs, local.labs, (a, b) => ({ done: a.done || b.done, runs: Math.max(a.runs, b.runs) })),
+    labs: mergeRecords(cloud.labs, local.labs, mergeLab),
     ctf: mergeRecords(cloud.ctf, local.ctf, (a, b) => ({ solved: a.solved || b.solved, hints: Math.max(a.hints, b.hints) })),
     // Max, not sum: the same day may already be in both copies after an earlier merge.
     days: mergeRecords(cloud.days, local.days, (a, b) => ({

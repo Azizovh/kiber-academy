@@ -274,6 +274,13 @@ export function initSync(): void {
   let lastPull = 0;
   document.addEventListener('visibilitychange', () => {
     const { user } = useAuth.getState();
+    // Leaving the tab (switching away, minimising, closing): send a pending save now instead of after the delay.
+    if (document.visibilityState === 'hidden' && saveTimer && user) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      void syncNow(user.id);
+      return;
+    }
     if (document.visibilityState !== 'visible' || !user || Date.now() - lastPull < PULL_INTERVAL_MS) return;
     lastPull = Date.now();
     void syncNow(user.id);

@@ -11,7 +11,7 @@ Specification: `docs/TZ.md`. Architecture: `docs/ARCHITECTURE.md`. Read both bef
 - In November 2026 the user asked that finished work be committed and pushed to `origin main`
   (`github.com/Azizovh/kiber-academy`) as it lands. End commit messages with the `Co-Authored-By` line your session specifies.
 
-## State (v1.22.0)
+## State (v1.23.0)
 
 Done: the whole platform, the full roadmap (foundation + 4 specialities + career), **full lessons for all six
 foundation stages** (`s0`–`s5`, 52 topics), **the whole SOC / Blue Team track** (`b1`–`b4`, 33 topics:
@@ -182,6 +182,14 @@ lesson was rewritten without it. Practical consequences:
   Consequence: deletions (a cleared note) can come back from another device; the full reset writes the cloud copy
   directly (`resetEverywhere`). Adding a store means adding it to `SyncData`, `readLocal`, `applyLocal` and the merge.
 - Admin = `profiles.is_admin`, set only by SQL in the Supabase dashboard; users cannot update that column.
+- Lab runs are saved (v1.23): `LabProgress.run = { step, journal, at }` in the progress store, so it syncs with `labs`.
+  The journal holds every terminal line, SIEM search (`spl>`/`kql>`) and editor save (`edit> {json}`, consecutive
+  saves of one file collapse); LabPage saves after each command and edit and, on opening, replays it with
+  `replayJournal` (`labs/run.ts`) before showing the terminal — the simulator is deterministic, so files, cwd and
+  history come back. `mergeLab` keeps the run with the newer `at`; finishing or restarting a lab writes an empty run
+  with a fresh stamp so an older run from another device does not return. A content test replays half of every lab's
+  solution and solves the rest. Leaving the tab sends a pending cloud save at once (`visibilitychange` → hidden).
+  A lab command must therefore stay deterministic for the same input (no Math.random in lab state).
 - Vercel hosts the site (`cbersecurity-learning-platform.vercel.app`) and deploys from GitHub; env vars live there.
   For the desktop shortcut the same keys go into a local `.env` before `npm run build`.
 
