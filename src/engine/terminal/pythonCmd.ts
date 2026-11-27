@@ -17,13 +17,13 @@ export const python3: AsyncCommand = (args, ctx) => {
   if (!ctx.allowAsync) return fail("python3: sudo, find -exec, xargs va docker exec orqali ishga tushmaydi — buyruqni terminalga to'g'ridan-to'g'ri yozing.");
   if (args[0] === '-c') {
     if (args[1] === undefined) return fail('Argument expected for the -c option\nusage: python3 [option] ... [-c cmd | -m mod | file | -] [arg] ...');
-    return runPython(ctx.state, 'code', args[1], ['-c', ...args.slice(2)]).then(result);
+    return runPython(ctx.state, 'code', args[1], ['-c', ...args.slice(2)], !ctx.piped).then(result);
   }
   if (args[0]!.startsWith('-')) return fail(`Unknown option: ${args[0]}\nusage: python3 [option] ... [-c cmd | -m mod | file | -] [arg] ...`);
   const { abs, node } = nodeAt(ctx, args[0]!);
   if (!node) return fail(`python3: can't open file '${abs}': [Errno 2] No such file or directory`);
   if (node.type === 'dir') return fail(`python3: can't find '__main__' module in '${abs}'`);
-  return runPython(ctx.state, 'file', abs, [args[0]!, ...args.slice(1)]).then(result);
+  return runPython(ctx.state, 'file', abs, [args[0]!, ...args.slice(1)], !ctx.piped).then(result);
 };
 
 const pip: Command = (args) => {

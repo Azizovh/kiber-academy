@@ -132,6 +132,18 @@ export function stopPython(): boolean {
 
 export const pythonRunning = () => current !== null;
 
+/* Live output: the terminal shows a program's lines while it runs (only runs whose output goes to the screen). */
+export type LiveListener = (stream: Stream, text: string) => void;
+let liveListener: LiveListener | null = null;
+
+/** Subscribes to the lines of screen-bound runs; returns the unsubscribe function. One listener (one terminal). */
+export function watchPythonOutput(fn: LiveListener): () => void {
+  liveListener = fn;
+  return () => {
+    if (liveListener === fn) liveListener = null;
+  };
+}
+
 function kill(why: 'stop' | 'timeout'): boolean {
   if (mode !== 'worker' || !current) return false;
   const job = current;
@@ -246,15 +258,21 @@ const KILLED: Record<'stop' | 'timeout', string> = {
   timeout: `TimeoutError: dastur ${TIME_LIMIT + WATCHDOG_MARGIN} soniyadan ko'p ishladi (bitta og'ir amal ichida qolib ketdi) va to'xtatildi`,
 };
 
-/** Runs a Python file or a code string as `python3` would, in the lab's file system. */
-export function runPython(state: ShellState, kind: 'file' | 'code', target: string, argv: string[]): Promise<PyRun> {
+/**
+ * Runs a Python file or a code string as `python3` would, in the lab's file system. `live`: the output goes to the
+ * screen (not into a pipe or a file), so its lines are also passed to the live listener as they arrive.
+ */
+export function runPython(state: ShellState, kind: 'file' | 'code', target: string, argv: string[], live = false): Promise<PyRun> {
   if (!mode) return Promise.resolve(NOT_LOADED);
   return enqueue(async () => {
     if (mode === 'worker') await workerReady;
     const req: RunRequest = { snap: snapshot(state), kind, target, argv, cwd: state.cwd };
     const out: string[] = [];
     const err: string[] = [];
-    const line = (stream: Stream, text: string) => (stream === 'out' ? out : err).push(text);
+    const line = (stream: Stream, text: string) => {
+      (stream === 'out' ? out : err).push(text);
+      if (live) liveListener?.(stream, text);
+    };
     if (mode === 'inline') {
       const done = runIn(inlinePy!, req, line);
       applyChanges(state, done.changes);

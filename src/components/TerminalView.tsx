@@ -10,7 +10,7 @@ import {
   type ShellInit,
   type ShellState,
 } from '../engine/terminal/shell';
-import { stopPython } from '../engine/runtime/python';
+import { stopPython, watchPythonOutput } from '../engine/runtime/python';
 import type { LabCheckCtx } from '../content/types';
 
 type Entry =
@@ -19,6 +19,9 @@ type Entry =
   | { kind: 'note'; text: string }
   | { kind: 'ok'; text: string }
   | { kind: 'warn'; text: string };
+
+/** Lines of a running program kept on screen; the finished output (up to 3000 lines) replaces them. */
+const LIVE_MAX = 200;
 
 /** What a lab says after a command: a success line, or advice (a failed hidden test) in amber. */
 export type CommandMessage = string | { warn: string } | void;
@@ -79,18 +82,38 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
   const [showBusy, setShowBusy] = useState(false);
   // Bumped by reset: a run that finishes on the old machine is dropped.
   const runToken = useRef(0);
+  // What a running program has printed so far; replaced by the finished output when it ends.
+  const [live, setLive] = useState<{ text: string; err: boolean }[]>([]);
 
   useEffect(() => {
     body.current?.scrollTo({ top: body.current.scrollHeight });
-  }, [entries, showBusy]);
+  }, [entries, showBusy, live]);
 
   useEffect(() => {
     if (!running) {
       setShowBusy(false);
+      setLive([]);
       return;
     }
     const t = setTimeout(() => setShowBusy(true), 300);
-    return () => clearTimeout(t);
+    // Lines can arrive by the thousand: collect them and render at most every 50 ms, keeping the last LIVE_MAX.
+    // (A timer, not requestAnimationFrame: that one never fires in a hidden or minimised window.)
+    const pending: { text: string; err: boolean }[] = [];
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const flush = () => {
+      timer = null;
+      const add = pending.splice(0);
+      setLive((l) => [...l, ...add].slice(-LIVE_MAX));
+    };
+    const stop = watchPythonOutput((stream, text) => {
+      pending.push({ text, err: stream === 'err' });
+      timer ??= setTimeout(flush, 50);
+    });
+    return () => {
+      clearTimeout(t);
+      stop();
+      if (timer) clearTimeout(timer);
+    };
   }, [running]);
 
   const state = shell.current;
@@ -256,7 +279,17 @@ export function TerminalView({ init, commands, onCommand, onReset, banner, heigh
             aria-label="Terminal buyrug'i"
           />
         </div>
-        {showBusy && (
+        {running && live.length > 0 && (
+          <pre className="term-out term-live" aria-live="off">
+            {live.map((l, i) => (
+              <span key={i} className={l.err ? 'err' : undefined}>
+                {l.text}
+                {'\n'}
+              </span>
+            ))}
+          </pre>
+        )}
+        {(showBusy || live.length > 0) && running && (
           <div className="term-busy" role="status">
             <span>Dastur ishlayapti…</span>
             <button type="button" className="term-stop" onClick={() => stopPython()}>

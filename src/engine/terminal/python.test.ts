@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { evalPython, loadPython } from '../runtime/python';
+import { evalPython, loadPython, watchPythonOutput } from '../runtime/python';
 import { loadSql } from '../runtime/sql';
 import { createShell, execLine, execLineAsync } from './shell';
 import { fileAt } from '../../content/labs/helpers';
@@ -82,6 +82,22 @@ describe('python3', () => {
     expect(execLine(state, 'python3 tahlil.py').output).toMatch(/to'g'ridan-to'g'ri/);
     expect(execLine(state, 'python3 --version').output).toMatch(/^Python 3/);
     expect((await execLineAsync(state, 'sudo python3 tahlil.py')).output).toMatch(/to'g'ridan-to'g'ri/);
+  });
+
+  it('passes the lines of screen-bound runs to the live listener, not of piped ones', async () => {
+    const { run } = sh();
+    const seen: string[] = [];
+    const stop = watchPythonOutput((stream, text) => seen.push(`${stream}:${text}`));
+    try {
+      await run('python3 -c "print(1); print(2)"');
+      expect(seen).toEqual(['out:1', 'out:2']);
+      seen.length = 0;
+      expect((await run('python3 -c "print(3)" | cat')).output).toBe('3');
+      await run('python3 -c "print(4)" > /tmp/x.txt');
+      expect(seen).toEqual([]);
+    } finally {
+      stop();
+    }
   });
 
   it('explains python and pip', async () => {

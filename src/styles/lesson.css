@@ -585,6 +585,10 @@
   caret-color: transparent;
 }
 
+.term-live .err {
+  color: #ff9a9a;
+}
+
 /* Shown while a command (python3) is still running. */
 .term-busy {
   display: flex;

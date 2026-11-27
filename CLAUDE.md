@@ -292,7 +292,9 @@ and in tests (Node), the same code runs in-process ("inline" mode). Running is a
 `AsyncCommand`s, and the shell's pipeline code uses `terminal/maybe.ts` (`andThen`, `each`) so that lines without
 python3 stay synchronous. `execLine` is sync and python3 refuses there (also under sudo, find -exec, xargs, docker exec);
 `execLineAsync` is what the terminal and `runLabLine` use. A lab task's `check`/`feedback` may return a Promise (only
-`pyCases` does); exam checks stay synchronous. **Never export a function named `then` from a module**: dynamic
+`pyCases` does); exam checks stay synchronous. Live output: python3 passes `live` when its output goes to the screen
+(`!ctx.piped`), and the terminal shows those lines while the program runs (`watchPythonOutput`, flushed by a 50 ms timer —
+`requestAnimationFrame` never fires in a hidden pane or a minimised window); the finished output then replaces them. **Never export a function named `then` from a module**: dynamic
 `import()` treats the module as a Promise and every test suite failed to load. Electron runs the worker from `file://`
 (checked with a hidden window in v1.21). In the browser Pyodide is
 served from `public/pyodide`, which `scripts/copy-runtimes.mjs` fills from `node_modules/pyodide` before
@@ -342,6 +344,8 @@ files the way the editor would: `edit(path, content)` and `editFn(path, func, bo
   tokens in `tokens.css` are now chosen to keep 4.5:1 on their tint over `--surface-2` — keep that when adding colours.
 - In a hidden Browser pane timers are throttled and a long `javascript_tool` call times out after 45 s: run long
   checks in the background and poll, or pass a short `routes` list.
+- Wait ~2 s after switching `data-theme` before auditing: buttons have a 0.15 s colour transition, and in a hidden pane
+  the audit once measured mid-transition colours (1.1:1 and 1.6:1 reports that vanished on a re-run).
 
 ## Code conventions
 
@@ -365,8 +369,8 @@ files the way the editor would: `edit(path, content)` and `editFn(path, func, bo
 ## Backlog beyond lessons
 
 - Python in the browser has no network (socket, requests): those lesson parts are still practised on the learner's
-  own machine. Output appears when a program ends (lines are streamed from the worker but only kept for a stopped run);
-  python3 has no stdin.
+  own machine. python3 has no stdin. A screen-bound line inside a script that is itself piped (`bash x.sh | grep`)
+  still shows its raw lines live until the run ends.
 - Script support is linear on purpose: no if/for/while/functions/$(...); the shell says so when it meets them.
 - OWASP Top 10 follows the 2025 edition since v1.22 (checked against top10.owasp.org/2025 in November 2026: A01 Broken
   Access Control incl. SSRF, A02 Security Misconfiguration, A03 Software Supply Chain Failures, A04 Cryptographic Failures,
